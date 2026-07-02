@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       amount: Math.round(amount * 100),
       currency: "eur",
       metadata: { orderId },
-      payment_method_types: ["card"],
+      automatic_payment_methods: { enabled: true },
     });
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });

@@ -14,6 +14,7 @@ import {
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { StripePayment } from "@/components/checkout/StripePayment";
+import { PaymentLogos } from "@/components/checkout/PaymentLogos";
 import { useCartStore } from "@/lib/store/cart";
 import { SIZE_LABELS, getUnitPrice } from "@/types";
 import { formatPrice, cn } from "@/lib/utils";
@@ -236,15 +237,16 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <h2 className="font-display text-xl font-semibold">
-                        Mokėjimas kortele
+                        Mokėjimas
                       </h2>
                       <p className="text-black/40 text-sm">
-                        Saugus mokėjimas per Stripe
+                        Kortelė, Apple Pay arba Google Pay
                       </p>
                     </div>
                   </div>
                   <StripePayment
                     clientSecret={clientSecret}
+                    orderId={orderId}
                     onSuccess={handlePaymentSuccess}
                     onError={setError}
                   />
@@ -348,8 +350,8 @@ export default function CheckoutPage() {
                       >
                         <CreditCard className="w-5 h-5 text-olive shrink-0" />
                         <div>
-                          <span className="font-medium block">Kortele</span>
-                          <span className="text-black/40 text-sm">Stripe</span>
+                          <span className="font-medium block">Kortelė / Apple Pay / Google Pay</span>
+                          <PaymentLogos className="mt-2" />
                         </div>
                       </button>
                       <button
@@ -376,7 +378,7 @@ export default function CheckoutPage() {
                       <div className="flex items-center gap-3 p-4 rounded-2xl border border-black/10 bg-sand/50 mt-4">
                         <ShieldCheck className="w-5 h-5 text-olive shrink-0" />
                         <span className="text-sm text-black/60">
-                          Saugus mokėjimas per Stripe
+                          Saugus mokėjimas — kortelė, Apple Pay, Google Pay
                         </span>
                       </div>
                     )}
