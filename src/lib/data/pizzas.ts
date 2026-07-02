@@ -136,7 +136,7 @@ export const SEED_PIZZAS: Pizza[] = [
     ],
     price_small: 14.5,
     price_large: 26,
-    image_url: SIMPLE_PIZZA_IMAGE,
+    image_url: "/pizzas/serrano.jpg",
     available: true,
   },
   {
@@ -152,7 +152,7 @@ export const SEED_PIZZAS: Pizza[] = [
     ],
     price_small: 13.5,
     price_large: 24,
-    image_url: SIMPLE_PIZZA_IMAGE,
+    image_url: "/pizzas/honey-pepperoni.jpg",
     available: true,
   },
 ];
