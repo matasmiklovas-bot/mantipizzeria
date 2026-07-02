@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ensureApplePayDomainsRegistered } from "@/lib/apple-pay";
+import { ensurePaymentMethodDomainsRegistered } from "@/lib/payment-domains";
 import { stripe } from "@/lib/stripe";
 
 export async function POST(request: Request) {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       });
     }
 
-    await ensureApplePayDomainsRegistered();
+    await ensurePaymentMethodDomainsRegistered(request);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),

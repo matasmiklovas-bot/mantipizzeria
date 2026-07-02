@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
-import { getApplePayDomainAssociation } from "@/lib/apple-pay";
+import { ensurePaymentMethodDomainsRegistered } from "@/lib/payment-domains";
 
+/** Stripe handles Apple Pay domain verification via Payment Method Domains. */
 export async function GET() {
-  const content = await getApplePayDomainAssociation();
-
-  if (!content) {
-    return new NextResponse("Apple Pay domain verification file not configured", {
-      status: 404,
-    });
-  }
-
-  return new NextResponse(content, {
-    headers: {
-      "Content-Type": "text/plain",
-      "Cache-Control": "public, max-age=3600",
-    },
+  return NextResponse.json({
+    message: "Use Stripe Payment Method Domains API",
+    register: "/api/stripe/register-domains",
   });
+}
+
+export async function POST(request: Request) {
+  const domains = await ensurePaymentMethodDomainsRegistered(request);
+  return NextResponse.json({ ok: true, domains });
 }

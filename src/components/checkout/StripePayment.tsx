@@ -5,7 +5,6 @@ import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   PaymentElement,
-  ExpressCheckoutElement,
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
@@ -34,16 +33,13 @@ function PaymentForm({
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
-  const [expressReady, setExpressReady] = useState(false);
-  const [expressUnavailable, setExpressUnavailable] = useState(false);
 
   const returnUrl = orderId
     ? `${window.location.origin}/order/${orderId}`
     : `${window.location.origin}/checkout`;
 
-  const isWallet = mode === "apple_pay" || mode === "google_pay";
-
-  const confirmPayment = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!stripe || !elements) return;
 
     setLoading(true);
@@ -61,76 +57,38 @@ function PaymentForm({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await confirmPayment();
-  };
+  const walletOptions =
+    mode === "apple_pay"
+      ? { applePay: "auto" as const, googlePay: "never" as const }
+      : mode === "google_pay"
+        ? { applePay: "never" as const, googlePay: "auto" as const }
+        : { applePay: "never" as const, googlePay: "never" as const };
 
-  const expressOptions = {
-    buttonType: { applePay: "buy" as const, googlePay: "buy" as const },
-    buttonTheme: { applePay: "black" as const, googlePay: "black" as const },
-    buttonHeight: 48,
-    layout: { maxColumns: 1, maxRows: 1 },
-    paymentMethods: {
-      applePay: mode === "apple_pay" ? ("auto" as const) : ("never" as const),
-      googlePay: mode === "google_pay" ? ("auto" as const) : ("never" as const),
-      link: "never" as const,
-    },
-  };
+  const submitLabel =
+    mode === "apple_pay"
+      ? "Apmokėti su Apple Pay"
+      : mode === "google_pay"
+        ? "Apmokėti su Google Pay"
+        : "Apmokėti kortele";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {isWallet && (
-        <div className="space-y-3">
-          <ExpressCheckoutElement
-            options={expressOptions}
-            onReady={({ availablePaymentMethods }) => {
-              const ready =
-                mode === "apple_pay"
-                  ? !!availablePaymentMethods?.applePay
-                  : !!availablePaymentMethods?.googlePay;
-              setExpressReady(ready);
-              setExpressUnavailable(!ready);
-            }}
-            onConfirm={confirmPayment}
-          />
-          {expressUnavailable && (
-            <div className="rounded-2xl border border-black/10 bg-sand/50 p-4 text-sm text-black/60 text-center space-y-2">
-              <p>
-                {mode === "apple_pay"
-                  ? "Apple Pay nepasiekiamas šiame įrenginyje arba naršyklėje."
-                  : "Google Pay nepasiekiamas šiame įrenginyje arba naršyklėje."}
-              </p>
-              <p className="text-xs text-black/40">
-                {mode === "apple_pay"
-                  ? "Naudokite Safari iPhone/Mac su pridėta kortele Wallet programoje."
-                  : "Naudokite Chrome su pridėta kortele Google Pay."}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+      <PaymentElement
+        options={{
+          layout: "tabs",
+          wallets: walletOptions,
+        }}
+      />
 
-      {mode === "card" && (
-        <>
-          <PaymentElement
-            options={{
-              layout: "tabs",
-              wallets: { applePay: "never", googlePay: "never" },
-            }}
-          />
-          <Button type="submit" loading={loading} className="w-full" size="lg">
-            Apmokėti kortele
-          </Button>
-        </>
-      )}
-
-      {isWallet && expressReady && (
-        <p className="text-center text-xs text-black/40">
-          Spauskite {mode === "apple_pay" ? "Apple Pay" : "Google Pay"} mygtuką
-          viršuje
+      {mode === "apple_pay" && (
+        <p className="text-xs text-black/40 text-center">
+          Apple Pay rodomas Safari naršyklėje su kortele Wallet programoje.
         </p>
       )}
+
+      <Button type="submit" loading={loading} className="w-full" size="lg">
+        {submitLabel}
+      </Button>
     </form>
   );
 }

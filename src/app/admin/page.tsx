@@ -21,6 +21,10 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<DailyStats | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [payDomains, setPayDomains] = useState<
+    { domain: string; applePay: string; googlePay: string }[] | null
+  >(null);
+  const [payDomainsLoading, setPayDomainsLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -38,6 +42,17 @@ export default function AdminDashboard() {
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, [fetchData]);
+
+  const registerPayDomains = async () => {
+    setPayDomainsLoading(true);
+    try {
+      const res = await fetch("/api/stripe/register-domains", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) setPayDomains(data.domains ?? []);
+    } finally {
+      setPayDomainsLoading(false);
+    }
+  };
 
   const activeOrders = orders.filter(
     (o) => o.status !== "delivered" && o.payment_status !== "pending"
@@ -145,6 +160,29 @@ export default function AdminDashboard() {
             <p className="text-black/45 text-sm">{link.desc}</p>
           </Link>
         ))}
+      </div>
+
+      <div className="bg-white rounded-2xl p-6 card-shadow mb-8">
+        <h2 className="font-display text-xl font-semibold mb-2">Apple Pay / Google Pay</h2>
+        <p className="text-black/50 text-sm mb-4">
+          Spauskite, kad Stripe užregistruotų jūsų domeną. Apple Pay veikia Safari
+          (iPhone/Mac). Tikri pinigai reikalauja Stripe live raktų Vercel.
+        </p>
+        <Button onClick={registerPayDomains} loading={payDomainsLoading} size="sm">
+          Registruoti mokėjimo domeną
+        </Button>
+        {payDomains && (
+          <ul className="mt-4 space-y-2 text-sm">
+            {payDomains.map((d) => (
+              <li key={d.domain} className="flex flex-wrap gap-2">
+                <span className="font-medium">{d.domain}</span>
+                <span className="text-black/50">
+                  Apple Pay: {d.applePay} · Google Pay: {d.googlePay}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {stats && stats.popularPizzas.length > 0 && (
