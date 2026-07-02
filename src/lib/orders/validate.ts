@@ -27,7 +27,12 @@ export async function validateAndBuildOrder(
   if (paymentMethod === "cash" && paymentStatus !== "cash_pending") {
     throw new Error("INVALID_PAYMENT");
   }
-  if (paymentMethod === "credit_card" && paymentStatus !== "pending") {
+  const stripeMethods: PaymentMethod[] = [
+    "credit_card",
+    "apple_pay",
+    "google_pay",
+  ];
+  if (stripeMethods.includes(paymentMethod) && paymentStatus !== "pending") {
     throw new Error("INVALID_PAYMENT");
   }
 

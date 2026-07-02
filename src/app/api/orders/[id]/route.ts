@@ -37,9 +37,12 @@ export async function PATCH(
       if (!existing) {
         return NextResponse.json({ error: "Order not found" }, { status: 404 });
       }
+      const stripeMethods = ["credit_card", "apple_pay", "google_pay"] as const;
       if (
         existing.payment_status === "pending" &&
-        existing.payment_method === "credit_card"
+        stripeMethods.includes(
+          existing.payment_method as (typeof stripeMethods)[number]
+        )
       ) {
         await updateOrderPaymentStatus(id, "paid");
         const order = await getOrder(id);

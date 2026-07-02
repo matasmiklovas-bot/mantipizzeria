@@ -13,13 +13,30 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
-import { StripePayment } from "@/components/checkout/StripePayment";
-import { PaymentLogos } from "@/components/checkout/PaymentLogos";
+import {
+  StripePayment,
+  STRIPE_MODE_LABELS,
+  type StripePaymentMode,
+} from "@/components/checkout/StripePayment";
+import {
+  ApplePayBadge,
+  GooglePayBadge,
+  CardBadge,
+} from "@/components/checkout/PaymentLogos";
 import { useCartStore } from "@/lib/store/cart";
 import { SIZE_LABELS, getUnitPrice } from "@/types";
 import { formatPrice, cn } from "@/lib/utils";
 
-type PaymentChoice = "card" | "cash";
+type PaymentChoice = StripePaymentMode | "cash";
+
+const STRIPE_METHOD_MAP: Record<
+  StripePaymentMode,
+  "credit_card" | "apple_pay" | "google_pay"
+> = {
+  card: "credit_card",
+  apple_pay: "apple_pay",
+  google_pay: "google_pay",
+};
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
@@ -79,8 +96,10 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleCardSubmit = async (e: React.FormEvent) => {
+  const handleStripeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (paymentMethod === "cash") return;
+
     setLoading(true);
     setError("");
 
@@ -90,7 +109,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...createOrderPayload(),
-          payment_method: "credit_card",
+          payment_method: STRIPE_METHOD_MAP[paymentMethod],
           payment_status: "pending",
         }),
       });
@@ -237,7 +256,7 @@ export default function CheckoutPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
             <div className="order-2 lg:order-1">
-              {clientSecret ? (
+              {clientSecret && paymentMethod !== "cash" ? (
                 <div className="bg-white rounded-3xl p-6 md:p-8 card-shadow">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-11 h-11 rounded-xl bg-olive/10 flex items-center justify-center">
@@ -245,15 +264,16 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <h2 className="font-display text-xl font-semibold">
-                        Mokėjimas
+                        {STRIPE_MODE_LABELS[paymentMethod].title}
                       </h2>
                       <p className="text-black/40 text-sm">
-                        Kortelė, Apple Pay arba Google Pay
+                        {STRIPE_MODE_LABELS[paymentMethod].subtitle}
                       </p>
                     </div>
                   </div>
                   <StripePayment
                     clientSecret={clientSecret}
+                    mode={paymentMethod}
                     orderId={orderId}
                     onSuccess={handlePaymentSuccess}
                     onError={setError}
@@ -267,7 +287,7 @@ export default function CheckoutPage() {
               ) : (
                 <form
                   onSubmit={
-                    paymentMethod === "cash" ? handleCashSubmit : handleCardSubmit
+                    paymentMethod === "cash" ? handleCashSubmit : handleStripeSubmit
                   }
                   className="space-y-6"
                 >
@@ -345,48 +365,68 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => setPaymentMethod("card")}
                         className={cn(
-                          "flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all",
+                          "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all",
                           paymentMethod === "card"
                             ? "border-olive bg-olive/5"
                             : "border-black/10 hover:border-black/20"
                         )}
                       >
                         <CreditCard className="w-5 h-5 text-olive shrink-0" />
-                        <div>
-                          <span className="font-medium block">Kortelė / Apple Pay / Google Pay</span>
-                          <PaymentLogos className="mt-2" />
-                        </div>
+                        <span className="font-medium">Kortelė</span>
+                        <CardBadge />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("apple_pay")}
+                        className={cn(
+                          "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all",
+                          paymentMethod === "apple_pay"
+                            ? "border-olive bg-olive/5"
+                            : "border-black/10 hover:border-black/20"
+                        )}
+                      >
+                        <span className="font-medium">Apple Pay</span>
+                        <ApplePayBadge />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("google_pay")}
+                        className={cn(
+                          "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all",
+                          paymentMethod === "google_pay"
+                            ? "border-olive bg-olive/5"
+                            : "border-black/10 hover:border-black/20"
+                        )}
+                      >
+                        <span className="font-medium">Google Pay</span>
+                        <GooglePayBadge />
                       </button>
                       <button
                         type="button"
                         onClick={() => setPaymentMethod("cash")}
                         className={cn(
-                          "flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all",
+                          "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all",
                           paymentMethod === "cash"
                             ? "border-gold bg-gold/5"
                             : "border-black/10 hover:border-black/20"
                         )}
                       >
                         <Banknote className="w-5 h-5 text-gold shrink-0" />
-                        <div>
-                          <span className="font-medium block">Grynaisiais</span>
-                          <span className="text-black/40 text-sm">
-                            Prie staliuko
-                          </span>
-                        </div>
+                        <span className="font-medium">Grynaisiais</span>
+                        <span className="text-black/40 text-sm">Prie staliuko</span>
                       </button>
                     </div>
 
-                    {paymentMethod === "card" && (
+                    {paymentMethod !== "cash" && (
                       <div className="flex items-center gap-3 p-4 rounded-2xl border border-black/10 bg-sand/50 mt-4">
                         <ShieldCheck className="w-5 h-5 text-olive shrink-0" />
                         <span className="text-sm text-black/60">
-                          Saugus mokėjimas — kortelė, Apple Pay, Google Pay
+                          Saugus mokėjimas per Stripe
                         </span>
                       </div>
                     )}
