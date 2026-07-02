@@ -36,6 +36,33 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 
 const POLL_MS = 5000;
 
+const MENU_ORDER = [
+  "Margherita",
+  "Margherita Piccante",
+  "Vegetariana",
+  "Blue Pepperoni",
+  "Nduja",
+  "Prosciutto Cotto",
+  "Salami Stracciatella",
+  "Serrano",
+  "Honey Pepperoni",
+];
+
+function sortItemsByMenu(
+  items: Order["items"]
+): NonNullable<Order["items"]> {
+  if (!items) return [];
+  return [...items].sort((a, b) => {
+    const baseName = (n: string) => n.split(" (")[0].trim();
+    const ai = MENU_ORDER.indexOf(baseName(a.pizza_name));
+    const bi = MENU_ORDER.indexOf(baseName(b.pizza_name));
+    if (ai === -1 && bi === -1) return a.pizza_name.localeCompare(b.pizza_name);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
 function ordersSignature(orders: Order[]): string {
   return orders
     .map(
@@ -340,7 +367,7 @@ export default function KitchenPage() {
                   </div>
 
                   <div className="space-y-2 mb-4 flex-1">
-                    {order.items?.map((item) => (
+                    {sortItemsByMenu(order.items).map((item) => (
                       <div
                         key={item.id ?? `${item.pizza_id}-${item.pizza_name}`}
                         className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5"

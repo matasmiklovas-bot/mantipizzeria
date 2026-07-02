@@ -12,6 +12,19 @@ import { isSupabaseConfigured } from "./supabase/env";
 
 export { isSupabaseConfigured } from "./supabase/env";
 
+const MENU_ORDER: string[] = SEED_PIZZAS.map((p) => p.name);
+
+function sortByMenuOrder(pizzas: Pizza[]): Pizza[] {
+  return [...pizzas].sort((a, b) => {
+    const ai = MENU_ORDER.indexOf(a.name);
+    const bi = MENU_ORDER.indexOf(b.name);
+    if (ai === -1 && bi === -1) return a.name.localeCompare(b.name);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
 
 function normalizePizza(row: Record<string, unknown>): Pizza {
   const pizza = row as unknown as Pizza;
@@ -53,7 +66,7 @@ async function seedMenuIfEmpty(
 
 export async function getPizzas(): Promise<Pizza[]> {
   if (!isSupabaseConfigured()) {
-    return memoryPizzas.filter((p) => p.available);
+    return sortByMenuOrder(memoryPizzas.filter((p) => p.available));
   }
 
   const supabase = await getSupabase();
@@ -61,24 +74,26 @@ export async function getPizzas(): Promise<Pizza[]> {
   const { data, error } = await supabase
     .from("pizzas")
     .select("*")
-    .eq("available", true)
-    .order("name");
+    .eq("available", true);
   if (error) throw error;
-  return (data ?? []).map((row) => normalizePizza(row as Record<string, unknown>));
+  return sortByMenuOrder(
+    (data ?? []).map((row) => normalizePizza(row as Record<string, unknown>))
+  );
 }
 
 export async function getAllPizzas(): Promise<Pizza[]> {
   if (!isSupabaseConfigured()) {
-    return memoryPizzas;
+    return sortByMenuOrder(memoryPizzas);
   }
   const supabase = await getSupabase();
   await seedMenuIfEmpty(supabase);
   const { data, error } = await supabase
     .from("pizzas")
-    .select("*")
-    .order("name");
+    .select("*");
   if (error) throw error;
-  return (data ?? []).map((row) => normalizePizza(row as Record<string, unknown>));
+  return sortByMenuOrder(
+    (data ?? []).map((row) => normalizePizza(row as Record<string, unknown>))
+  );
 }
 
 export async function getPizzaById(id: string): Promise<Pizza | null> {
