@@ -12,8 +12,18 @@ import { SEED_PIZZAS } from "./data/pizzas";
 function isSupabaseConfigured(): boolean {
   return !!(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+    process.env.SUPABASE_SERVICE_ROLE_KEY
   );
+}
+
+function normalizePizza(row: Record<string, unknown>): Pizza {
+  const pizza = row as unknown as Pizza;
+  return {
+    ...pizza,
+    price_small: Number(row.price_small),
+    price_large: Number(row.price_large),
+  };
 }
 
 // In-memory store for demo mode
@@ -35,27 +45,41 @@ export async function getPizzas(): Promise<Pizza[]> {
   if (!isSupabaseConfigured()) {
     return memoryPizzas.filter((p) => p.available);
   }
-  const supabase = await getSupabase();
-  const { data, error } = await supabase
-    .from("pizzas")
-    .select("*")
-    .eq("available", true)
-    .order("name");
-  if (error) throw error;
-  return data as Pizza[];
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase
+      .from("pizzas")
+      .select("*")
+      .eq("available", true)
+      .order("name");
+    if (error) throw error;
+    if (!data?.length) {
+      return memoryPizzas.filter((p) => p.available);
+    }
+    return data.map((row) => normalizePizza(row as Record<string, unknown>));
+  } catch (err) {
+    console.error("Supabase getPizzas failed, using seed menu:", err);
+    return memoryPizzas.filter((p) => p.available);
+  }
 }
 
 export async function getAllPizzas(): Promise<Pizza[]> {
   if (!isSupabaseConfigured()) {
     return memoryPizzas;
   }
-  const supabase = await getSupabase();
-  const { data, error } = await supabase
-    .from("pizzas")
-    .select("*")
-    .order("name");
-  if (error) throw error;
-  return data as Pizza[];
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase
+      .from("pizzas")
+      .select("*")
+      .order("name");
+    if (error) throw error;
+    if (!data?.length) return memoryPizzas;
+    return data.map((row) => normalizePizza(row as Record<string, unknown>));
+  } catch (err) {
+    console.error("Supabase getAllPizzas failed, using seed menu:", err);
+    return memoryPizzas;
+  }
 }
 
 export async function getPizzaById(id: string): Promise<Pizza | null> {

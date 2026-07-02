@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
+import { Loader2, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { PizzaCard } from "@/components/menu/PizzaCard";
 import { Button } from "@/components/ui/Button";
@@ -12,12 +12,20 @@ import type { Pizza } from "@/types";
 export default function MenuPage() {
   const [pizzas, setPizzas] = useState<Pizza[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const totalItems = useCartStore((s) => s.totalItems());
 
   useEffect(() => {
     fetch("/api/pizzas")
-      .then((r) => r.json())
-      .then(setPizzas)
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok || !Array.isArray(data)) {
+          setError(true);
+          return;
+        }
+        setPizzas(data);
+      })
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -36,10 +44,13 @@ export default function MenuPage() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl h-96 animate-pulse" />
-              ))}
+            <div className="flex justify-center py-24">
+              <Loader2 className="h-10 w-10 animate-spin text-red" aria-label="Kraunama" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <p className="text-black/60 mb-4">Nepavyko užkrauti meniu.</p>
+              <Button onClick={() => window.location.reload()}>Bandyti dar kartą</Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
