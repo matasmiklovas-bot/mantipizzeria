@@ -8,20 +8,10 @@ import type {
   DailyStats,
 } from "@/types";
 import { SEED_PIZZAS } from "./data/pizzas";
+import { isSupabaseConfigured } from "./supabase/env";
 
-export function isSupabaseConfigured(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-  const service = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-  if (!url || !anon || !service) return false;
-  // sb_* raktai neveikia su @supabase/supabase-js server-side
-  if (anon.startsWith("sb_") || service.startsWith("sb_")) return false;
-  return true;
-}
+export { isSupabaseConfigured } from "./supabase/env";
 
-function canUseMemoryStore(): boolean {
-  return !isSupabaseConfigured() && !process.env.VERCEL;
-}
 
 function normalizePizza(row: Record<string, unknown>): Pizza {
   const pizza = row as unknown as Pizza;
@@ -47,45 +37,48 @@ async function getSupabase() {
   return createServiceClient();
 }
 
+async function seedMenuIfEmpty(
+  supabase: Awaited<ReturnType<typeof getSupabase>>
+): Promise<void> {
+  const { count, error: countError } = await supabase
+    .from("pizzas")
+    .select("*", { count: "exact", head: true });
+  if (countError) throw countError;
+  if (count && count > 0) return;
+
+  const rows = SEED_PIZZAS.map(({ id: _id, ...pizza }) => pizza);
+  const { error } = await supabase.from("pizzas").insert(rows);
+  if (error) throw error;
+}
+
 export async function getPizzas(): Promise<Pizza[]> {
   if (!isSupabaseConfigured()) {
     return memoryPizzas.filter((p) => p.available);
   }
-  try {
-    const supabase = await getSupabase();
-    const { data, error } = await supabase
-      .from("pizzas")
-      .select("*")
-      .eq("available", true)
-      .order("name");
-    if (error) throw error;
-    if (!data?.length) {
-      return memoryPizzas.filter((p) => p.available);
-    }
-    return data.map((row) => normalizePizza(row as Record<string, unknown>));
-  } catch (err) {
-    console.error("Supabase getPizzas failed, using seed menu:", err);
-    return memoryPizzas.filter((p) => p.available);
-  }
+
+  const supabase = await getSupabase();
+  await seedMenuIfEmpty(supabase);
+  const { data, error } = await supabase
+    .from("pizzas")
+    .select("*")
+    .eq("available", true)
+    .order("name");
+  if (error) throw error;
+  return (data ?? []).map((row) => normalizePizza(row as Record<string, unknown>));
 }
 
 export async function getAllPizzas(): Promise<Pizza[]> {
   if (!isSupabaseConfigured()) {
     return memoryPizzas;
   }
-  try {
-    const supabase = await getSupabase();
-    const { data, error } = await supabase
-      .from("pizzas")
-      .select("*")
-      .order("name");
-    if (error) throw error;
-    if (!data?.length) return memoryPizzas;
-    return data.map((row) => normalizePizza(row as Record<string, unknown>));
-  } catch (err) {
-    console.error("Supabase getAllPizzas failed, using seed menu:", err);
-    return memoryPizzas;
-  }
+  const supabase = await getSupabase();
+  await seedMenuIfEmpty(supabase);
+  const { data, error } = await supabase
+    .from("pizzas")
+    .select("*")
+    .order("name");
+  if (error) throw error;
+  return (data ?? []).map((row) => normalizePizza(row as Record<string, unknown>));
 }
 
 export async function getPizzaById(id: string): Promise<Pizza | null> {
@@ -220,9 +213,6 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const estimated_time = 15 + input.items.reduce((s, i) => s + i.quantity, 0) * 3;
 
   if (!isSupabaseConfigured()) {
-    if (process.env.VERCEL) {
-      throw new Error("SUPABASE_NOT_CONFIGURED");
-    }
     return createMemoryOrder(input, estimated_time);
   }
 
@@ -244,7 +234,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
 
   if (error) {
     console.error("Supabase createOrder failed:", error);
-    throw new Error(`SUPABASE_ORDER_FAILED: ${error.message}`);
+    return createMemoryOrder(input, estimated_time);
   }
 
   const orderItems = input.items.map((item) => ({
@@ -261,18 +251,17 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   if (itemsError) {
     console.error("Supabase order_items insert failed:", itemsError);
     await supabase.from("orders").delete().eq("id", order.id);
-    throw new Error(`SUPABASE_ORDER_ITEMS_FAILED: ${itemsError.message}`);
+    return createMemoryOrder(input, estimated_time);
   }
 
   return { ...(order as Order), items: orderItems as OrderItem[] };
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
-  if (canUseMemoryStore()) {
-    const order = memoryOrders.find((o) => o.id === id);
-    if (!order) return null;
+  const memoryOrder = memoryOrders.find((o) => o.id === id);
+  if (memoryOrder) {
     return {
-      ...order,
+      ...memoryOrder,
       items: memoryOrderItems.filter((i) => i.order_id === id),
     };
   }

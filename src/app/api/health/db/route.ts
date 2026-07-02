@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
 import { isSupabaseConfigured } from "@/lib/db";
+import {
+  getSupabaseAnonKey,
+  getSupabaseServiceKey,
+  getSupabaseUrl,
+} from "@/lib/supabase/env";
 
 export async function GET() {
   const configured = isSupabaseConfigured();
 
   if (!configured) {
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-    const service = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+    const hasUrl = Boolean(getSupabaseUrl());
+    const hasAnon = Boolean(getSupabaseAnonKey());
+    const hasService = Boolean(getSupabaseServiceKey());
     let hint = "Trūksta Supabase env kintamųjų Vercel.";
-    if (anon.startsWith("sb_") || service.startsWith("sb_")) {
+    if (hasUrl && (!hasAnon || !hasService)) {
       hint =
-        "Naudojate sb_ raktus — serveriui reikia Legacy anon + service_role (eyJ...).";
+        "Trūksta anon/publishable arba service/secret rakto. Nukopijuokite iš Supabase Dashboard → Settings → API.";
     }
 
     return NextResponse.json({ ok: false, configured: false, hint });

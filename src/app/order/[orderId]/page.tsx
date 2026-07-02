@@ -23,7 +23,10 @@ export default function OrderPage({
 
   const fetchOrder = useCallback(async (id: string) => {
     const cached = readCachedOrder(id);
-    if (cached) setOrder(cached);
+    if (cached) {
+      setOrder(cached);
+      setLoading(false);
+    }
 
     const res = await fetch(`/api/orders/${id}`);
     if (res.ok) {

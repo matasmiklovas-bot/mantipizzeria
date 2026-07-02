@@ -1,4 +1,4 @@
-import { getPizzaById, isSupabaseConfigured } from "@/lib/db";
+import { getPizzaById } from "@/lib/db";
 import type { CreateOrderInput } from "@/lib/db";
 import {
   getUnitPrice,
@@ -57,12 +57,6 @@ export async function validateAndBuildOrder(
 
     const pizza = await getPizzaById(pizzaId);
     if (!pizza || !pizza.available) {
-      throw new Error("INVALID_PIZZA");
-    }
-
-    const uuidRe =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (isSupabaseConfigured() && !uuidRe.test(pizza.id)) {
       throw new Error("INVALID_PIZZA");
     }
 
