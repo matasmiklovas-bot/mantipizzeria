@@ -47,13 +47,13 @@ export function PizzaCard({ pizza, index }: PizzaCardProps) {
             <span className="font-display text-lg font-bold leading-none text-red">
               {index + 1}.
             </span>
-            <h3 className="font-display text-xl font-bold uppercase leading-none tracking-wide text-red">
+            <h3 className="font-display text-xl font-bold leading-none text-red">
               {pizza.name}
             </h3>
           </div>
 
-          <p className="mb-3 text-xs font-bold uppercase leading-relaxed tracking-wide text-black/70">
-            {pizza.ingredients.join(", ")}.
+          <p className="mb-3 text-sm leading-7 text-black/60">
+            {pizza.ingredients.join(" · ")}
           </p>
           <p className="text-sm leading-relaxed text-black/45">
             {pizza.description}
@@ -85,19 +85,38 @@ export function PizzaCard({ pizza, index }: PizzaCardProps) {
           ))}
         </div>
 
-        <Button onClick={handleAdd} className="w-full" variant="primary">
-          {added ? (
-            <>
-              <Check className="w-4 h-4" />
-              Pridėta
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" />
-              Pridėti
-            </>
-          )}
-        </Button>
+        <motion.div
+          animate={added ? { scale: [1, 1.06, 0.97, 1] } : { scale: 1 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+        >
+          <Button
+            onClick={handleAdd}
+            className={cn(
+              "w-full transition-colors duration-300",
+              added && "bg-olive hover:bg-olive"
+            )}
+            variant="primary"
+          >
+            {added ? (
+              <>
+                <motion.span
+                  initial={{ scale: 0, rotate: -45 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                  className="inline-flex"
+                >
+                  <Check className="w-4 h-4" />
+                </motion.span>
+                Pridėta
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                Pridėti
+              </>
+            )}
+          </Button>
+        </motion.div>
       </div>
       </div>
     </motion.div>

@@ -11,6 +11,7 @@ import type { Order } from "@/types";
 import { PAYMENT_METHOD_LABELS } from "@/types";
 import { formatPrice, formatTime } from "@/lib/utils";
 import { cacheOrderLocally, readCachedOrder } from "@/lib/order-cache";
+import { Confetti } from "@/components/order/Confetti";
 
 export default function OrderPage({
   params,
@@ -20,6 +21,21 @@ export default function OrderPage({
   const [order, setOrder] = useState<Order | null>(null);
   const [orderId, setOrderId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [celebrate, setCelebrate] = useState(false);
+
+  useEffect(() => {
+    if (!order || !orderId) return;
+    // Confetti tik pirmą kartą atidarius šio užsakymo puslapį
+    const key = `manti-celebrated-${orderId}`;
+    try {
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        setCelebrate(true);
+      }
+    } catch {
+      // sessionStorage nepasiekiamas — praleidžiam
+    }
+  }, [order, orderId]);
 
   const fetchOrder = useCallback(async (id: string) => {
     const cached = readCachedOrder(id);
@@ -81,6 +97,7 @@ export default function OrderPage({
 
   return (
     <>
+      {celebrate && <Confetti />}
       <Header variant="order" />
       <main className="min-h-screen bg-cream pt-24 pb-12 px-4">
         <div className="max-w-2xl mx-auto">

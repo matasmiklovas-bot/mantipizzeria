@@ -18,9 +18,16 @@ export function Hero() {
   return (
     <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-black">
       {!ready && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6 bg-cream">
+          <motion.img
+            src="/brand/logo-mark.png"
+            alt="Manti Pizzeria"
+            className="h-20 w-auto object-contain"
+            animate={{ scale: [1, 1.05, 1], opacity: [0.85, 1, 0.85] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          />
           <Loader2
-            className="h-10 w-10 animate-spin text-gold"
+            className="h-7 w-7 animate-spin text-gold"
             aria-label="Kraunama"
           />
         </div>
