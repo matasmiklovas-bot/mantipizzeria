@@ -260,6 +260,32 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   return { ...(order as Order), items: orderItems as OrderItem[] };
 }
 
+function normalizeOrder(row: Record<string, unknown>): Order {
+  const { order_items, ...orderFields } = row;
+  const order = orderFields as unknown as Order;
+  return {
+    ...order,
+    total_amount: Number(order.total_amount),
+    estimated_time: Number(order.estimated_time),
+    items: ((order_items as OrderItem[] | null) ?? []).map((item) => ({
+      ...item,
+      unit_price: Number(item.unit_price),
+      quantity: Number(item.quantity),
+    })),
+  };
+}
+
+function sortKitchenOrders(orders: Order[]): Order[] {
+  return [...orders].sort((a, b) => {
+    const aUnpaid =
+      a.payment_method === "cash" && a.payment_status === "cash_pending" ? 0 : 1;
+    const bUnpaid =
+      b.payment_method === "cash" && b.payment_status === "cash_pending" ? 0 : 1;
+    if (aUnpaid !== bUnpaid) return aUnpaid - bUnpaid;
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  });
+}
+
 export async function getOrder(id: string): Promise<Order | null> {
   const memoryOrder = memoryOrders.find((o) => o.id === id);
   if (memoryOrder) {
@@ -274,16 +300,11 @@ export async function getOrder(id: string): Promise<Order | null> {
   const supabase = await getSupabase();
   const { data: order, error } = await supabase
     .from("orders")
-    .select("*")
+    .select("*, order_items(*)")
     .eq("id", id)
     .maybeSingle();
   if (error || !order) return null;
-
-  const { data: items } = await supabase
-    .from("order_items")
-    .select("*")
-    .eq("order_id", id);
-  return { ...(order as Order), items: (items ?? []) as OrderItem[] };
+  return normalizeOrder(order as Record<string, unknown>);
 }
 
 export async function getOrders(status?: OrderStatus): Promise<Order[]> {
@@ -298,21 +319,34 @@ export async function getOrders(status?: OrderStatus): Promise<Order[]> {
   const supabase = await getSupabase();
   let query = supabase
     .from("orders")
-    .select("*")
+    .select("*, order_items(*)")
     .order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
   const { data: orders, error } = await query;
   if (error) throw error;
+  return (orders ?? []).map((row) =>
+    normalizeOrder(row as Record<string, unknown>)
+  );
+}
 
-  const result: Order[] = [];
-  for (const order of orders ?? []) {
-    const { data: items } = await supabase
-      .from("order_items")
-      .select("*")
-      .eq("order_id", order.id);
-    result.push({ ...(order as Order), items: (items ?? []) as OrderItem[] });
+export async function getKitchenOrders(): Promise<Order[]> {
+  if (!isSupabaseConfigured()) {
+    return sortKitchenOrders(await getActiveKitchenOrders());
   }
-  return result;
+
+  const supabase = await getSupabase();
+  const { data: orders, error } = await supabase
+    .from("orders")
+    .select("*, order_items(*)")
+    .neq("status", "delivered")
+    .neq("payment_status", "pending")
+    .order("created_at", { ascending: true })
+    .limit(50);
+  if (error) throw error;
+
+  return sortKitchenOrders(
+    (orders ?? []).map((row) => normalizeOrder(row as Record<string, unknown>))
+  );
 }
 
 export async function getActiveKitchenOrders(): Promise<Order[]> {
@@ -347,7 +381,10 @@ export async function updateOrderStatus(
     .from("order_items")
     .select("*")
     .eq("order_id", id);
-  return { ...(data as Order), items: (items ?? []) as OrderItem[] };
+  return normalizeOrder({
+    ...(data as Record<string, unknown>),
+    order_items: items ?? [],
+  });
 }
 
 export async function updateOrderPaymentStatus(

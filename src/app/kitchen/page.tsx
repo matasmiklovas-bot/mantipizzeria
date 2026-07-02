@@ -34,6 +34,17 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   delivered: "Pristatyta",
 };
 
+const POLL_MS = 5000;
+
+function ordersSignature(orders: Order[]): string {
+  return orders
+    .map(
+      (o) =>
+        `${o.id}:${o.status}:${o.payment_status}:${o.items?.length ?? 0}`
+    )
+    .join("|");
+}
+
 export default function KitchenPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +54,10 @@ export default function KitchenPage() {
   const knownIds = useRef<Set<string>>(new Set());
   const firstLoad = useRef(true);
   const soundOnRef = useRef(soundOn);
+  const fetchingRef = useRef(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const ordersSigRef = useRef("");
+
   soundOnRef.current = soundOn;
 
   const playChime = useCallback(() => {
@@ -52,7 +67,11 @@ export default function KitchenPage() {
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext })
           .webkitAudioContext;
-      const ctx = new AudioCtx();
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioCtx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") void ctx.resume();
       const notes = [880, 1108, 1318];
       notes.forEach((freq, i) => {
         const osc = ctx.createOscillator();
@@ -74,84 +93,96 @@ export default function KitchenPage() {
   }, []);
 
   const fetchOrders = useCallback(async () => {
-    const res = await fetch("/api/orders");
-    if (!res.ok) return;
-    const data: Order[] = await res.json();
-    const active = data.filter(
-      (o) => o.status !== "delivered" && o.payment_status !== "pending"
-    );
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
 
-    const freshIds: string[] = [];
-    for (const o of active) {
-      if (!knownIds.current.has(o.id)) {
-        knownIds.current.add(o.id);
-        if (!firstLoad.current) freshIds.push(o.id);
+    try {
+      const res = await fetch("/api/kitchen/orders");
+      if (!res.ok) return;
+      const data: Order[] = await res.json();
+
+      const freshIds: string[] = [];
+      for (const o of data) {
+        if (!knownIds.current.has(o.id)) {
+          knownIds.current.add(o.id);
+          if (!firstLoad.current) freshIds.push(o.id);
+        }
       }
-    }
 
-    if (freshIds.length > 0) {
-      playChime();
-      setNewOrderIds((prev) => {
-        const next = new Set(prev);
-        freshIds.forEach((id) => next.add(id));
-        return next;
-      });
-      freshIds.forEach((id) =>
-        setTimeout(() => {
-          setNewOrderIds((prev) => {
-            const next = new Set(prev);
-            next.delete(id);
-            return next;
-          });
-        }, 12000)
-      );
-    }
+      if (freshIds.length > 0) {
+        playChime();
+        setNewOrderIds((prev) => {
+          const next = new Set(prev);
+          freshIds.forEach((id) => next.add(id));
+          return next;
+        });
+        freshIds.forEach((id) =>
+          setTimeout(() => {
+            setNewOrderIds((prev) => {
+              const next = new Set(prev);
+              next.delete(id);
+              return next;
+            });
+          }, 12000)
+        );
+      }
 
-    firstLoad.current = false;
-    const sorted = active.sort((a, b) => {
-      const aUnpaid =
-        a.payment_method === "cash" && a.payment_status === "cash_pending" ? 0 : 1;
-      const bUnpaid =
-        b.payment_method === "cash" && b.payment_status === "cash_pending" ? 0 : 1;
-      if (aUnpaid !== bUnpaid) return aUnpaid - bUnpaid;
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-    });
-    setOrders(sorted);
-    setLoading(false);
+      firstLoad.current = false;
+      const sig = ordersSignature(data);
+      if (sig !== ordersSigRef.current) {
+        ordersSigRef.current = sig;
+        setOrders(data);
+      }
+      setLoading(false);
+    } finally {
+      fetchingRef.current = false;
+    }
   }, [playChime]);
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 3000);
+    const interval = setInterval(fetchOrders, POLL_MS);
     return () => clearInterval(interval);
   }, [fetchOrders]);
 
   const updateStatus = async (id: string, status: OrderStatus) => {
-    setOrders((prev) =>
-      prev
+    setOrders((prev) => {
+      const next = prev
         .map((o) => (o.id === id ? { ...o, status } : o))
-        .filter((o) => o.status !== "delivered")
-    );
-    await fetch(`/api/orders/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+        .filter((o) => o.status !== "delivered");
+      ordersSigRef.current = ordersSignature(next);
+      return next;
     });
-    fetchOrders();
+
+    try {
+      await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+    } catch {
+      fetchOrders();
+    }
   };
 
   const markAsPaid = async (id: string) => {
-    setOrders((prev) =>
-      prev.map((o) =>
+    setOrders((prev) => {
+      const next = prev.map((o) =>
         o.id === id ? { ...o, payment_status: "paid" as const } : o
-      )
-    );
-    await fetch(`/api/orders/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ payment_status: "paid" }),
+      );
+      ordersSigRef.current = ordersSignature(next);
+      return next;
     });
-    fetchOrders();
+
+    try {
+      await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment_status: "paid" }),
+      });
+    } catch {
+      fetchOrders();
+    }
   };
 
   const handleLogout = async () => {
@@ -311,7 +342,7 @@ export default function KitchenPage() {
                   <div className="space-y-2 mb-4 flex-1">
                     {order.items?.map((item) => (
                       <div
-                        key={item.id}
+                        key={item.id ?? `${item.pizza_id}-${item.pizza_name}`}
                         className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5"
                       >
                         <span className="bg-white/10 text-white font-bold w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-lg">
