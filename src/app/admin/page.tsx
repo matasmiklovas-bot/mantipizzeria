@@ -15,6 +15,8 @@ import {
   Database,
   CheckCircle2,
   AlertTriangle,
+  Power,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import type { DailyStats, Order } from "@/types";
@@ -27,11 +29,44 @@ interface DbHealth {
   hint?: string;
 }
 
+interface SiteSettings {
+  orderingEnabled: boolean;
+  busyMode: boolean;
+}
+
+function Toggle({
+  on,
+  onClick,
+  disabled,
+}: {
+  on: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${
+        on ? "bg-olive" : "bg-black/20"
+      } ${disabled ? "opacity-50" : ""}`}
+    >
+      <span
+        className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${
+          on ? "left-6" : "left-1"
+        }`}
+      />
+    </button>
+  );
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DailyStats | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [dbHealth, setDbHealth] = useState<DbHealth | null>(null);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const [payDomains, setPayDomains] = useState<
     { domain: string; applePay: string; googlePay: string }[] | null
   >(null);
@@ -39,16 +74,41 @@ export default function AdminDashboard() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [statsRes, ordersRes, healthRes] = await Promise.all([
+    const [statsRes, ordersRes, healthRes, settingsRes] = await Promise.all([
       fetch("/api/admin/stats"),
       fetch("/api/orders"),
       fetch("/api/health/db"),
+      fetch("/api/settings"),
     ]);
     if (statsRes.ok) setStats(await statsRes.json());
     if (ordersRes.ok) setOrders(await ordersRes.json());
     if (healthRes.ok) setDbHealth(await healthRes.json());
+    if (settingsRes.ok) setSettings(await settingsRes.json());
     setLoading(false);
   }, []);
+
+  const updateSettings = async (updates: Partial<SiteSettings>) => {
+    if (!settings) return;
+    setSettingsSaving(true);
+    // Optimistinis atnaujinimas
+    setSettings({ ...settings, ...updates });
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        setSettings(await res.json());
+      } else {
+        setSettings(settings);
+      }
+    } catch {
+      setSettings(settings);
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -183,6 +243,53 @@ export default function AdminDashboard() {
             <p className="text-black/45 text-sm">{link.desc}</p>
           </Link>
         ))}
+      </div>
+
+      <div className="bg-white rounded-2xl p-6 card-shadow mb-8">
+        <div className="flex items-center gap-3 mb-5">
+          <Power className="w-6 h-6 text-olive" />
+          <h2 className="font-display text-xl font-semibold">Svetainės valdymas</h2>
+        </div>
+        <div className="space-y-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-medium">Priimti užsakymus</p>
+              <p className="text-black/50 text-sm">
+                Išjungus, klientai matys „Šiuo metu uždaryta" ir negalės užsakyti.
+                Virtuvė ir admin veikia toliau.
+              </p>
+            </div>
+            <Toggle
+              on={settings?.orderingEnabled ?? true}
+              disabled={!settings || settingsSaving}
+              onClick={() =>
+                updateSettings({ orderingEnabled: !settings?.orderingEnabled })
+              }
+            />
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-medium flex items-center gap-2">
+                <Clock className="w-4 h-4 text-gold" />
+                Piko režimas
+              </p>
+              <p className="text-black/50 text-sm">
+                Kai virtuvė nespėja: klientams rodomas įspėjimas apie ilgesnį
+                laukimą, o numatomas laikas pailgėja +20 min.
+              </p>
+            </div>
+            <Toggle
+              on={settings?.busyMode ?? false}
+              disabled={!settings || settingsSaving}
+              onClick={() => updateSettings({ busyMode: !settings?.busyMode })}
+            />
+          </div>
+        </div>
+        {settings && !settings.orderingEnabled && (
+          <div className="mt-5 bg-red/10 border border-red/30 rounded-xl px-4 py-3 text-sm text-red font-medium">
+            Svetainė išjungta — klientai negali pateikti užsakymų.
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl p-6 card-shadow mb-8">

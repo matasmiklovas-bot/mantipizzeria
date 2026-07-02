@@ -7,6 +7,7 @@ import {
 } from "@/lib/db";
 import { requireAdmin, requireStaff } from "@/lib/auth";
 import { validateAndBuildOrder } from "@/lib/orders/validate";
+import { getSiteSettings } from "@/lib/settings";
 
 export async function GET(request: Request) {
   try {
@@ -34,9 +35,19 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const settings = await getSiteSettings();
+    if (!settings.orderingEnabled) {
+      return NextResponse.json(
+        { error: "Šiuo metu užsakymai nepriimami. Atsiprašome!" },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const orderInput = await validateAndBuildOrder(body);
-    const order = await createOrder(orderInput);
+    const order = await createOrder(orderInput, {
+      extraMinutes: settings.busyMode ? 20 : 0,
+    });
     return NextResponse.json(order, { status: 201 });
   } catch (e) {
     if (e instanceof Error && e.message.startsWith("INVALID")) {

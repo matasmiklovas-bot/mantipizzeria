@@ -227,8 +227,14 @@ function createMemoryOrder(input: CreateOrderInput, estimated_time: number): Ord
   return { ...order, items: memoryOrderItems.filter((i) => i.order_id === orderId) };
 }
 
-export async function createOrder(input: CreateOrderInput): Promise<Order> {
-  const estimated_time = 15 + input.items.reduce((s, i) => s + i.quantity, 0) * 3;
+export async function createOrder(
+  input: CreateOrderInput,
+  options?: { extraMinutes?: number }
+): Promise<Order> {
+  const estimated_time =
+    15 +
+    input.items.reduce((s, i) => s + i.quantity, 0) * 3 +
+    (options?.extraMinutes ?? 0);
 
   if (!isSupabaseConfigured()) {
     return createMemoryOrder(input, estimated_time);
