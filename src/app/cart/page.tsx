@@ -1,31 +1,33 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { CartItemRow } from "@/components/cart/CartItemRow";
 import { Button } from "@/components/ui/Button";
 import { useCartStore } from "@/lib/store/cart";
+import { useCartHydrated } from "@/lib/store/use-cart-hydrated";
 import { formatPrice } from "@/lib/utils";
 
 export default function CartPage() {
+  const router = useRouter();
+  const hydrated = useCartHydrated();
   const items = useCartStore((s) => s.items);
   const total = useCartStore((s) => s.totalPrice());
 
-  if (items.length === 0) {
+  useEffect(() => {
+    if (hydrated && items.length === 0) {
+      router.replace("/");
+    }
+  }, [hydrated, items.length, router]);
+
+  if (!hydrated || items.length === 0) {
     return (
-      <>
-        <Header variant="order" />
-        <main className="pt-32 pb-16 min-h-screen bg-cream flex items-center justify-center">
-          <div className="text-center px-4">
-            <p className="font-display text-2xl font-semibold mb-2">Krepšelis tuščias</p>
-            <p className="text-black/50 mb-6">Pridėkite picų iš meniu</p>
-            <Link href="/menu">
-              <Button>Grįžti į meniu</Button>
-            </Link>
-          </div>
-        </main>
-      </>
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-olive border-t-transparent rounded-full animate-spin" />
+      </div>
     );
   }
 

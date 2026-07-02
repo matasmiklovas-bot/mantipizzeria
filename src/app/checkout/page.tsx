@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CreditCard,
@@ -24,6 +25,7 @@ import {
   CardBadge,
 } from "@/components/checkout/PaymentLogos";
 import { useCartStore } from "@/lib/store/cart";
+import { useCartHydrated } from "@/lib/store/use-cart-hydrated";
 import { SIZE_LABELS, getUnitPrice } from "@/types";
 import { formatPrice, cn } from "@/lib/utils";
 
@@ -39,6 +41,8 @@ const STRIPE_METHOD_MAP: Record<
 };
 
 export default function CheckoutPage() {
+  const router = useRouter();
+  const hydrated = useCartHydrated();
   const items = useCartStore((s) => s.items);
   const tableNumber = useCartStore((s) => s.tableNumber);
   const setTableNumber = useCartStore((s) => s.setTableNumber);
@@ -50,6 +54,12 @@ export default function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (hydrated && items.length === 0 && !clientSecret) {
+      router.replace("/");
+    }
+  }, [hydrated, items.length, clientSecret, router]);
 
   const createOrderPayload = () => ({
     table_number: tableNumber,
@@ -160,19 +170,11 @@ export default function CheckoutPage() {
     if (orderId) window.location.href = `/order/${orderId}`;
   };
 
-  if (items.length === 0 && !clientSecret) {
+  if ((!hydrated || items.length === 0) && !clientSecret) {
     return (
-      <>
-        <Header variant="order" />
-        <main className="pt-32 pb-16 min-h-screen bg-cream flex items-center justify-center">
-          <div className="text-center">
-            <p className="font-display text-2xl mb-4">Krepšelis tuščias</p>
-            <Link href="/menu">
-              <Button>Grįžti į meniu</Button>
-            </Link>
-          </div>
-        </main>
-      </>
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-olive border-t-transparent rounded-full animate-spin" />
+      </div>
     );
   }
 
