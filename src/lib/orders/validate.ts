@@ -63,7 +63,7 @@ export async function validateAndBuildOrder(
 
     total += expectedPrice * quantity;
     items.push({
-      pizza_id: pizzaId,
+      pizza_id: pizza.id,
       pizza_name: pizzaName,
       quantity,
       unit_price: expectedPrice,

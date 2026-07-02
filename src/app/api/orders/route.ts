@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     if (e instanceof Error && e.message.startsWith("INVALID")) {
       return NextResponse.json({ error: "Invalid order" }, { status: 400 });
     }
+    console.error("Create order error:", e);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }

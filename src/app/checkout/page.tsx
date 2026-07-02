@@ -64,12 +64,16 @@ export default function CheckoutPage() {
       });
 
       const order = await orderRes.json();
-      if (!orderRes.ok) throw new Error("Nepavyko sukurti užsakymo");
+      if (!orderRes.ok) {
+        throw new Error(order.error ?? "Nepavyko sukurti užsakymo");
+      }
 
       clearCart();
       window.location.href = `/order/${order.id}`;
-    } catch {
-      setError("Įvyko klaida. Bandykite dar kartą.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Įvyko klaida. Bandykite dar kartą."
+      );
     } finally {
       setLoading(false);
     }
@@ -92,7 +96,9 @@ export default function CheckoutPage() {
       });
 
       const order = await orderRes.json();
-      if (!orderRes.ok) throw new Error("Nepavyko sukurti užsakymo");
+      if (!orderRes.ok) {
+        throw new Error(order.error ?? "Nepavyko sukurti užsakymo");
+      }
 
       const payRes = await fetch("/api/stripe/create-payment-intent", {
         method: "POST",
@@ -114,8 +120,10 @@ export default function CheckoutPage() {
 
       setClientSecret(payData.clientSecret);
       setOrderId(order.id);
-    } catch {
-      setError("Įvyko klaida. Bandykite dar kartą.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Įvyko klaida. Bandykite dar kartą."
+      );
     } finally {
       setLoading(false);
     }

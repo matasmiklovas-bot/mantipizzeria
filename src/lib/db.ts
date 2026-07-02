@@ -83,17 +83,40 @@ export async function getAllPizzas(): Promise<Pizza[]> {
 }
 
 export async function getPizzaById(id: string): Promise<Pizza | null> {
+  const seedPizza = memoryPizzas.find((p) => p.id === id) ?? null;
+
   if (!isSupabaseConfigured()) {
-    return memoryPizzas.find((p) => p.id === id) ?? null;
+    return seedPizza;
   }
-  const supabase = await getSupabase();
-  const { data, error } = await supabase
-    .from("pizzas")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (error) return null;
-  return data as Pizza;
+
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase
+      .from("pizzas")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (!error && data) {
+      return normalizePizza(data as Record<string, unknown>);
+    }
+
+    // Meniu rodo seed id (1,2,3...) — surandame picą Supabase pagal pavadinimą
+    if (seedPizza) {
+      const { data: byName, error: nameError } = await supabase
+        .from("pizzas")
+        .select("*")
+        .eq("name", seedPizza.name)
+        .maybeSingle();
+      if (!nameError && byName) {
+        return normalizePizza(byName as Record<string, unknown>);
+      }
+    }
+  } catch (err) {
+    console.error("Supabase getPizzaById failed:", err);
+  }
+
+  return seedPizza;
 }
 
 export async function createPizza(
@@ -156,71 +179,81 @@ export interface CreateOrderInput {
   items: { pizza_id: string; pizza_name: string; quantity: number; unit_price: number }[];
 }
 
+function createMemoryOrder(input: CreateOrderInput, estimated_time: number): Order {
+  orderCounter++;
+  const orderId = generateId();
+  const order: Order = {
+    id: orderId,
+    order_number: orderCounter,
+    table_number: input.table_number,
+    customer_name: input.customer_name,
+    customer_phone: input.customer_phone,
+    status: "received",
+    payment_method: input.payment_method,
+    payment_status: input.payment_status,
+    total_amount: input.total_amount,
+    estimated_time,
+    stripe_payment_intent_id: input.stripe_payment_intent_id,
+    created_at: new Date().toISOString(),
+  };
+  memoryOrders.unshift(order);
+  for (const item of input.items) {
+    memoryOrderItems.push({
+      id: generateId(),
+      order_id: orderId,
+      pizza_id: item.pizza_id,
+      pizza_name: item.pizza_name,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+    });
+  }
+  return { ...order, items: memoryOrderItems.filter((i) => i.order_id === orderId) };
+}
+
 export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const estimated_time = 15 + input.items.reduce((s, i) => s + i.quantity, 0) * 3;
 
   if (!isSupabaseConfigured()) {
-    orderCounter++;
-    const orderId = generateId();
-    const order: Order = {
-      id: orderId,
-      order_number: orderCounter,
-      table_number: input.table_number,
-      customer_name: input.customer_name,
-      customer_phone: input.customer_phone,
-      status: "received",
-      payment_method: input.payment_method,
-      payment_status: input.payment_status,
-      total_amount: input.total_amount,
-      estimated_time,
-      stripe_payment_intent_id: input.stripe_payment_intent_id,
-      created_at: new Date().toISOString(),
-    };
-    memoryOrders.unshift(order);
-    for (const item of input.items) {
-      memoryOrderItems.push({
-        id: generateId(),
-        order_id: orderId,
-        pizza_id: item.pizza_id,
-        pizza_name: item.pizza_name,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-      });
-    }
-    return { ...order, items: memoryOrderItems.filter((i) => i.order_id === orderId) };
+    return createMemoryOrder(input, estimated_time);
   }
 
-  const supabase = await getSupabase();
-  const { data: order, error } = await supabase
-    .from("orders")
-    .insert({
-      table_number: input.table_number,
-      customer_name: input.customer_name,
-      customer_phone: input.customer_phone,
-      payment_method: input.payment_method,
-      payment_status: input.payment_status,
-      total_amount: input.total_amount,
-      estimated_time,
-      stripe_payment_intent_id: input.stripe_payment_intent_id,
-    })
-    .select()
-    .single();
-  if (error) throw error;
+  try {
+    const supabase = await getSupabase();
+    const { data: order, error } = await supabase
+      .from("orders")
+      .insert({
+        table_number: input.table_number,
+        customer_name: input.customer_name,
+        customer_phone: input.customer_phone,
+        payment_method: input.payment_method,
+        payment_status: input.payment_status,
+        total_amount: input.total_amount,
+        estimated_time,
+        stripe_payment_intent_id: input.stripe_payment_intent_id,
+      })
+      .select()
+      .single();
 
-  const orderItems = input.items.map((item) => ({
-    order_id: order.id,
-    pizza_id: item.pizza_id,
-    pizza_name: item.pizza_name,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-  }));
+    if (error) throw error;
 
-  const { error: itemsError } = await supabase
-    .from("order_items")
-    .insert(orderItems);
-  if (itemsError) throw itemsError;
+    const orderItems = input.items.map((item) => ({
+      order_id: order.id,
+      pizza_id: item.pizza_id,
+      pizza_name: item.pizza_name,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+    }));
 
-  return { ...(order as Order), items: orderItems as OrderItem[] };
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(orderItems);
+    if (itemsError) throw itemsError;
+
+    return { ...(order as Order), items: orderItems as OrderItem[] };
+  } catch (err) {
+    console.error("Supabase createOrder failed, using memory fallback:", err);
+    return createMemoryOrder(input, estimated_time);
+  }
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
