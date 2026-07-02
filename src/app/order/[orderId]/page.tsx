@@ -6,9 +6,11 @@ import { ArrowLeft, CheckCircle, Clock } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { OrderTracker } from "@/components/order/OrderTracker";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import type { Order } from "@/types";
 import { PAYMENT_METHOD_LABELS } from "@/types";
 import { formatPrice, formatTime } from "@/lib/utils";
+import { cacheOrderLocally, readCachedOrder } from "@/lib/order-cache";
 
 export default function OrderPage({
   params,
@@ -20,10 +22,14 @@ export default function OrderPage({
   const [loading, setLoading] = useState(true);
 
   const fetchOrder = useCallback(async (id: string) => {
+    const cached = readCachedOrder(id);
+    if (cached) setOrder(cached);
+
     const res = await fetch(`/api/orders/${id}`);
     if (res.ok) {
       const data = await res.json();
       setOrder(data);
+      cacheOrderLocally(data);
     }
     setLoading(false);
   }, []);
@@ -52,8 +58,20 @@ export default function OrderPage({
 
   if (!order) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream">
-        <p className="text-black/60">Užsakymas nerastas</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-cream px-4 text-center">
+        <p className="font-display text-xl font-semibold mb-2">Užsakymas nerastas</p>
+        <p className="text-black/50 text-sm max-w-md mb-6">
+          Užsakymas galėjo būti sukurtas, bet duomenų bazė neprijungta. Virtuvė
+          jo gali nematyti — reikia sutvarkyti Supabase raktus Vercel.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link href="/menu">
+            <Button>Grįžti į meniu</Button>
+          </Link>
+          <Link href="/">
+            <Button variant="outline">Pagrindinis</Button>
+          </Link>
+        </div>
       </div>
     );
   }

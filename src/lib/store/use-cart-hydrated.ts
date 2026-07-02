@@ -4,15 +4,19 @@ import { useEffect, useState } from "react";
 import { useCartStore } from "./cart";
 
 export function useCartHydrated() {
-  const [hydrated, setHydrated] = useState(() =>
-    useCartStore.persist.hasHydrated()
-  );
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const unsub = useCartStore.persist.onFinishHydration(() => {
+    const persist = useCartStore.persist;
+    if (!persist) {
+      setHydrated(true);
+      return;
+    }
+
+    const unsub = persist.onFinishHydration(() => {
       setHydrated(true);
     });
-    if (useCartStore.persist.hasHydrated()) {
+    if (persist.hasHydrated()) {
       setHydrated(true);
     }
     return unsub;

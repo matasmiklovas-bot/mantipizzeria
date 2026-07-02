@@ -28,6 +28,7 @@ import { useCartStore } from "@/lib/store/cart";
 import { useCartHydrated } from "@/lib/store/use-cart-hydrated";
 import { SIZE_LABELS, getUnitPrice } from "@/types";
 import { formatPrice, cn } from "@/lib/utils";
+import { cacheOrderLocally } from "@/lib/order-cache";
 
 type PaymentChoice = StripePaymentMode | "cash";
 
@@ -95,6 +96,7 @@ export default function CheckoutPage() {
         throw new Error(order.error ?? "Nepavyko sukurti užsakymo");
       }
 
+      cacheOrderLocally(order);
       clearCart();
       window.location.href = `/order/${order.id}`;
     } catch (err) {
@@ -129,6 +131,8 @@ export default function CheckoutPage() {
         throw new Error(order.error ?? "Nepavyko sukurti užsakymo");
       }
 
+      cacheOrderLocally(order);
+
       const payRes = await fetch("/api/stripe/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,6 +146,7 @@ export default function CheckoutPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ payment_status: "paid" }),
         });
+        cacheOrderLocally({ ...order, payment_status: "paid" });
         clearCart();
         window.location.href = `/order/${order.id}`;
         return;
