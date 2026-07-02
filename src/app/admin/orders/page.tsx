@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/Input";
 import type { Order, OrderStatus } from "@/types";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/types";
 import { formatPrice, formatTime, cn } from "@/lib/utils";
-import { Banknote, Trash2, Search } from "lucide-react";
+import { Banknote, Trash2, Search, Undo2, Pencil, BrushCleaning } from "lucide-react";
 
 const STATUS_OPTIONS: OrderStatus[] = ["received", "preparing", "ready", "delivered"];
 
@@ -17,6 +17,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
+  const [clearing, setClearing] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     const res = await fetch("/api/orders");
@@ -54,11 +55,27 @@ export default function AdminOrdersPage() {
     fetchOrders();
   };
 
-  const markAsPaid = async (id: string) => {
+  const setPaymentStatus = async (id: string, paid: boolean) => {
     await fetch(`/api/orders/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ payment_status: "paid" }),
+      body: JSON.stringify({ payment_status: paid ? "paid" : "cash_pending" }),
+    });
+    fetchOrders();
+  };
+
+  const changeTable = async (order: Order) => {
+    const value = prompt("Naujas staliuko numeris (1–99):", String(order.table_number));
+    if (!value) return;
+    const table = parseInt(value, 10);
+    if (!Number.isInteger(table) || table < 1 || table > 99) {
+      alert("Neteisingas staliuko numeris");
+      return;
+    }
+    await fetch(`/api/orders/${order.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table_number: table }),
     });
     fetchOrders();
   };
@@ -68,6 +85,21 @@ export default function AdminOrdersPage() {
     await fetch(`/api/orders/${id}`, { method: "DELETE" });
     fetchOrders();
   };
+
+  const clearDelivered = async () => {
+    const deliveredCount = orders.filter((o) => o.status === "delivered").length;
+    if (deliveredCount === 0) return;
+    if (!confirm(`Ištrinti visus pristatytus užsakymus (${deliveredCount})?`)) return;
+    setClearing(true);
+    try {
+      await fetch("/api/orders?scope=delivered", { method: "DELETE" });
+      await fetchOrders();
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  const deliveredCount = orders.filter((o) => o.status === "delivered").length;
 
   const filters: { id: Filter; label: string }[] = [
     { id: "all", label: "Visi" },
@@ -80,9 +112,23 @@ export default function AdminOrdersPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h1 className="font-display text-3xl font-bold">Užsakymai</h1>
-        <div className="flex items-center gap-2 text-black/50 text-sm">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          Tiesioginis · {orders.length} iš viso
+        <div className="flex items-center gap-3">
+          {deliveredCount > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={clearDelivered}
+              loading={clearing}
+              className="text-black/60"
+            >
+              <BrushCleaning className="w-4 h-4" />
+              Išvalyti pristatytus ({deliveredCount})
+            </Button>
+          )}
+          <div className="flex items-center gap-2 text-black/50 text-sm">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            Tiesioginis · {orders.length} iš viso
+          </div>
         </div>
       </div>
 
@@ -127,7 +173,16 @@ export default function AdminOrdersPage() {
                     <span className="font-display text-xl font-bold">
                       #{order.order_number}
                     </span>
-                    <Badge variant="olive">Staliukas {order.table_number}</Badge>
+                    <button
+                      onClick={() => changeTable(order)}
+                      title="Pakeisti staliuką"
+                      className="group"
+                    >
+                      <Badge variant="olive">
+                        Staliukas {order.table_number}
+                        <Pencil className="w-3 h-3 ml-1 inline opacity-40 group-hover:opacity-100" />
+                      </Badge>
+                    </button>
                     <Badge>{ORDER_STATUS_LABELS[order.status]}</Badge>
                     {order.payment_method === "cash" &&
                       order.payment_status === "cash_pending" && (
@@ -161,11 +216,22 @@ export default function AdminOrdersPage() {
                   order.payment_status === "cash_pending" && (
                     <Button
                       size="sm"
-                      onClick={() => markAsPaid(order.id)}
+                      onClick={() => setPaymentStatus(order.id, true)}
                       className="bg-gold text-black hover:bg-gold/90"
                     >
                       <Banknote className="w-4 h-4" />
                       Patvirtinti apmokėjimą
+                    </Button>
+                  )}
+                {order.payment_method === "cash" &&
+                  order.payment_status === "paid" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setPaymentStatus(order.id, false)}
+                    >
+                      <Undo2 className="w-4 h-4" />
+                      Atšaukti apmokėjimą
                     </Button>
                   )}
                 {STATUS_OPTIONS.map((status) => (

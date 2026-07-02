@@ -426,6 +426,40 @@ export async function deleteOrder(id: string): Promise<void> {
   await supabase.from("orders").delete().eq("id", id);
 }
 
+export async function deleteDeliveredOrders(): Promise<number> {
+  if (!isSupabaseConfigured()) {
+    const delivered = memoryOrders.filter((o) => o.status === "delivered");
+    const ids = new Set(delivered.map((o) => o.id));
+    memoryOrders = memoryOrders.filter((o) => !ids.has(o.id));
+    memoryOrderItems = memoryOrderItems.filter((i) => !ids.has(i.order_id));
+    return delivered.length;
+  }
+  const supabase = await getSupabase();
+  const { data: delivered, error } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("status", "delivered");
+  if (error) throw error;
+  const ids = (delivered ?? []).map((o) => o.id as string);
+  if (ids.length === 0) return 0;
+  await supabase.from("order_items").delete().in("order_id", ids);
+  await supabase.from("orders").delete().in("id", ids);
+  return ids.length;
+}
+
+export async function updateOrderTable(
+  id: string,
+  table_number: number
+): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    const idx = memoryOrders.findIndex((o) => o.id === id);
+    if (idx !== -1) memoryOrders[idx].table_number = table_number;
+    return;
+  }
+  const supabase = await getSupabase();
+  await supabase.from("orders").update({ table_number }).eq("id", id);
+}
+
 export async function getDailyStats(): Promise<DailyStats> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

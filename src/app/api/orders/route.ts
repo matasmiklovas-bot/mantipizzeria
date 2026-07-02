@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
-import { createOrder, getOrders, getOrder } from "@/lib/db";
-import { requireStaff } from "@/lib/auth";
+import {
+  createOrder,
+  getOrders,
+  getOrder,
+  deleteDeliveredOrders,
+} from "@/lib/db";
+import { requireAdmin, requireStaff } from "@/lib/auth";
 import { validateAndBuildOrder } from "@/lib/orders/validate";
 
 export async function GET(request: Request) {
@@ -39,5 +44,22 @@ export async function POST(request: Request) {
     }
     console.error("Create order error:", e);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    await requireAdmin();
+    const { searchParams } = new URL(request.url);
+    if (searchParams.get("scope") !== "delivered") {
+      return NextResponse.json({ error: "Invalid scope" }, { status: 400 });
+    }
+    const deleted = await deleteDeliveredOrders();
+    return NextResponse.json({ deleted });
+  } catch (e) {
+    if (e instanceof Error && e.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.json({ error: "Failed to delete orders" }, { status: 500 });
   }
 }

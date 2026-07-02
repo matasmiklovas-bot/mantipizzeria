@@ -21,6 +21,7 @@ export default function AdminMenuPage() {
     ingredients: "",
     price_small: "",
     price_large: "",
+    image_url: "",
   });
 
   const fetchPizzas = async () => {
@@ -35,7 +36,7 @@ export default function AdminMenuPage() {
   }, []);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", ingredients: "", price_small: "", price_large: "" });
+    setForm({ name: "", description: "", ingredients: "", price_small: "", price_large: "", image_url: "" });
     setEditing(null);
     setShowForm(false);
   };
@@ -53,8 +54,8 @@ export default function AdminMenuPage() {
       ingredients: form.ingredients.split(",").map((s) => s.trim()),
       price_small: parseFloat(form.price_small),
       price_large: parseFloat(form.price_large),
-      image_url: editing?.image_url ?? SIMPLE_PIZZA_IMAGE,
-      available: true,
+      image_url: form.image_url.trim() || editing?.image_url || SIMPLE_PIZZA_IMAGE,
+      available: editing?.available ?? true,
     };
 
     const res = await fetch("/api/pizzas", {
@@ -105,6 +106,7 @@ export default function AdminMenuPage() {
       ingredients: pizza.ingredients.join(", "),
       price_small: String(pizza.price_small),
       price_large: String(pizza.price_large),
+      image_url: pizza.image_url,
     });
     setShowForm(true);
   };
@@ -140,6 +142,7 @@ export default function AdminMenuPage() {
           </div>
           <Input label="Aprašymas" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
           <Input label="Ingredientai (atskirti kableliais)" value={form.ingredients} onChange={(e) => setForm({ ...form, ingredients: e.target.value })} required />
+          <Input label="Nuotraukos nuoroda (pvz. /pizzas/margherita.jpg)" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder={SIMPLE_PIZZA_IMAGE} />
           <div className="flex gap-3">
             <Button type="submit">{editing ? "Išsaugoti" : "Pridėti"}</Button>
             <Button type="button" variant="ghost" onClick={resetForm}>Atšaukti</Button>

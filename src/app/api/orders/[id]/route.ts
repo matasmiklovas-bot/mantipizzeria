@@ -4,6 +4,7 @@ import {
   getOrder,
   updateOrderStatus,
   updateOrderPaymentStatus,
+  updateOrderTable,
 } from "@/lib/db";
 import { requireStaff } from "@/lib/auth";
 import type { OrderStatus, PaymentStatus } from "@/types";
@@ -52,13 +53,24 @@ export async function PATCH(
 
     await requireStaff();
 
+    if (body.table_number !== undefined) {
+      const table = Number(body.table_number);
+      if (!Number.isInteger(table) || table < 1 || table > 99) {
+        return NextResponse.json({ error: "Invalid table" }, { status: 400 });
+      }
+      await updateOrderTable(id, table);
+    }
+
     if (body.payment_status) {
       await updateOrderPaymentStatus(id, body.payment_status as PaymentStatus);
-      const order = await getOrder(id);
+    }
+
+    if (body.status) {
+      const order = await updateOrderStatus(id, body.status as OrderStatus);
       return NextResponse.json(order);
     }
 
-    const order = await updateOrderStatus(id, body.status as OrderStatus);
+    const order = await getOrder(id);
     return NextResponse.json(order);
   } catch (e) {
     if (e instanceof Error && e.message === "UNAUTHORIZED") {

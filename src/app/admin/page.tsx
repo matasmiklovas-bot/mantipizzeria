@@ -12,15 +12,26 @@ import {
   ChefHat,
   RefreshCw,
   ExternalLink,
+  Database,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import type { DailyStats, Order } from "@/types";
 import { formatPrice } from "@/lib/utils";
 
+interface DbHealth {
+  ok: boolean;
+  configured: boolean;
+  pizzaCount?: number;
+  hint?: string;
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DailyStats | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dbHealth, setDbHealth] = useState<DbHealth | null>(null);
   const [payDomains, setPayDomains] = useState<
     { domain: string; applePay: string; googlePay: string }[] | null
   >(null);
@@ -28,12 +39,14 @@ export default function AdminDashboard() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [statsRes, ordersRes] = await Promise.all([
+    const [statsRes, ordersRes, healthRes] = await Promise.all([
       fetch("/api/admin/stats"),
       fetch("/api/orders"),
+      fetch("/api/health/db"),
     ]);
     if (statsRes.ok) setStats(await statsRes.json());
     if (ordersRes.ok) setOrders(await ordersRes.json());
+    if (healthRes.ok) setDbHealth(await healthRes.json());
     setLoading(false);
   }, []);
 
@@ -118,6 +131,16 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {dbHealth && !dbHealth.ok && (
+        <div className="bg-red/10 border border-red/30 rounded-2xl p-4 mb-6 flex flex-wrap items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-red shrink-0" />
+          <p className="text-black/70 flex-1">
+            <span className="font-semibold text-red">Duomenų bazė neveikia.</span>{" "}
+            {dbHealth.hint ?? "Patikrinkite Supabase raktus Vercel."}
+          </p>
+        </div>
+      )}
+
       {unpaidCash.length > 0 && (
         <div className="bg-gold/10 border border-gold/30 rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
           <p className="text-black/70">
@@ -160,6 +183,30 @@ export default function AdminDashboard() {
             <p className="text-black/45 text-sm">{link.desc}</p>
           </Link>
         ))}
+      </div>
+
+      <div className="bg-white rounded-2xl p-6 card-shadow mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <Database className="w-6 h-6 text-olive" />
+          <h2 className="font-display text-xl font-semibold">Sistemos būklė</h2>
+        </div>
+        <div className="flex flex-wrap gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            {dbHealth?.ok ? (
+              <CheckCircle2 className="w-5 h-5 text-olive" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-red" />
+            )}
+            <span className="font-medium">Duomenų bazė:</span>
+            <span className={dbHealth?.ok ? "text-olive" : "text-red"}>
+              {dbHealth === null
+                ? "Tikrinama..."
+                : dbHealth.ok
+                  ? `Veikia (${dbHealth.pizzaCount} picos)`
+                  : "Neveikia"}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl p-6 card-shadow mb-8">
