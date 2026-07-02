@@ -60,6 +60,12 @@ export async function validateAndBuildOrder(
       throw new Error("INVALID_PIZZA");
     }
 
+    const uuidRe =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRe.test(pizza.id)) {
+      throw new Error("INVALID_PIZZA");
+    }
+
     const size = parseSize(pizzaName);
     const expectedPrice = getUnitPrice(pizza, size);
     if (Math.abs(unitPrice - expectedPrice) > 0.01) {

@@ -9,12 +9,18 @@ import type {
 } from "@/types";
 import { SEED_PIZZAS } from "./data/pizzas";
 
-function isSupabaseConfigured(): boolean {
-  return !!(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
+export function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const service = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+  if (!url || !anon || !service) return false;
+  // sb_* raktai neveikia su @supabase/supabase-js server-side
+  if (anon.startsWith("sb_") || service.startsWith("sb_")) return false;
+  return true;
+}
+
+function canUseMemoryStore(): boolean {
+  return !isSupabaseConfigured() && !process.env.VERCEL;
 }
 
 function normalizePizza(row: Record<string, unknown>): Pizza {
@@ -214,50 +220,55 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const estimated_time = 15 + input.items.reduce((s, i) => s + i.quantity, 0) * 3;
 
   if (!isSupabaseConfigured()) {
+    if (process.env.VERCEL) {
+      throw new Error("SUPABASE_NOT_CONFIGURED");
+    }
     return createMemoryOrder(input, estimated_time);
   }
 
-  try {
-    const supabase = await getSupabase();
-    const { data: order, error } = await supabase
-      .from("orders")
-      .insert({
-        table_number: input.table_number,
-        customer_name: input.customer_name,
-        customer_phone: input.customer_phone,
-        payment_method: input.payment_method,
-        payment_status: input.payment_status,
-        total_amount: input.total_amount,
-        estimated_time,
-        stripe_payment_intent_id: input.stripe_payment_intent_id,
-      })
-      .select()
-      .single();
+  const supabase = await getSupabase();
+  const { data: order, error } = await supabase
+    .from("orders")
+    .insert({
+      table_number: input.table_number,
+      customer_name: input.customer_name,
+      customer_phone: input.customer_phone,
+      payment_method: input.payment_method,
+      payment_status: input.payment_status,
+      total_amount: input.total_amount,
+      estimated_time,
+      stripe_payment_intent_id: input.stripe_payment_intent_id,
+    })
+    .select()
+    .single();
 
-    if (error) throw error;
-
-    const orderItems = input.items.map((item) => ({
-      order_id: order.id,
-      pizza_id: item.pizza_id,
-      pizza_name: item.pizza_name,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-    }));
-
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
-    if (itemsError) throw itemsError;
-
-    return { ...(order as Order), items: orderItems as OrderItem[] };
-  } catch (err) {
-    console.error("Supabase createOrder failed, using memory fallback:", err);
-    return createMemoryOrder(input, estimated_time);
+  if (error) {
+    console.error("Supabase createOrder failed:", error);
+    throw new Error(`SUPABASE_ORDER_FAILED: ${error.message}`);
   }
+
+  const orderItems = input.items.map((item) => ({
+    order_id: order.id,
+    pizza_id: item.pizza_id,
+    pizza_name: item.pizza_name,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+  }));
+
+  const { error: itemsError } = await supabase
+    .from("order_items")
+    .insert(orderItems);
+  if (itemsError) {
+    console.error("Supabase order_items insert failed:", itemsError);
+    await supabase.from("orders").delete().eq("id", order.id);
+    throw new Error(`SUPABASE_ORDER_ITEMS_FAILED: ${itemsError.message}`);
+  }
+
+  return { ...(order as Order), items: orderItems as OrderItem[] };
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
-  if (!isSupabaseConfigured()) {
+  if (canUseMemoryStore()) {
     const order = memoryOrders.find((o) => o.id === id);
     if (!order) return null;
     return {
@@ -265,13 +276,16 @@ export async function getOrder(id: string): Promise<Order | null> {
       items: memoryOrderItems.filter((i) => i.order_id === id),
     };
   }
+
+  if (!isSupabaseConfigured()) return null;
+
   const supabase = await getSupabase();
   const { data: order, error } = await supabase
     .from("orders")
     .select("*")
     .eq("id", id)
-    .single();
-  if (error) return null;
+    .maybeSingle();
+  if (error || !order) return null;
 
   const { data: items } = await supabase
     .from("order_items")

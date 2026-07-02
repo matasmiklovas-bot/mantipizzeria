@@ -37,7 +37,20 @@ export async function POST(request: Request) {
     if (e instanceof Error && e.message.startsWith("INVALID")) {
       return NextResponse.json({ error: "Invalid order" }, { status: 400 });
     }
+    if (e instanceof Error && e.message === "SUPABASE_NOT_CONFIGURED") {
+      return NextResponse.json(
+        {
+          error:
+            "Duomenų bazė nesukonfigūruota. Vercel reikia legacy Supabase raktų (eyJ...).",
+        },
+        { status: 503 }
+      );
+    }
     console.error("Create order error:", e);
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    const message =
+      e instanceof Error && e.message.startsWith("SUPABASE_")
+        ? "Nepavyko išsaugoti užsakymo. Patikrinkite Supabase nustatymus."
+        : "Failed to create order";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
