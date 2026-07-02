@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronDown, Loader2 } from "lucide-react";
@@ -9,12 +10,30 @@ import { cn } from "@/lib/utils";
 
 export function Hero() {
   const [videoReady, setVideoReady] = useState(false);
+  const [logoSrc, setLogoSrc] = useState("/brand/logo-mark.png");
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setVideoReady(true), 8000);
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   return (
-    <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-black">
+    <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-olive">
       {!videoReady && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
-          <Loader2 className="h-10 w-10 animate-spin text-gold" aria-label="Kraunama" />
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-olive">
+          <Image
+            src={logoSrc}
+            alt="Manti Pizzeria"
+            width={88}
+            height={88}
+            className="mb-6 rounded-2xl"
+            priority
+            onError={() => setLogoSrc("/brand/logo-mark.svg")}
+          />
+          <Loader2
+            className="h-10 w-10 animate-spin text-gold"
+            aria-label="Kraunama"
+          />
         </div>
       )}
 
@@ -30,6 +49,8 @@ export function Hero() {
         playsInline
         preload="auto"
         onCanPlay={() => setVideoReady(true)}
+        onLoadedData={() => setVideoReady(true)}
+        onError={() => setVideoReady(true)}
         aria-hidden="true"
       />
 

@@ -69,10 +69,11 @@ function PaymentForm({
   const expressOptions = {
     buttonType: { applePay: "buy" as const, googlePay: "buy" as const },
     buttonTheme: { applePay: "black" as const, googlePay: "black" as const },
+    buttonHeight: 48,
     layout: { maxColumns: 1, maxRows: 1 },
     paymentMethods: {
-      applePay: mode === "apple_pay" ? ("always" as const) : ("never" as const),
-      googlePay: mode === "google_pay" ? ("always" as const) : ("never" as const),
+      applePay: mode === "apple_pay" ? ("auto" as const) : ("never" as const),
+      googlePay: mode === "google_pay" ? ("auto" as const) : ("never" as const),
       link: "never" as const,
     },
   };
@@ -94,11 +95,18 @@ function PaymentForm({
             onConfirm={confirmPayment}
           />
           {expressUnavailable && (
-            <p className="text-sm text-black/50 text-center">
-              {mode === "apple_pay"
-                ? "Apple Pay nepasiekiamas šiame įrenginyje. Naudokite Safari iPhone arba pasirinkite kitą mokėjimą."
-                : "Google Pay nepasiekiamas. Naudokite Chrome arba pasirinkite kitą mokėjimą."}
-            </p>
+            <div className="rounded-2xl border border-black/10 bg-sand/50 p-4 text-sm text-black/60 text-center space-y-2">
+              <p>
+                {mode === "apple_pay"
+                  ? "Apple Pay nepasiekiamas šiame įrenginyje arba naršyklėje."
+                  : "Google Pay nepasiekiamas šiame įrenginyje arba naršyklėje."}
+              </p>
+              <p className="text-xs text-black/40">
+                {mode === "apple_pay"
+                  ? "Naudokite Safari iPhone/Mac su pridėta kortele Wallet programoje."
+                  : "Naudokite Chrome su pridėta kortele Google Pay."}
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -153,6 +161,7 @@ export function StripePayment({
       stripe={stripePromise}
       options={{
         clientSecret,
+        locale: "lt",
         appearance: {
           theme: "stripe",
           variables: {
