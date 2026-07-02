@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { requireAdmin } from "@/lib/auth";
+import { getRequestAppUrl } from "@/lib/utils";
 
-function getBaseUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-}
-
-function buildUrl(target: string, table: string | null) {
-  const baseUrl = getBaseUrl();
+function buildUrl(request: Request, target: string, table: string | null) {
+  const baseUrl = getRequestAppUrl(request);
   switch (target) {
     case "kitchen":
       return `${baseUrl}/kitchen`;
@@ -37,7 +34,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Table number required" }, { status: 400 });
   }
 
-  const url = buildUrl(target, table);
+  const url = buildUrl(request, target, table);
 
   if (format === "svg") {
     const svg = await QRCode.toString(url, { type: "svg", width: 400, margin: 2 });
