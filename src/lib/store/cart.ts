@@ -63,6 +63,6 @@ export const useCartStore = create<CartStore>()(
           0
         ),
     }),
-    { name: "manti-cart-v2" }
+    { name: "manti-cart-v3" }
   )
 );

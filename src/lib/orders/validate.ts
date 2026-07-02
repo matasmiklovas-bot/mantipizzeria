@@ -1,4 +1,4 @@
-import { getPizzaById } from "@/lib/db";
+import { getPizzaById, getPizzas } from "@/lib/db";
 import type { CreateOrderInput } from "@/lib/db";
 import {
   getUnitPrice,
@@ -50,12 +50,19 @@ export async function validateAndBuildOrder(
     const pizzaName = String(item.pizza_name ?? "");
     const quantity = Number(item.quantity);
     const unitPrice = Number(item.unit_price);
+    const uuidRe =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
     if (!pizzaId || !pizzaName || !Number.isInteger(quantity) || quantity < 1) {
       throw new Error("INVALID_ITEMS");
     }
 
-    const pizza = await getPizzaById(pizzaId);
+    let pizza = await getPizzaById(pizzaId);
+    if ((!pizza || !uuidRe.test(pizza.id)) && pizzaName.includes("(")) {
+      const name = pizzaName.split(" (")[0].trim();
+      const menu = await getPizzas();
+      pizza = menu.find((p) => p.name === name) ?? pizza;
+    }
     if (!pizza || !pizza.available) {
       throw new Error("INVALID_PIZZA");
     }

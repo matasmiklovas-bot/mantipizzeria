@@ -83,6 +83,8 @@ export async function getAllPizzas(): Promise<Pizza[]> {
 
 export async function getPizzaById(id: string): Promise<Pizza | null> {
   const seedPizza = memoryPizzas.find((p) => p.id === id) ?? null;
+  const uuidRe =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   if (!isSupabaseConfigured()) {
     return seedPizza;
@@ -90,17 +92,18 @@ export async function getPizzaById(id: string): Promise<Pizza | null> {
 
   try {
     const supabase = await getSupabase();
-    const { data, error } = await supabase
-      .from("pizzas")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
 
-    if (!error && data) {
-      return normalizePizza(data as Record<string, unknown>);
+    if (uuidRe.test(id)) {
+      const { data, error } = await supabase
+        .from("pizzas")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) {
+        return normalizePizza(data as Record<string, unknown>);
+      }
     }
 
-    // Meniu rodo seed id (1,2,3...) — surandame picą Supabase pagal pavadinimą
     if (seedPizza) {
       const { data: byName, error: nameError } = await supabase
         .from("pizzas")
