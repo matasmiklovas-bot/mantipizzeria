@@ -69,8 +69,8 @@ export function About() {
             </div>
             <div className="absolute -bottom-6 -left-6 bg-cream p-5 rounded-2xl card-shadow">
               <img
-                src="/brand/logo.png"
-                alt="Mantì Pizzeria logotipas"
+                src="/brand/logo-mark.png"
+                alt="Manti Pizzeria logotipas"
                 className="h-10 w-auto object-contain"
               />
             </div>

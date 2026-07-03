@@ -46,10 +46,10 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/brand/logo.png",
-        width: 400,
-        height: 240,
-        alt: "Mantì Pizzeria logotipas",
+        url: "/brand/logo-mark.png",
+        width: 120,
+        height: 120,
+        alt: "Manti Pizzeria logotipas",
       },
     ],
   },
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Mantì Pizzeria — pica Palangoje",
     description: SITE_DESCRIPTION,
-    images: ["/brand/logo.png"],
+    images: ["/brand/logo-mark.png"],
   },
   robots: {
     index: true,
@@ -68,8 +68,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/brand/logo.png",
-    apple: "/brand/logo.png",
+    icon: "/brand/logo-mark.png",
+    apple: "/brand/logo-mark.png",
   },
   verification: process.env.GOOGLE_SITE_VERIFICATION
     ? { google: process.env.GOOGLE_SITE_VERIFICATION }

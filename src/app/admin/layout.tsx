@@ -11,7 +11,6 @@ import {
   LogOut,
   ChefHat,
 } from "lucide-react";
-import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -71,7 +70,11 @@ export default function AdminLayout({
     <div className="min-h-screen bg-cream flex">
       <aside className="w-64 bg-black text-white shrink-0 hidden md:flex flex-col">
         <div className="p-6 border-b border-white/10">
-          <Logo className="h-10 mb-2" />
+          <img
+            src="/brand/logo-mark.png"
+            alt="Manti Pizzeria"
+            className="h-10 w-auto object-contain brightness-0 invert mb-2"
+          />
           <p className="text-white/40 text-xs">Admin panelė</p>
         </div>
 

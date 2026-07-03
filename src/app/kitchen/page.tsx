@@ -233,9 +233,9 @@ export default function KitchenPage() {
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <img
-              src="/brand/logo.png"
-              alt="Mantì Pizzeria"
-              className="h-10 w-auto object-contain"
+              src="/brand/logo-mark.png"
+              alt="Manti Pizzeria"
+              className="h-10 w-auto object-contain brightness-0 invert"
             />
             <div className="hidden sm:block h-10 w-px bg-white/15" />
             <div>

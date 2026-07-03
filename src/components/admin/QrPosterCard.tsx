@@ -10,8 +10,8 @@ export function QrPosterCard({ qrSrc, label, className }: QrPosterCardProps) {
       className={`bg-[#111111] border-2 border-[#c9a962] rounded-sm flex flex-col items-center justify-between px-6 py-8 w-[280px] aspect-[3/4] shadow-xl ${className ?? ""}`}
     >
       <img
-        src="/brand/logo.png"
-        alt="Mantì Pizzeria"
+        src="/brand/logo-mark.png"
+        alt="Manti Pizzeria"
         className="h-[72px] w-auto max-w-[200px] object-contain brightness-0 invert"
       />
 
