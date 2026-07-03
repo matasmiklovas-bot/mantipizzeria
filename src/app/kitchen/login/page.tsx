@@ -34,9 +34,9 @@ export default function KitchenLoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img
-            src="/brand/logo-mark.png"
-            alt="Manti Pizzeria"
-            className="h-14 w-auto object-contain brightness-0 invert mx-auto mb-6"
+            src="/brand/logo.png"
+            alt="Mantì Pizzeria"
+            className="h-14 w-auto object-contain mx-auto mb-6"
           />
           <h1 className="font-display text-3xl font-bold text-white">Virtuvė & Kasa</h1>
           <p className="text-white/50 mt-2">Darbuotojų prisijungimas</p>

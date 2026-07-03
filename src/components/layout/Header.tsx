@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, ShoppingBag } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
 import { useCartStore } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 
@@ -26,14 +27,7 @@ export function Header({ variant = "landing" }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center group">
-            <img
-              src="/brand/logo-mark.png"
-              alt="Manti Pizzeria"
-              className={cn(
-                "h-11 w-auto object-contain transition-transform group-hover:scale-105",
-                variant === "landing" && "brightness-0 invert"
-              )}
-            />
+            <Logo className="h-12 transition-transform group-hover:scale-105" />
           </Link>
 
           {variant === "landing" && (

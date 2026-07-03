@@ -377,7 +377,7 @@ export default function CheckoutPage() {
                         type="button"
                         onClick={() => setPaymentMethod("card")}
                         className={cn(
-                          "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all",
+                          "flex flex-col items-start gap-2 overflow-visible p-4 rounded-2xl border-2 text-left transition-all",
                           paymentMethod === "card"
                             ? "border-olive bg-olive/5"
                             : "border-black/10 hover:border-black/20"
@@ -391,7 +391,7 @@ export default function CheckoutPage() {
                         type="button"
                         onClick={() => setPaymentMethod("apple_pay")}
                         className={cn(
-                          "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all",
+                          "flex flex-col items-start gap-2 overflow-visible p-4 rounded-2xl border-2 text-left transition-all",
                           paymentMethod === "apple_pay"
                             ? "border-olive bg-olive/5"
                             : "border-black/10 hover:border-black/20"
@@ -404,7 +404,7 @@ export default function CheckoutPage() {
                         type="button"
                         onClick={() => setPaymentMethod("google_pay")}
                         className={cn(
-                          "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all",
+                          "flex flex-col items-start gap-2 overflow-visible p-4 rounded-2xl border-2 text-left transition-all",
                           paymentMethod === "google_pay"
                             ? "border-olive bg-olive/5"
                             : "border-black/10 hover:border-black/20"
@@ -417,7 +417,7 @@ export default function CheckoutPage() {
                         type="button"
                         onClick={() => setPaymentMethod("cash")}
                         className={cn(
-                          "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all",
+                          "flex flex-col items-start gap-2 overflow-visible p-4 rounded-2xl border-2 text-left transition-all",
                           paymentMethod === "cash"
                             ? "border-gold bg-gold/5"
                             : "border-black/10 hover:border-black/20"

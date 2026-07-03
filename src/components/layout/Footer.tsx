@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/brand/Logo";
 
 export function Footer() {
   return (
@@ -6,11 +7,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div>
-            <img
-              src="/brand/logo-mark.png"
-              alt="Manti Pizzeria"
-              className="h-14 w-auto object-contain brightness-0 invert mb-5"
-            />
+            <Logo className="h-14 mb-5" />
             <p className="text-white/60 text-sm leading-relaxed">
               Vaivorykštės g. 53, Palanga
               <br />

@@ -54,7 +54,7 @@ export async function renderPosterCanvas(
 
   // logotipas
   try {
-    const logo = await loadImage("/brand/logo-mark.png");
+    const logo = await loadImage("/brand/logo.png");
     const logoW = 220;
     const logoH = (logo.height / logo.width) * logoW;
     ctx.filter = "brightness(0) invert(1)";
@@ -114,7 +114,7 @@ export function posterPrintHtml(
       ({ qrSrc, label }) => `
     <div class="page">
       <div class="card">
-        <img class="logo" src="/brand/logo-mark.png" alt="Manti Pizzeria" />
+        <img class="logo" src="/brand/logo.png" alt="Mantì Pizzeria" />
         <div class="qr-box">
           <img src="${qrSrc}" alt="QR" />
         </div>

@@ -20,8 +20,8 @@ export function Hero() {
       {!ready && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6 bg-cream">
           <motion.img
-            src="/brand/logo-mark.png"
-            alt="Manti Pizzeria"
+            src="/brand/logo.png"
+            alt="Mantì Pizzeria"
             className="h-20 w-auto object-contain"
             animate={{ scale: [1, 1.05, 1], opacity: [0.85, 1, 0.85] }}
             transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
