@@ -87,7 +87,7 @@ h2{font-size:clamp(32px,4.4vw,48px);line-height:1.08;font-weight:600;letter-spac
 .card{display:flex;flex-direction:column;padding:22px;border:1px solid var(--hair);border-radius:18px}
 .card .pic{height:150px;display:grid;place-items:center;margin-bottom:16px}
 .card .pic img{max-height:150px;max-width:100%;object-fit:contain}
-.card .pic i{width:96px;height:120px;border-radius:12px;background:var(--bg2)}
+.card .pic i{display:block;width:96px;height:120px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 100'%3E%3Cg fill='none' stroke='%23d2d2d7' stroke-width='3'%3E%3Cellipse cx='40' cy='50' rx='30' ry='46'/%3E%3Cellipse cx='40' cy='50' rx='15' ry='24'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
 .card .brand{font-size:13px;color:var(--muted)}
 .card h3{font-size:19px;font-weight:600;letter-spacing:-.02em;line-height:1.25}
 .card .spec{font-size:14px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
@@ -459,7 +459,7 @@ function card(p) {
   const max = Math.max(1, Math.min(8, p.stock || 8));
   const def = Math.min(4, max);
   return `<article class="card">
-    <div class="pic">${p.img ? `<img src="${SHOP}${esc(p.img)}" alt="${esc(brandName(p.brand) + ' ' + p.model)}" loading="lazy" onerror="this.replaceWith(document.createElement('i'))">` : '<i></i>'}</div>
+    <div class="pic">${p.img ? `<img src="${SHOP}${esc(p.img)}" alt="${esc(brandName(p.brand) + ' ' + p.model)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('i'), { role: 'img', ariaLabel: 'Nuotraukos nėra' }))">` : '<i role="img" aria-label="Nuotraukos nėra"></i>'}</div>
     <div class="info">
       <p class="brand">${esc(brandName(p.brand))}</p>
       <h3>${esc(p.model)}</h3>
