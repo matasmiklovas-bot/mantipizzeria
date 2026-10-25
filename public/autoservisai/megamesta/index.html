@@ -333,7 +333,8 @@ const ANY = { name: 'Bet kuris servisas', hours: { ...WEEKDAYS, 6: [8, 14] }, pe
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const pad = n => String(n).padStart(2, '0');
-const fmtPhone = p => p.replace(/^\+370(\d{3})(\d{5})$/, '+370 $1 $2');
+// Non-breaking spaces keep a phone number on one line.
+const fmtPhone = p => p.replace(/^\+370(\d{3})(\d{5})$/, '+370\u00a0$1\u00a0$2');
 const DAY = ['sekmadienis', 'pirmadienis', 'antradienis', 'trečiadienis', 'ketvirtadienis', 'penktadienis', 'šeštadienis'];
 const DAY_ON = ['sekmadienį', 'pirmadienį', 'antradienį', 'trečiadienį', 'ketvirtadienį', 'penktadienį', 'šeštadienį'];
 const DAY_SHORT = ['Sk', 'Pr', 'An', 'Tr', 'Kt', 'Pn', 'Št'];
