@@ -180,8 +180,11 @@ footer a:hover{text-decoration:underline}
 .done button{margin-top:32px}
 
 @media (max-width:820px){
-  .nav nav{display:none}
   .grid{grid-template-columns:1fr 1fr}
+  .facts li{padding:0 12px;font-size:13px}
+}
+@media (max-width:700px){
+  .nav nav{display:none}
   .list,.locs{grid-template-columns:1fr}
   .facts{grid-template-columns:auto auto;row-gap:8px}
   .facts li:nth-child(3){border-left:0}
@@ -414,13 +417,13 @@ function renderResults() {
     return;
   }
   const sorted = [...list].sort((a, b) => sortBy === 'ship' ? (parseInt(a.days, 10) - parseInt(b.days, 10)) || a.price - b.price : a.price - b.price);
-  const shown = showAll ? sorted : sorted.slice(0, 9);
+  const shown = showAll ? sorted : sorted.slice(0, 12);
   box.innerHTML = `<div class="res-head">
       <div><h2>${title}</h2><p>${SEASON[q.season][0].toUpperCase() + SEASON[q.season].slice(1)} · ${list.length} ${plural(list.length, 'pasiūlymas', 'pasiūlymai', 'pasiūlymų')}</p></div>
       <div class="sort"><button data-sort="price" aria-pressed="${sortBy === 'price'}">Pigiausios</button><button data-sort="ship" aria-pressed="${sortBy === 'ship'}">Greičiausias pristatymas</button></div>
     </div>
     <div class="grid">${shown.map(card).join('')}</div>
-    ${!showAll && sorted.length > 9 ? `<div class="more"><button class="link" data-more>Rodyti visus ${sorted.length}</button></div>` : ''}
+    ${!showAll && sorted.length > 12 ? `<div class="more"><button class="link" data-more>Rodyti visus ${sorted.length}</button></div>` : ''}
     <p class="source">${live[key(q)] ? 'Kainos ir likučiai iš sandėlio.' : `Kainos ir likučiai atnaujinti ${TIRES_UPDATED}.`} Pirkimas vyksta krepšelyje naujospadangosinternetu.lt.</p>`;
 }
 
