@@ -1,11 +1,11 @@
 # Autoservisų svetainės
 
-Dvi naujos svetainės, kiekviena viename `index.html` faile:
+Dvi naujos svetainės, kiekviena viename `index.html` faile (`public/autoservisai/`):
 
 | Svetainė | Failas | Pranešimų kanalas (ntfy) |
 |---|---|---|
-| megamesta.lt | `megamesta/index.html` | `megamesta-2b041afb1892` |
-| naujospadangosinternetu.lt | `naujospadangos/index.html` | `naujospadangos-2f0d59dcdef5` |
+| megamesta.lt | `public/autoservisai/megamesta/index.html` | `megamesta-2b041afb1892` |
+| naujospadangosinternetu.lt | `public/autoservisai/naujospadangos/index.html` | `naujospadangos-2f0d59dcdef5` |
 
 ## Pranešimai į telefoną (2 minutės)
 
@@ -30,14 +30,13 @@ Jokio serverio ar duomenų bazės nereikia.
 
 ## Padangų kainų atnaujinimas
 
-`naujospadangos/index.html` turi dabartinės parduotuvės pasiūlymus populiariausiems
+`public/autoservisai/naujospadangos/index.html` turi dabartinės parduotuvės pasiūlymus populiariausiems
 dydžiams (pigiausius ir aukščiausios klasės, visiems trims sezonams). Atnaujinti:
 
 ```
-cd naujospadangos
-python3 atnaujinti_padangas.py
+python3 autoservisai/naujospadangos/atnaujinti_padangas.py
 ```
 
-Skriptas surenka kainas iš naujospadangosinternetu.lt ir įrašo jas į `index.html`
+Skriptas surenka kainas iš naujospadangosinternetu.lt ir įrašo jas į svetainės failą
 (trunka apie pusvalandį). Ieškant dydžio, kurio nėra sąraše, klientui siūloma palikti
 numerį. Parduotuvė gauna pranešimą ir paskambina su pasiūlymu.

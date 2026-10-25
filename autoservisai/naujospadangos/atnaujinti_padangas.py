@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Refresh the tyre offers embedded in index.html from naujospadangosinternetu.lt.
+"""Refresh the tyre offers embedded in public/autoservisai/naujospadangos/index.html
+from naujospadangosinternetu.lt.
 
 Usage:
     python3 atnaujinti_padangas.py              # scrape the live shop, then update index.html
@@ -23,7 +24,7 @@ SIZES = {
 }
 SEASONS = {'winter': '2', 'summer': '1', 'all': '3'}
 HERE = os.path.dirname(os.path.abspath(__file__))
-PAGE = os.path.join(HERE, 'index.html')
+PAGE = os.path.join(HERE, '..', '..', 'public', 'autoservisai', 'naujospadangos', 'index.html')
 
 
 def parse_list(page):
