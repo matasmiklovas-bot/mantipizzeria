@@ -619,6 +619,8 @@ const pad = n => String(n).padStart(2, '0');
 const WD = ['sekmadienis', 'pirmadienis', 'antradienis', 'trečiadienis', 'ketvirtadienis', 'penktadienis', 'šeštadienis'];
 const WDS = ['Sk', 'Pr', 'An', 'Tr', 'Kt', 'Pn', 'Št'];
 const MON = ['sausio', 'vasario', 'kovo', 'balandžio', 'gegužės', 'birželio', 'liepos', 'rugpjūčio', 'rugsėjo', 'spalio', 'lapkričio', 'gruodžio'];
+// Lithuanian plural: 1 laikas, 2 laikai, 10 laikų.
+const plural = (n, one, few, many) => n % 10 === 1 && n % 100 !== 11 ? one : n % 10 >= 2 && (n % 100 < 10 || n % 100 >= 20) ? few : many;
 const fmtPhone = p => p.replace(/^\+370(\d{3})(\d{5})$/, '+370 $1 $2');
 const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const sameDay = (a, b) => dayKey(a) === dayKey(b);
@@ -781,7 +783,7 @@ function render(dir = 1) {
     const selDay = state.sel.date && state.day && sameDay(new Date(state.sel.date), state.day);
     html = `<p class="step-k">${esc(svc().name)} · ${esc(l.name)}</p><h2 id="stepTitle">Kada patogu?</h2>
       <div class="days" role="listbox" aria-label="Diena">${days.map((d, i) => `<button class="day ${sameDay(d, state.day) ? 'sel' : ''}" data-day="${i}" role="option" aria-selected="${sameDay(d, state.day)}"><small>${i === 0 && sameDay(d, new Date()) ? 'Šiand.' : WDS[d.getDay()]}</small><b>${d.getDate()}</b></button>`).join('')}</div>
-      <p class="day-label"><b>${state.day ? longDate(state.day) : ''}</b> · ${slots.filter(s => !s.taken).length} laisvi laikai</p>
+      <p class="day-label"><b>${state.day ? longDate(state.day) : ''}</b> · ${(n => `${n} ${plural(n, 'laisvas laikas', 'laisvi laikai', 'laisvų laikų')}`)(slots.filter(s => !s.taken).length)}</p>
       ${slots.length ? `<div class="slots">${slots.map(s => `<button class="slot ${selDay && state.sel.time === s.t ? 'sel' : ''}" data-time="${s.t}" ${s.taken ? 'disabled aria-label="' + s.t + ' užimta"' : ''}>${s.t}</button>`).join('')}</div>` : '<div class="empty">Šią dieną laisvų laikų nebėra.</div>'}
       <p class="note">${icon('phone')}<span>Meistras paskambins ir patvirtins laiką. Jei skubu, paskambinkite: <a class="link" href="tel:${l.people[0][1]}">${fmtPhone(l.people[0][1])}</a></span></p>`;
     state._days = days;

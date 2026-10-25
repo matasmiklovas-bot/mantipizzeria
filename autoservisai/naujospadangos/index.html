@@ -355,6 +355,7 @@ footer{border-top:1px solid var(--hair);padding:44px 0 calc(44px + env(safe-area
   .sel select{font-size:17px;padding-right:28px}
   .strip{grid-template-columns:1fr;gap:12px}
   .products{grid-template-columns:1fr}
+  .prod-img{height:96px;margin:10px 0 4px}
   .fit-grid{grid-template-columns:1fr}
   .fit-card.big{grid-column:auto}
   .fit-card{min-height:0}
@@ -671,6 +672,8 @@ const WD = ['sekmadienis', 'pirmadienis', 'antradienis', 'trečiadienis', 'ketvi
 const WDS = ['Sk', 'Pr', 'An', 'Tr', 'Kt', 'Pn', 'Št'];
 const MON = ['sausio', 'vasario', 'kovo', 'balandžio', 'gegužės', 'birželio', 'liepos', 'rugpjūčio', 'rugsėjo', 'spalio', 'lapkričio', 'gruodžio'];
 const cap = s => s.replace(/^./, c => c.toUpperCase());
+// Lithuanian plural: 1 laikas, 2 laikai, 10 laikų.
+const plural = (n, one, few, many) => n % 10 === 1 && n % 100 !== 11 ? one : n % 10 >= 2 && (n % 100 < 10 || n % 100 >= 20) ? few : many;
 const fmtPhone = p => p.replace(/^\+370(\d{3})(\d{5})$/, '+370 $1 $2');
 const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const sameDay = (a, b) => dayKey(a) === dayKey(b);
@@ -785,7 +788,7 @@ function renderResults() {
   const list = [...offers].sort((a, b) => sortBy === 'price' ? a.price - b.price : sortBy === 'ship' ? shipScore(a) - shipScore(b) || a.price - b.price : labelScore(a) - labelScore(b) || a.price - b.price);
   const cheapest = Math.min(...offers.map(p => p.price));
   const shown = list.slice(0, state.showAll ? list.length : 6);
-  $('#resSub').textContent = `${SEASON_LT[q.season]} · ${offers.length} pasiūlymai · nuo ${eur(cheapest)} / vnt.`;
+  $('#resSub').textContent = `${SEASON_LT[q.season]} · ${offers.length} ${plural(offers.length, 'pasiūlymas', 'pasiūlymai', 'pasiūlymų')} · nuo ${eur(cheapest)} / vnt.`;
   $('#resBody').innerHTML = `<div class="products">${shown.map(p => `
     <article class="prod ${p.price === cheapest ? 'best' : ''}">
       <div class="prod-top"><span class="ship ${shipClass(p)}"><i></i>Pristatymas ${p.days} d.d.</span><span class="stock ${p.stock < 4 ? 'low' : ''}">${p.stock > 20 ? '20+ vnt.' : p.stock < 4 ? `Liko ${p.stock} vnt.` : p.stock + ' vnt.'}</span></div>
@@ -948,7 +951,7 @@ function render(dir = 1) {
     state._days = days;
     html = `<p class="step-k">${esc(headline())} · ${esc(l.name)}</p><h2 id="stepTitle">Kada patogu?</h2>
       <div class="days">${days.map((d, i) => `<button class="day ${sameDay(d, state.day) ? 'sel' : ''}" data-day="${i}" aria-pressed="${sameDay(d, state.day)}"><small>${sameDay(d, new Date()) ? 'Šiand.' : WDS[d.getDay()]}</small><b>${d.getDate()}</b></button>`).join('')}</div>
-      <p class="day-label"><b>${state.day ? longDate(state.day) : ''}</b> · ${slots.filter(x => !x.taken).length} laisvi laikai</p>
+      <p class="day-label"><b>${state.day ? longDate(state.day) : ''}</b> · ${(n => `${n} ${plural(n, 'laisvas laikas', 'laisvi laikai', 'laisvų laikų')}`)(slots.filter(x => !x.taken).length)}</p>
       ${slots.length ? `<div class="slots">${slots.map(x => `<button class="slot ${selDay && state.sel.time === x.t ? 'sel' : ''}" data-time="${x.t}" ${x.taken ? 'disabled aria-label="' + x.t + ' užimta"' : ''}>${x.t}</button>`).join('')}</div>` : '<div class="empty">Šią dieną laisvų laikų nebėra.</div>'}
       <p class="note">${icon('phone')}<span>${state.mode === 'order' ? 'Padangos jūsų jau lauks servise. ' : ''}Meistras paskambins ir patvirtins laiką.</span></p>`;
   }
