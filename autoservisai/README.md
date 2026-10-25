@@ -27,8 +27,13 @@ klientas mato klaidą ir serviso telefono numerį, registracija neprarandama tyl
 
 ## Paskelbimas
 
-Įkelkite `index.html` į bet kurį talpinimą (dabartinį serverį, Netlify, Vercel, GitHub Pages).
-Jokio serverio ar duomenų bazės nereikia.
+Įkelkite aplanko turinį (`index.html`, `og.png`, `apple-touch-icon.png`) į bet kurį talpinimą.
+Prieš paleidžiant tikrame domene:
+
+1. Ištrinkite eilutę `<meta name="robots" content="noindex">` (ji neleidžia Google indeksuoti peržiūros adreso).
+2. `og:image` nuorodoje pakeiskite peržiūros adresą į tikrą domeną.
+3. NaujosPadangos svetainei reikia ir maršruto `src/app/api/autoservisai/padangos` (gyvos kainos).
+   Be jo svetainė naudoja įrašytus duomenis.
 
 ## Padangų kainų atnaujinimas
 
