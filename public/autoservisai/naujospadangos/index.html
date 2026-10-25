@@ -146,6 +146,11 @@ footer .top{padding-bottom:14px;line-height:1.7}
 footer .bottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding-top:14px;border-top:1px solid var(--line)}
 footer a:hover{text-decoration:underline}
 
+/* sections ease in as they scroll into view (skipped for reduced motion) */
+.js .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(.25,.1,.25,1),transform .8s cubic-bezier(.25,.1,.25,1)}
+.js .reveal.seen{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js .reveal{opacity:1;transform:none;transition:none}}
+
 /* booking sheet */
 .sheet{position:fixed;inset:0;z-index:50;display:none}
 .sheet.open{display:block}
@@ -693,6 +698,13 @@ document.addEventListener('keydown', e => {
   if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
   else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
 });
+
+// Ease sections in as they enter the viewport.
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('seen'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px' });
+  document.querySelectorAll('#montavimas .wrap, #kontaktai h2, .where').forEach(el => { el.classList.add('reveal'); io.observe(el); });
+  document.documentElement.classList.add('js');
+}
 </script>
 </body>
 </html>
