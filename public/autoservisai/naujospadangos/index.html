@@ -151,6 +151,28 @@ footer a:hover{text-decoration:underline}
 .js .reveal.seen{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.js .reveal{opacity:1;transform:none;transition:none}}
 
+/* checkout */
+.item{display:flex;gap:16px;align-items:center;padding:16px;border:1px solid var(--line);border-radius:12px}
+.item img,.item i{width:56px;height:70px;object-fit:contain;flex:none}
+.item i{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 100'%3E%3Cg fill='none' stroke='%23d2d2d7' stroke-width='3'%3E%3Cellipse cx='40' cy='50' rx='30' ry='46'/%3E%3Cellipse cx='40' cy='50' rx='15' ry='24'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
+.item .what{flex:1;min-width:0}
+.item small{display:block;font-size:13px;color:var(--muted)}
+.item b{display:block;font-size:17px;font-weight:600;letter-spacing:-.015em}
+.item .select{width:auto;padding:8px 28px 8px 10px;font-size:15px;border-radius:10px;background-position:right 10px center}
+.sum{margin-top:14px;font-size:15px}
+.sum div{display:flex;justify-content:space-between;padding:4px 0;color:var(--muted)}
+.sum .grand{color:var(--text);font-size:19px;font-weight:600;border-top:1px solid var(--hair);margin-top:6px;padding-top:12px}
+.sub-pick{margin-top:12px}
+.banks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.banks label{display:flex;align-items:center;justify-content:center;height:52px;border:1px solid var(--line);border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;text-align:center}
+.banks input{position:absolute;opacity:0;pointer-events:none}
+.banks label:has(input:checked){border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+.banks label:has(input:focus-visible){outline:2px solid var(--link);outline-offset:2px}
+.demo{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--bg2);font-size:13px;color:var(--muted)}
+.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:17px;outline:none;background:#fff;resize:vertical;min-height:70px}
+.field textarea:focus{border-color:var(--link);box-shadow:0 0 0 3px rgba(0,102,204,.2)}
+.missing .radios,.missing .banks label{border-color:var(--bad)}
+
 /* booking sheet */
 .sheet{position:fixed;inset:0;z-index:50;display:none}
 .sheet.open{display:block}
@@ -232,6 +254,7 @@ footer a:hover{text-decoration:underline}
   .form{padding:4px 20px calc(24px + env(safe-area-inset-bottom))}
   .fields{grid-template-columns:1fr}
   .times{grid-template-columns:repeat(4,1fr)}
+  .banks{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -451,7 +474,7 @@ function renderResults() {
     </div>
     <div class="grid">${shown.map(card).join('')}</div>
     ${!showAll && sorted.length > 12 ? `<div class="more"><button class="link" data-more>Rodyti visus ${sorted.length}</button></div>` : ''}
-    <p class="source">${live[key(q)] ? 'Kainos ir likučiai iš sandėlio.' : `Kainos ir likučiai atnaujinti ${TIRES_UPDATED}.`} Pirkimas vyksta krepšelyje naujospadangosinternetu.lt.</p>`;
+    <p class="source">${live[key(q)] ? 'Kainos ir likučiai iš sandėlio.' : `Kainos ir likučiai atnaujinti ${TIRES_UPDATED}.`}</p>`;
 }
 
 function card(p) {
@@ -470,7 +493,7 @@ function card(p) {
     <div class="buy">
       <div class="price"><b>${eur(p.price)}</b><small>už vnt.</small></div>
       <select class="select qty" aria-label="Kiekis" data-id="${esc(p.id)}" data-price="${p.price}">${Array.from({ length: max }, (_, i) => `<option ${i + 1 === def ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>
-      <a class="btn" target="_blank" rel="noopener" data-buy="${esc(p.id)}" href="${SHOP}krepselis.htm?kiekis=${def}&addcart=${esc(p.id)}">Pirkti</a>
+      <button class="btn" data-buy="${esc(p.id)}">Pirkti</button>
     </div>
     <p class="total">${def} vnt. – ${eur(p.price * def)}</p>
   </article>`;
@@ -499,7 +522,6 @@ $('#results').addEventListener('change', e => {
   const s = e.target.closest('.qty');
   if (!s) return;
   const card = s.closest('.card');
-  card.querySelector('[data-buy]').href = `${SHOP}krepselis.htm?kiekis=${s.value}&addcart=${s.dataset.id}`;
   card.querySelector('.total').textContent = `${s.value} vnt. – ${eur(s.value * s.dataset.price)}`;
 });
 $('#results').addEventListener('submit', async e => {
@@ -561,6 +583,139 @@ $('#locs').addEventListener('mouseover', e => { const l = e.target.closest('.loc
 $('#locs').addEventListener('mouseleave', () => highlight(-1, false));
 
 
+/* ---------- checkout (demo payment) ---------- */
+// Banks shown on naujospadangosinternetu.lt today. Payment is a demo until a
+// payment provider is connected in pay() below.
+const BANKS = ['Swedbank', 'SEB', 'Luminor', 'Citadele', 'Šiaulių bankas', 'Paysera'];
+const HOW = [
+  ['courier', 'Pristatymas į namus', 'Lietuvoje per 1 d.d.'],
+  ['pickup', 'Atsiimsiu Vilniuje', 'Viename iš penkių servisų'],
+  ['fit', 'Su montavimu Vilniuje', 'Pasirinkite servisą ir laiką'],
+];
+let order;
+
+function openCheckout(id) {
+  const p = rows(query).find(x => x.id === id);
+  if (!p) return;
+  const card = [...document.querySelectorAll('[data-buy]')].find(b => b.dataset.buy === id)?.closest('.card');
+  const qty = +(card?.querySelector('.qty')?.value || Math.min(4, p.stock || 4));
+  order = { p, qty, size: `${query.w}/${query.h} R${query.r}`, how: '' };
+  sel = { loc: 0, day: null, time: '' };
+  lastFocus = document.activeElement;
+  $('#sheetTitle').textContent = 'Užsakymas';
+  const max = Math.max(1, Math.min(8, p.stock || 8));
+  body.innerHTML = `<form class="form" id="checkout" novalidate>
+    <fieldset>
+      <div class="item">
+        ${p.img ? `<img src="${SHOP}${esc(p.img)}" alt="" onerror="this.replaceWith(document.createElement('i'))">` : '<i></i>'}
+        <div class="what"><small>${esc(brandName(p.brand))}</small><b>${esc(p.model)}</b><small>${order.size} ${esc(p.idx)} · ${eur(p.price)} už vnt.</small></div>
+        <select class="select" id="coQty" aria-label="Kiekis">${Array.from({ length: max }, (_, i) => `<option ${i + 1 === qty ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>
+      </div>
+      <div class="sum" id="coSum"></div>
+    </fieldset>
+    <fieldset id="howBox">
+      <legend>Kaip norite gauti?</legend>
+      <div class="radios">${HOW.map(([v, t, d]) => `<label><input type="radio" name="how" value="${v}"><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>
+      <p class="need">Pasirinkite, kaip gausite padangas.</p>
+      <div id="howMore"></div>
+    </fieldset>
+    <fieldset>
+      <legend>Kontaktai</legend>
+      <div class="fields">
+        <div class="field"><input id="name" autocomplete="name" placeholder="Vardas, pavardė" aria-label="Vardas, pavardė"><p class="err">Įrašykite vardą.</p></div>
+        <div class="field"><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Telefonas" aria-label="Telefonas"><p class="err">Įrašykite telefoną, pvz. 8 612 34567.</p></div>
+        <div class="field full"><input id="email" type="email" autocomplete="email" placeholder="El. paštas (sąskaitai)" aria-label="El. paštas"><p class="err">Įrašykite el. pašto adresą.</p></div>
+      </div>
+    </fieldset>
+    <fieldset id="payBox">
+      <legend>Apmokėjimas</legend>
+      <div class="banks">${BANKS.map(b => `<label><input type="radio" name="bank" value="${b}">${b}</label>`).join('')}</div>
+      <p class="need">Pasirinkite banką.</p>
+      <p class="demo">Demonstracinė versija: apmokėjimas dar neprijungtas, pinigai nebus nuskaičiuoti. Užsakymas bus išsiųstas parduotuvei.</p>
+    </fieldset>
+    <div id="fail"></div>
+    <button class="btn submit" type="submit" id="payBtn"></button>
+    <p class="small">Kainos su PVM. Užsakymą patvirtinsime skambučiu.</p>
+  </form>`;
+  renderSum();
+  sheet.classList.add('open'); sheet.setAttribute('aria-hidden', 'false');
+  document.documentElement.style.overflow = 'hidden';
+  $('#coQty').focus();
+}
+
+function renderSum() {
+  const total = order.p.price * order.qty;
+  const delivery = order.how === 'courier' ? 'Patvirtinsime skambučiu' : order.how ? 'Nemokamai' : '–';
+  $('#coSum').innerHTML = `<div><span>${order.qty} vnt. × ${eur(order.p.price)}</span><span>${eur(total)}</span></div>
+    <div><span>Pristatymas</span><span>${delivery}</span></div>
+    ${order.how === 'fit' ? '<div><span>Montavimas</span><span>Servise</span></div>' : ''}
+    <div class="grand"><span>Iš viso</span><span>${eur(total)}</span></div>`;
+  $('#payBtn').textContent = `Apmokėti ${eur(total)}`;
+}
+
+function renderHow() {
+  const box = $('#howMore');
+  if (order.how === 'courier') {
+    box.innerHTML = `<div class="fields sub-pick">
+      <div class="field full"><input id="addr" autocomplete="street-address" placeholder="Adresas" aria-label="Adresas"><p class="err">Įrašykite adresą.</p></div>
+      <div class="field"><input id="city" autocomplete="address-level2" placeholder="Miestas" aria-label="Miestas"><p class="err">Įrašykite miestą.</p></div>
+      <div class="field"><input id="zip" inputmode="numeric" autocomplete="postal-code" placeholder="Pašto kodas (nebūtina)" aria-label="Pašto kodas"></div>
+    </div>`;
+  } else if (order.how) {
+    box.innerHTML = `<div class="sub-pick"><select class="select" id="coLoc" aria-label="Servisas">${LOCATIONS.map((l, i) => `<option value="${i}" ${i === sel.loc ? 'selected' : ''}>${l.name} · ${hoursText(l.hours)}</option>`).join('')}</select></div>
+      ${order.how === 'fit' ? '<fieldset id="when" style="margin-top:16px"></fieldset>' : ''}`;
+    if (order.how === 'fit') renderWhen();
+  } else box.innerHTML = '';
+}
+
+// Connect the bank/payment provider here. It should start the payment for
+// `o` and resolve once the provider confirms it; the demo just waits.
+async function pay(o) {
+  await new Promise(r => setTimeout(r, 1200));
+  return { ok: true, ref: 'DEMO-' + Date.now().toString(36).toUpperCase().slice(-6) };
+}
+
+async function submitCheckout(form) {
+  const name = $('#name').value.trim(), phone = normPhone($('#phone').value), email = $('#email').value.trim();
+  const bank = form.querySelector('[name=bank]:checked')?.value;
+  $('#howBox').classList.toggle('missing', !order.how);
+  $('#payBox').classList.toggle('missing', !bank);
+  $('#name').parentElement.classList.toggle('bad', name.length < 2);
+  $('#phone').parentElement.classList.toggle('bad', !phone);
+  $('#email').parentElement.classList.toggle('bad', !/^\S+@\S+\.\S+$/.test(email));
+  if (order.how === 'courier') {
+    $('#addr').parentElement.classList.toggle('bad', $('#addr').value.trim().length < 4);
+    $('#city').parentElement.classList.toggle('bad', $('#city').value.trim().length < 2);
+  }
+  if (order.how === 'fit') $('#when').classList.toggle('missing', !sel.time);
+  const first = form.querySelector('.missing, .bad');
+  if (first) {
+    first.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    (first.querySelector('input:not([type=radio])') || first.querySelector('input, .times button'))?.focus({ preventScroll: true });
+    return;
+  }
+  const p = order.p, total = p.price * order.qty;
+  const how = order.how === 'courier'
+    ? `Pristatymas: ${$('#addr').value.trim()}, ${$('#city').value.trim()} ${$('#zip').value.trim()}`.trim()
+    : order.how === 'pickup' ? `Atsiims: ${loc().name}` : `Montavimas: ${loc().name}, ${dateText(sel.day)}, ${sel.time}`;
+  const btn = form.querySelector('.submit');
+  btn.disabled = true; btn.textContent = 'Jungiamasi prie banko…'; $('#fail').innerHTML = '';
+  const res = await pay({ id: p.id, qty: order.qty, total, bank, name, phone, email });
+  if (!res.ok) { btn.disabled = false; renderSum(); $('#fail').innerHTML = '<div class="fail" role="alert"><p>Apmokėti nepavyko. Bandykite dar kartą.</p></div>'; return; }
+  const title = `Užsakymas ${res.ref}: ${eur(total)}`;
+  const message = [`${name}, ${fmtPhone(phone)}, ${email}`, `${order.qty} × ${brandName(p.brand)} ${p.model} ${order.size} ${p.idx}`,
+    `Prekės kodas ${p.id} · ${eur(p.price)} už vnt.`, how, `Apmokėjimas: ${bank} (demo, nenuskaičiuota)`].join('\n');
+  try { await sendPush(title, message, phone); } catch (e) { /* the order screen still shows; the shop can be called */ }
+  body.innerHTML = `<div class="done" role="status">
+    <h3>Užsakymas priimtas.</h3>
+    <p>Užsakymo numeris ${res.ref}. Paskambinsime numeriu ${fmtPhone(phone)} ir patvirtinsime.</p>
+    <p class="what">${order.qty} × ${esc(brandName(p.brand))} ${esc(p.model)}<br>${order.size} ${esc(p.idx)}<br>${esc(how)}<br>Iš viso ${eur(total)}</p>
+    <p class="demo" style="text-align:left">Demonstracinis apmokėjimas: pinigai nenuskaičiuoti.</p>
+    <button class="btn btn-l" data-close>Gerai</button>
+  </div>`;
+  body.querySelector('[data-close]').focus();
+}
+
 /* ---------- fitting booking ---------- */
 const sheet = $('#sheet'), body = $('#sheetBody');
 let sel, lastFocus;
@@ -587,6 +742,7 @@ function days(l) {
 
 function openBooking(locIndex = 0) {
   sel = { loc: locIndex, day: null, time: '' };
+  $('#sheetTitle').textContent = 'Registracija montavimui';
   lastFocus = document.activeElement;
   body.innerHTML = `<form class="form" id="form" novalidate>
     <fieldset>
@@ -621,6 +777,7 @@ function closeBooking() {
   lastFocus && lastFocus.focus();
 }
 function renderWhen() {
+  if (!$('#when')) return;
   const ds = days(loc());
   if (!sel.day || !ds.some(d => d.getTime() === sel.day.getTime())) { sel.day = ds[0]; sel.time = ''; }
   const ts = sel.day ? slots(loc(), sel.day) : [];
@@ -669,10 +826,11 @@ async function submitBooking(form) {
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-book],[data-close],[data-day],[data-time],[data-sort],[data-more]');
+  const t = e.target.closest('[data-book],[data-buy],[data-close],[data-day],[data-time],[data-sort],[data-more]');
   if (!t) return;
   if (t.matches('[data-close]')) return closeBooking();
   if (t.matches('[data-book]')) return openBooking(t.dataset.loc ? +t.dataset.loc : 0);
+  if (t.matches('[data-buy]')) return openCheckout(t.dataset.buy);
   if (t.matches('[data-sort]')) { sortBy = t.dataset.sort; return renderResults(); }
   if (t.matches('[data-more]')) { showAll = true; return renderResults(); }
   if (t.matches('[data-day]')) {
@@ -686,9 +844,16 @@ document.addEventListener('click', e => {
     document.querySelectorAll('[data-time]').forEach(b => b.setAttribute('aria-pressed', b === t));
   }
 });
-body.addEventListener('change', e => { if (e.target.name === 'loc') { sel.loc = +e.target.value; renderWhen(); } });
+body.addEventListener('change', e => {
+  const t = e.target;
+  if (t.name === 'loc') { sel.loc = +t.value; renderWhen(); }
+  if (t.id === 'coLoc') { sel.loc = +t.value; renderWhen(); }
+  if (t.id === 'coQty') { order.qty = +t.value; renderSum(); }
+  if (t.name === 'how') { order.how = t.value; $('#howBox').classList.remove('missing'); renderHow(); renderSum(); }
+  if (t.name === 'bank') $('#payBox').classList.remove('missing');
+});
 body.addEventListener('input', e => e.target.closest('.field')?.classList.remove('bad'));
-body.addEventListener('submit', e => { e.preventDefault(); submitBooking(e.target); });
+body.addEventListener('submit', e => { e.preventDefault(); e.target.id === 'checkout' ? submitCheckout(e.target) : submitBooking(e.target); });
 document.addEventListener('keydown', e => {
   if (!sheet.classList.contains('open')) return;
   if (e.key === 'Escape') return closeBooking();

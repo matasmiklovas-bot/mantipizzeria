@@ -11,8 +11,15 @@ Dvi naujos svetainės, kiekviena viename `index.html` faile (`public/autoservisa
 
 Kai klientas užsiregistruoja į servisą ar montavimą, arba palieka numerį, kad perskambintumėte,
 telefonas iškart gauna pranešimą. Jame yra kliento vardas, automobilis, paslauga, laikas ir
-mygtukas **„Skambinti“**. Padangų pirkimas vyksta dabartiniame naujospadangosinternetu.lt
-krepšelyje: mygtukas „Pirkti“ įdeda pasirinktą padangą ir kiekį ten.
+mygtukas **„Skambinti“**. Padangų užsakymai ateina taip pat: prekė, kiekis, suma,
+pristatymo būdas ir kontaktai.
+
+## Apmokėjimas
+
+Pirkimas vyksta pačioje svetainėje (krepšelis, pristatymas ar montavimas, kontaktai, banko pasirinkimas).
+Kol bankai neprijungti, apmokėjimas yra demonstracinis: pinigai nenuskaičiuojami, o užsakymas
+siunčiamas parduotuvei. Bankus (pvz. per Paysera ar Montonio) prijunkite funkcijoje `pay()`
+faile `public/autoservisai/naujospadangos/index.html`.
 
 1. Įdiekite nemokamą programėlę **ntfy**: [App Store](https://apps.apple.com/app/ntfy/id1625396347) arba [Google Play](https://play.google.com/store/apps/details?id=io.heckel.ntfy).
 2. Spauskite **+** ir įrašykite kanalo pavadinimą iš lentelės aukščiau.
