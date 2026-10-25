@@ -24,7 +24,7 @@
 <style>
 :root{
   --text:#1d1d1f; --muted:#6e6e73; --line:#d2d2d7; --hair:#e8e8ed; --bg2:#f5f5f7;
-  --link:#0066cc; --brand:#a8c81e; --ok:#1d7f3a; --warn:#b25000; --bad:#d70015;
+  --link:#0066cc; --brand:#a8c81e; --pin:#5f7d00; --ok:#1d7f3a; --warn:#b25000; --bad:#d70015;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue","Inter",Arial,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -125,6 +125,22 @@ h2{font-size:clamp(32px,4.4vw,48px);line-height:1.08;font-weight:600;letter-spac
 .loc .state.on{color:var(--ok)}
 .loc .acts{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:10px;font-size:15px}
 
+/* map */
+.where{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start}
+.where .locs{grid-template-columns:1fr;margin-top:0}
+.map{position:sticky;top:72px;margin:0;border-radius:18px;overflow:hidden;background:#eeeeef;aspect-ratio:1200/1100}
+.map img{display:block;width:100%;height:100%}
+.map figcaption{position:absolute;right:0;bottom:0;padding:2px 8px;font-size:11px;color:var(--muted);background:rgba(255,255,255,.85);border-top-left-radius:8px}
+.map figcaption a{color:inherit;text-decoration:underline}
+.pin{position:absolute;display:flex;align-items:center;gap:6px;transform:translate(-9px,-50%);font-size:12px;font-weight:600;letter-spacing:-.01em;cursor:pointer}
+.pin.left{flex-direction:row-reverse;transform:translate(calc(-100% + 9px),-50%)}
+.pin i{width:18px;height:18px;border-radius:50%;background:var(--pin);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);transition:transform .2s}
+.pin span{background:#fff;color:var(--text);border-radius:7px;padding:3px 8px;box-shadow:0 1px 3px rgba(0,0,0,.18);white-space:nowrap;transition:background .2s,color .2s}
+.pin:hover i,.pin.on i{transform:scale(1.25)}
+.pin.on span{background:var(--text);color:#fff}
+.loc{transition:background .3s}
+.loc.on h3{color:var(--pin)}
+
 footer{border-top:1px solid var(--line);background:var(--bg2);font-size:12px;color:var(--muted);padding:28px 0 calc(28px + env(safe-area-inset-bottom))}
 footer .top{padding-bottom:14px;line-height:1.7}
 footer .bottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding-top:14px;border-top:1px solid var(--line)}
@@ -185,6 +201,8 @@ footer a:hover{text-decoration:underline}
 }
 @media (max-width:700px){
   .nav nav{display:none}
+  .where{grid-template-columns:1fr;gap:8px}
+  .map{position:relative;top:0}
   .list,.locs{grid-template-columns:1fr}
   .facts{grid-template-columns:auto auto;row-gap:8px}
   .facts li:nth-child(3){border-left:0}
@@ -218,11 +236,11 @@ footer a:hover{text-decoration:underline}
   <div class="wrap">
     <a class="logo" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h13L11 8l10 10-3 3L8 11l-5 5z" fill="currentColor"/></svg>NaujosPadangosInternetu.lt</a>
     <nav aria-label="Pagrindinis"><a href="#paieska">Padangos</a><a href="#montavimas">Montavimas</a><a href="#kontaktai">Kontaktai</a></nav>
-    <a class="tel" href="tel:+37067021777">+370 670 21777</a>
+    <a class="tel" href="tel:+37067021777">+370&nbsp;670&nbsp;21777</a>
   </div>
 </header>
 
-<noscript><p style="padding:12px 22px;background:#fff8e5;font-size:15px;text-align:center">Registracijai reikia įjungti JavaScript. Skambinkite <a href="tel:+37067021777" style="color:#0066cc">+370 670 21777</a>.</p></noscript>
+<noscript><p style="padding:12px 22px;background:#fff8e5;font-size:15px;text-align:center">Registracijai reikia įjungti JavaScript. Skambinkite <a href="tel:+37067021777" style="color:#0066cc">+370&nbsp;670&nbsp;21777</a>.</p></noscript>
 <main>
   <section class="hero" id="paieska">
     <div class="wrap">
@@ -267,8 +285,11 @@ footer a:hover{text-decoration:underline}
   <section id="kontaktai">
     <div class="wrap">
       <h2>Kontaktai</h2>
-      <p class="lead">Atsiėmimas ir montavimas penkiuose servisuose Vilniuje. Telefonas <a class="link" href="tel:+37067021777">+370 670 21777</a>.</p>
-      <div class="locs" id="locs"></div>
+      <p class="lead">Atsiėmimas ir montavimas penkiuose servisuose Vilniuje. Telefonas <a class="link" href="tel:+37067021777">+370&nbsp;670&nbsp;21777</a>.</p>
+      <div class="where" style="margin-top:36px">
+        <figure class="map" id="map"><img src="map.jpg" alt="Servisų vietos Vilniaus žemėlapyje" width="600" height="550"><figcaption>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> bendraautoriai</figcaption></figure>
+        <div class="locs" id="locs"></div>
+      </div>
     </div>
   </section>
 </main>
@@ -276,7 +297,7 @@ footer a:hover{text-decoration:underline}
 <footer>
   <div class="wrap">
     <p class="top">Autoservisas: <a class="link" href="https://www.megamesta.lt/">megamesta.lt</a></p>
-    <div class="bottom"><span>© <span id="year">2026</span> NaujosPadangosInternetu.lt</span><span><a href="tel:+37067021777">+370 670 21777</a> · <a href="mailto:info@naujospadangosinternetu.lt">info@naujospadangosinternetu.lt</a></span></div>
+    <div class="bottom"><span>© <span id="year">2026</span> NaujosPadangosInternetu.lt</span><span><a href="tel:+37067021777">+370&nbsp;670&nbsp;21777</a> · <a href="mailto:info@naujospadangosinternetu.lt">info@naujospadangosinternetu.lt</a></span></div>
   </div>
 </footer>
 
@@ -516,6 +537,24 @@ const renderLocs = () => $('#locs').innerHTML = LOCATIONS.map((l, i) => `<div cl
   </div>`).join('');
 renderLocs();
 setInterval(renderLocs, 60000);
+
+// Pin positions on map.jpg (percent of width/height), from OpenStreetMap coordinates.
+const PINS = [[45.72, 16.23, 'right'], [37.79, 34.67, 'left'], [62.21, 63.95, 'right'], [55.93, 69.31, 'left'], [41.33, 83.77, 'right']];
+const map = $('#map');
+map.insertAdjacentHTML('beforeend', LOCATIONS.map((l, i) => `<button class="pin ${PINS[i][2]}" data-pin="${i}" style="left:${PINS[i][0]}%;top:${PINS[i][1]}%" aria-label="${l.name}"><i></i><span>${l.name.replace(/ \S+$/, '')}</span></button>`).join(''));
+function highlight(i, on) {
+  document.querySelectorAll('[data-pin]').forEach(p => p.classList.toggle('on', on && +p.dataset.pin === i));
+  document.querySelectorAll('.loc').forEach((l, j) => l.classList.toggle('on', on && j === i));
+}
+map.addEventListener('click', e => {
+  const p = e.target.closest('[data-pin]'); if (!p) return;
+  const i = +p.dataset.pin;
+  highlight(i, true);
+  if (matchMedia('(max-width:700px)').matches) document.querySelectorAll('.loc')[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+$('#locs').addEventListener('mouseover', e => { const l = e.target.closest('.loc'); if (l) highlight([...l.parentNode.children].indexOf(l), true); });
+$('#locs').addEventListener('mouseleave', () => highlight(-1, false));
+
 
 /* ---------- fitting booking ---------- */
 const sheet = $('#sheet'), body = $('#sheetBody');

@@ -24,7 +24,7 @@
 <style>
 :root{
   --text:#1d1d1f; --muted:#6e6e73; --line:#d2d2d7; --hair:#e8e8ed; --bg2:#f5f5f7;
-  --link:#0066cc; --brand:#e30613; --brand-dark:#c00510; --ok:#1d7f3a; --bad:#d70015;
+  --link:#0066cc; --brand:#e30613; --pin:#e30613; --brand-dark:#c00510; --ok:#1d7f3a; --bad:#d70015;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue","Inter",Arial,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -113,6 +113,22 @@ section{padding:96px 0}
 .loc li a{font-variant-numeric:tabular-nums}
 .loc .acts{display:flex;gap:24px;margin-top:14px;font-size:15px}
 
+/* map */
+.where{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start}
+.where .locs{grid-template-columns:1fr;margin-top:0}
+.map{position:sticky;top:72px;margin:0;border-radius:18px;overflow:hidden;background:#eeeeef;aspect-ratio:1200/1100}
+.map img{display:block;width:100%;height:100%}
+.map figcaption{position:absolute;right:0;bottom:0;padding:2px 8px;font-size:11px;color:var(--muted);background:rgba(255,255,255,.85);border-top-left-radius:8px}
+.map figcaption a{color:inherit;text-decoration:underline}
+.pin{position:absolute;display:flex;align-items:center;gap:6px;transform:translate(-9px,-50%);font-size:12px;font-weight:600;letter-spacing:-.01em;cursor:pointer}
+.pin.left{flex-direction:row-reverse;transform:translate(calc(-100% + 9px),-50%)}
+.pin i{width:18px;height:18px;border-radius:50%;background:var(--pin);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);transition:transform .2s}
+.pin span{background:#fff;color:var(--text);border-radius:7px;padding:3px 8px;box-shadow:0 1px 3px rgba(0,0,0,.18);white-space:nowrap;transition:background .2s,color .2s}
+.pin:hover i,.pin.on i{transform:scale(1.25)}
+.pin.on span{background:var(--text);color:#fff}
+.loc{transition:background .3s}
+.loc.on h3{color:var(--pin)}
+
 /* footer */
 footer{border-top:1px solid var(--line);background:var(--bg2);font-size:12px;color:var(--muted);padding:28px 0 calc(28px + env(safe-area-inset-bottom))}
 footer .top{padding-bottom:14px;line-height:1.7}
@@ -180,6 +196,8 @@ footer a:hover{text-decoration:underline}
 }
 @media (max-width:700px){
   .nav nav{display:none}
+  .where{grid-template-columns:1fr;gap:8px}
+  .map{position:relative;top:0}
   .tiles{grid-template-columns:1fr}
   .tile{min-height:420px}
   .locs{grid-template-columns:1fr}
@@ -213,7 +231,7 @@ footer a:hover{text-decoration:underline}
   </div>
 </header>
 
-<noscript><p style="padding:12px 22px;background:#fff8e5;font-size:15px;text-align:center">Registracijai reikia įjungti JavaScript. Skambinkite <a href="tel:+37060077868" style="color:#0066cc">+370 600 77868</a>.</p></noscript>
+<noscript><p style="padding:12px 22px;background:#fff8e5;font-size:15px;text-align:center">Registracijai reikia įjungti JavaScript. Skambinkite <a href="tel:+37060077868" style="color:#0066cc">+370&nbsp;600&nbsp;77868</a>.</p></noscript>
 <main>
   <section class="hero">
     <div class="wrap">
@@ -221,7 +239,7 @@ footer a:hover{text-decoration:underline}
       <p class="sub">Bet kuriuo paros metu. Meistras paskambins ir patvirtins laiką.</p>
       <div class="cta">
         <button class="btn btn-l" data-book>Registruotis</button>
-        <a class="link chev" href="tel:+37060077868">Skambinti +370 600 77868</a>
+        <a class="link chev" href="tel:+37060077868">Skambinti +370&nbsp;600&nbsp;77868</a>
       </div>
     </div>
   </section>
@@ -285,7 +303,10 @@ footer a:hover{text-decoration:underline}
         <h2 class="sec-h">Servisai</h2>
         <p class="lead">Skambinkite tiesiai meistrui arba užsiregistruokite internetu.</p>
       </div>
-      <div class="locs" id="locs"></div>
+      <div class="where">
+        <figure class="map" id="map"><img src="map.jpg" alt="Servisų vietos Vilniaus žemėlapyje" width="600" height="550"><figcaption>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> bendraautoriai</figcaption></figure>
+        <div class="locs" id="locs"></div>
+      </div>
     </div>
   </section>
 </main>
@@ -293,7 +314,7 @@ footer a:hover{text-decoration:underline}
 <footer>
   <div class="wrap">
     <p class="top">Įmonėms sudarome aptarnavimo sutartis: <a class="link" href="mailto:info@megamesta.lt">info@megamesta.lt</a>. Padangos internetu: <a class="link" href="https://www.naujospadangosinternetu.lt/">naujospadangosinternetu.lt</a></p>
-    <div class="row"><span>© <span id="year">2026</span> UAB „Megamesta“</span><span><a href="tel:+37060077868">+370 600 77868</a> · <a href="mailto:info@megamesta.lt">info@megamesta.lt</a></span></div>
+    <div class="row"><span>© <span id="year">2026</span> UAB „Megamesta“</span><span><a href="tel:+37060077868">+370&nbsp;600&nbsp;77868</a> · <a href="mailto:info@megamesta.lt">info@megamesta.lt</a></span></div>
   </div>
 </footer>
 
@@ -388,6 +409,24 @@ function renderLocs() {
 }
 renderLocs();
 setInterval(renderLocs, 60000);
+
+// Pin positions on map.jpg (percent of width/height), from OpenStreetMap coordinates.
+const PINS = [[45.72, 16.23, 'right'], [37.79, 34.67, 'left'], [62.21, 63.95, 'right'], [55.93, 69.31, 'left'], [41.33, 83.77, 'right']];
+const map = $('#map');
+map.insertAdjacentHTML('beforeend', LOCATIONS.map((l, i) => `<button class="pin ${PINS[i][2]}" data-pin="${i}" style="left:${PINS[i][0]}%;top:${PINS[i][1]}%" aria-label="${l.name}"><i></i><span>${l.name.replace(/ \S+$/, '')}</span></button>`).join(''));
+function highlight(i, on) {
+  document.querySelectorAll('[data-pin]').forEach(p => p.classList.toggle('on', on && +p.dataset.pin === i));
+  document.querySelectorAll('.loc').forEach((l, j) => l.classList.toggle('on', on && j === i));
+}
+map.addEventListener('click', e => {
+  const p = e.target.closest('[data-pin]'); if (!p) return;
+  const i = +p.dataset.pin;
+  highlight(i, true);
+  if (matchMedia('(max-width:700px)').matches) document.querySelectorAll('.loc')[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+$('#locs').addEventListener('mouseover', e => { const l = e.target.closest('.loc'); if (l) highlight([...l.parentNode.children].indexOf(l), true); });
+$('#locs').addEventListener('mouseleave', () => highlight(-1, false));
+
 
 /* ---------- booking ---------- */
 const sheet = $('#sheet'), body = $('#sheetBody');

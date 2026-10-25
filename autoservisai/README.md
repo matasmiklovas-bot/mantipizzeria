@@ -47,3 +47,8 @@ python3 autoservisai/naujospadangos/atnaujinti_padangas.py
 Skriptas surenka kainas iš naujospadangosinternetu.lt ir įrašo jas į svetainės failą
 (trunka apie pusvalandį). Ieškant dydžio, kurio nėra sąraše, klientui siūloma palikti
 numerį. Parduotuvė gauna pranešimą ir paskambina su pasiūlymu.
+
+## Žemėlapis
+
+`map.jpg` sukurtas iš OpenStreetMap duomenų (`python3 autoservisai/zemelapis.py`). Pasikeitus adresams,
+paleiskite skriptą iš naujo ir įrašykite atspausdintas taškų koordinates į `PINS` abiejuose `index.html`.
