@@ -75,6 +75,11 @@ def nice(word):
     return word.capitalize() if word.isupper() and word.isalpha() and len(word) > 2 else word
 
 
+def grade(s):
+    s = (s or '').strip().upper()
+    return s if re.fullmatch(r'[A-G]', s) else ''
+
+
 def clean(item):
     title = item['title']
     brand = next((b for b in BRANDS if title.lower().startswith(b.lower() + ' ')), title.split()[0])
@@ -88,7 +93,7 @@ def clean(item):
     model = ' '.join(nice(w) for w in words).strip(' -') or SIZE_RE.sub('', item['alt']).strip()
     days = re.findall(r'\d+', item['days'])
     days = '–'.join(days[:2]) if days else '1–3'
-    return [item['id'], brand, model, idx, item['price'], item['fuel'][:1], item['wet'][:1], item['noise'], item['stock'] or 0, days]
+    return [item['id'], brand, model, idx, item['price'], grade(item['fuel']), grade(item['wet']), item['noise'], item['stock'] or 0, days]
 
 
 def build(raw):
