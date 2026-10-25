@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
         destination: "https://www.mantipizzeria.lt/:path*",
         permanent: true,
       },
+      {
+        // Short links for the car-service pages in public/autoservisai; they use
+        // relative asset paths, so redirect rather than rewrite.
+        source: "/autoservisai/:site(megamesta|naujospadangos)",
+        destination: "/autoservisai/:site/index.html",
+        permanent: false,
+      },
     ];
   },
 };
