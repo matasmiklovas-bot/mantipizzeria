@@ -42,7 +42,8 @@ def parse_list(page):
             det=' '.join((g(r'class="details">\s*([^<]+)') or '').split()), price=float(price),
             fuel=(g(r'class="fuel"><i>([^<]*)') or '').upper(), wet=(g(r'class="rain"><i>([^<]*)') or '').upper(),
             noise=int(noise) if noise and noise.isdigit() else None, stock=int(stock) if stock else None,
-            days=' '.join((g(r'</i>\s*([^<]*?d\.d\.?)\s*</span>') or '').split())))
+            days=' '.join((g(r'</i>\s*([^<]*?d\.d\.?)\s*</span>') or '').split()),
+            img=g(r'<img[^>]*src="([^"]+)"') or ''))
     return out
 
 
@@ -93,7 +94,8 @@ def clean(item):
     model = ' '.join(nice(w) for w in words).strip(' -') or SIZE_RE.sub('', item['alt']).strip()
     days = re.findall(r'\d+', item['days'])
     days = '–'.join(days[:2]) if days else '1–3'
-    return [item['id'], brand, model, idx, item['price'], grade(item['fuel']), grade(item['wet']), item['noise'], item['stock'] or 0, days]
+    img = re.sub(r'^https?://www\.naujospadangosinternetu\.lt/', '', item.get('img', ''))
+    return [item['id'], brand, model, idx, item['price'], grade(item['fuel']), grade(item['wet']), item['noise'], item['stock'] or 0, days, img]
 
 
 def build(raw):

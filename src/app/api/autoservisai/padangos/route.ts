@@ -10,7 +10,7 @@ const BRANDS = ["BF Goodrich", "Road Rider", "Ling Long", "GT Radial", "King Mei
 
 const CORS = { "Access-Control-Allow-Origin": "*" };
 
-type Row = [id: string, brand: string, model: string, idx: string, price: number, fuel: string, wet: string, noise: number | null, stock: number, days: string];
+type Row = [id: string, brand: string, model: string, idx: string, price: number, fuel: string, wet: string, noise: number | null, stock: number, days: string, img: string];
 
 const decode = (s: string) =>
   s.replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
@@ -57,6 +57,7 @@ function toRow(li: string): Row | null {
     noise ? Number(noise) : null,
     Number(get(/Sandėlyje yra (\d+)/) ?? 0),
     days ? days.slice(0, 2).join("–") : "1–3",
+    (get(/<img[^>]*src="([^"]+)"/) ?? "").replace(/^https?:\/\/www\.naujospadangosinternetu\.lt\//, ""),
   ];
 }
 

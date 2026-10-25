@@ -9,8 +9,10 @@ Dvi naujos svetainės, kiekviena viename `index.html` faile (`public/autoservisa
 
 ## Pranešimai į telefoną (2 minutės)
 
-Kai klientas užsiregistruoja ar užsako, serviso telefonas iškart gauna pranešimą.
-Jame yra kliento vardas, automobilis, paslauga, laikas ir mygtukas **„Skambinti“**.
+Kai klientas užsiregistruoja į servisą ar montavimą, arba palieka numerį, kad perskambintumėte,
+telefonas iškart gauna pranešimą. Jame yra kliento vardas, automobilis, paslauga, laikas ir
+mygtukas **„Skambinti“**. Padangų pirkimas vyksta dabartiniame naujospadangosinternetu.lt
+krepšelyje: mygtukas „Pirkti“ įdeda pasirinktą padangą ir kiekį ten.
 
 1. Įdiekite nemokamą programėlę **ntfy**: [App Store](https://apps.apple.com/app/ntfy/id1625396347) arba [Google Play](https://play.google.com/store/apps/details?id=io.heckel.ntfy).
 2. Spauskite **+** ir įrašykite kanalo pavadinimą iš lentelės aukščiau.
