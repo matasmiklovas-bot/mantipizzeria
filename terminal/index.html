@@ -246,6 +246,25 @@
   body.zen #exitZen { opacity: .7; pointer-events: auto; } body.zen #exitZen:hover { opacity: 1; }
   .fs-on { display: none; } body.fs .fs-on, body.zen .fs-on { display: block; } body.fs .fs-off, body.zen .fs-off { display: none; }
 
+  /* svetainės kortelė pokalbyje ir peržiūra */
+  .site-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .site { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border: 1px solid var(--border2); background: var(--surface); border-radius: 12px; padding: 12px 14px; }
+  .site-ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: 0 0 auto; }
+  .site-ic svg { width: 18px; height: 18px; }
+  .site.building .site-ic svg { animation: twirl 2.4s linear infinite; }
+  .site-m { flex: 1; min-width: 0; }
+  .site-t { color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .site-s { color: var(--muted); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+  .site-s .warn { color: var(--warn); }
+  .sbtn { border: 0; border-radius: 9px; padding: 9px 18px; background: var(--accent); color: #0b0b0c; font-weight: 700; cursor: pointer; transition: transform .2s var(--spring), filter .2s; }
+  .sbtn:hover { filter: brightness(1.08); } .sbtn:active { transform: scale(.95); }
+  #viewer { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; background: var(--bg);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  #viewer[hidden] { display: none; }
+  .vbar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; background: var(--surface); }
+  .vbar b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  #vframe { flex: 1; width: 100%; border: 0; background: #fff; }
+
   #toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 120px); transform: translate(-50%, 12px); z-index: 80;
     background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 8px 14px; font-size: 12.5px;
     opacity: 0; transition: opacity .25s, transform .3s var(--spring); pointer-events: none; box-shadow: 0 12px 34px rgba(0,0,0,.5); max-width: 90vw; text-align: center; }
@@ -324,6 +343,16 @@
     </div>
   </div>
 
+  <div id="viewer" role="dialog" aria-modal="true" aria-label="Website preview" hidden>
+    <div class="vbar">
+      <span class="sq"></span><b id="vtitle">Website</b><span class="spacer"></span>
+      <button class="chip" id="vlink" type="button">Copy link</button>
+      <button class="chip icon-btn" id="vfull" type="button" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4"/></svg></button>
+      <button class="chip" id="vclose" type="button">Close</button>
+    </div>
+    <iframe id="vframe" title="Website preview" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox"></iframe>
+  </div>
+
   <div id="toast" role="status"></div>
   <canvas id="fx"></canvas>
 
@@ -362,6 +391,7 @@ Rules:
 - Links: when a link helps, write the full https:// URL or [label](https://...). They are clickable here. Only give URLs you are confident exist; prefer official sites and docs.
 - You cannot open links, browse the web, or see files. If the user sends a URL, say plainly that you can't open it, then help with what the URL itself shows or what they paste. Never invent what a page says.
 - The conversation is saved between visits, so earlier messages may be from previous days.
+- When the user asks for a website, web page, game, app, tool, calculator or anything visual or interactive, reply with one short sentence and then ONE complete, self-contained HTML file in a single \`\`\`html block, with nothing after it. Inline all CSS and JS, keep it under 400 lines, and make it look polished on a phone and an iPad. The app turns it into a link the user opens with one tap, so never explain how to run or save it. Inside it, external images, fetch and other websites are blocked: draw with CSS, SVG, canvas or emoji. Scripts may only load from https://cdnjs.cloudflare.com and fonts only from Google Fonts. localStorage is unavailable there, so keep state in memory. Never use Python for these; write Python only when the user asks for Python.
 - Never pretend to hack anything or run commands. Refuse real hacking requests.`;
 
   // ================= pagalbinės =================
@@ -467,6 +497,23 @@ Rules:
   function codeBlock(body, lang) {
     return `<div class="code"><div class="code-h"><span>${esc(lang || 'code')}</span><button class="link" type="button" data-copy="code">copy</button></div><pre><code>${esc(body)}</code></pre></div>`;
   }
+  // HTML atsakymas virsta svetaine: kortelė su „Open“ ir nuoroda vietoj kodo sienos
+  const siteSrc = new Map();   // id -> { src, title }
+  const isHtml = (lang, body) => /^(html?|xhtml)$/i.test(lang) || (!lang && /^\s*(<!doctype html|<html)/i.test(body));
+  function siteId(src) { let h = 2166136261; for (let i = 0; i < src.length; i++) { h ^= src.charCodeAt(i); h = Math.imul(h, 16777619); } return 's-' + (h >>> 0).toString(36) + src.length.toString(36); }
+  const siteTitle = src => { const m = src.match(/<title[^>]*>([^<]{1,80})<\/title>/i); return m ? m[1].trim().replace(/&amp;/g, '&') || 'Website' : 'Website'; };
+  const siteUrl = id => ARTIFACT_URL + '#' + id;
+  const GLOBE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><path d="M1.8 8h12.4M8 1.8c1.9 2 2.8 4 2.8 6.2S9.9 12.2 8 14.2C6.1 12.2 5.2 10.2 5.2 8S6.1 3.8 8 1.8z"/></svg>';
+  function siteCard(src, closed, live) {
+    const lines = src.split('\n').length;
+    if (!closed && live) return `<div class="site-wrap"><div class="site building"><div class="site-ic">${GLOBE}</div><div class="site-m"><div class="site-t">Building website…</div><div class="site-s">${lines} lines so far</div></div></div></div>`;
+    const id = siteId(src), title = siteTitle(src), kb = Math.max(1, Math.round(bytes(src) / 1024));
+    siteSrc.set(id, { src, title });
+    const link = Mem.mode === 'cloud' ? `<a href="${esc(siteUrl(id))}" target="_blank" rel="noopener noreferrer">link ↗</a><button class="link" type="button" data-url="${esc(siteUrl(id))}">copy link</button>` : '';
+    return `<div class="site-wrap"><div class="site" data-sid="${id}"><div class="site-ic">${GLOBE}</div>` +
+      `<div class="site-m"><div class="site-t">${esc(title)}</div><div class="site-s"><span>website · ${kb} KB</span>${closed ? '' : '<span class="warn">cut off · ask for a shorter version</span>'}${link}<button class="link" type="button" data-site="code">code</button></div></div>` +
+      `<button class="sbtn" type="button" data-site="open">Open</button></div><div class="site-code" hidden>${codeBlock(src, 'html')}</div></div>`;
+  }
   function table(rows) {
     const cells = r => r.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
     const body = rows.filter(r => !/^\s*\|?\s*:?-{2,}/.test(r)).map(cells);
@@ -474,7 +521,7 @@ Rules:
     const [head, ...rest] = body;
     return `<div class="tbl"><table><thead><tr>${head.map(c => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${rest.map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   }
-  function md(src) {
+  function md(src, live) {
     const L = String(src).replace(/\r\n?/g, '\n').split('\n');
     let html = '', para = [], i = 0, m;
     const flush = () => { if (para.length) { html += `<p>${para.map(inline).join('<br>')}</p>`; para = []; } };
@@ -483,7 +530,9 @@ Rules:
       if ((m = l.match(/^\s*(```|~~~)\s*([\w+#.-]*)\s*$/))) {
         flush(); const fence = m[1], body = []; i++;
         while (i < L.length && !new RegExp('^\\s*' + fence + '\\s*$').test(L[i])) body.push(L[i++]);
-        i++; html += codeBlock(body.join('\n'), m[2]); continue;
+        const closed = i < L.length; i++;
+        const code = body.join('\n');
+        html += isHtml(m[2], code) && code.trim() ? siteCard(code, closed, live) : codeBlock(code, m[2]); continue;
       }
       if (/^\s*$/.test(l)) { flush(); i++; continue; }
       if ((m = l.match(/^\s{0,3}(#{1,6})\s+(.*?)\s*#*\s*$/))) { flush(); html += `<div class="h">${inline(m[2])}</div>`; i++; continue; }
@@ -623,7 +672,7 @@ Rules:
     line(`<div class="welcome">${returning ? 'Welcome back' : 'Hello'}${who.name ? `, <b>${esc(who.name)}</b>` : ''}.</div><div class="sub">Type a message, or / for commands.</div>`);
     if (!returning) {
       const row = line('', 'sugs');
-      [['?', 'What can you do?'], ['→', 'Explain black holes in 3 sentences'], ['→', 'Write a tiny Python game']].forEach(([k, q], i) => {
+      [['?', 'What can you do?'], ['→', 'Explain black holes in 3 sentences'], ['→', 'Make a small game I can play']].forEach(([k, q], i) => {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'sug'; b.style.animationDelay = (.35 + i * .07) + 's';
         b.innerHTML = `<span class="k">${k}</span>${esc(q)}`;
         b.onclick = () => { if (busy) return; input.value = q; submit(); };
@@ -635,7 +684,7 @@ Rules:
   function renderTurn(msg, still) {
     if (msg.r === 'u') line(`<span class="arrow">❯</span><span>${linkify(msg.c)}</span>`, 'you' + (still ? ' still' : ''));
     else {
-      const a = line(`<span class="bullet">●</span><div class="txt md">${md(msg.c)}</div>`, 'ans' + (still ? ' still' : ''));
+      const a = line(`<span class="bullet">●</span><div class="txt md">${md(msg.c)}</div>`, 'ans' + (still ? ' still' : '')); ensureSites(a);
       metaLine(msg.c, msg.m, null, msg.t, a.querySelector('.txt'), still);
     }
   }
@@ -685,6 +734,7 @@ Rules:
   document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeOverlay(o.id); }));
   document.addEventListener('keydown', e => {
     if (e.defaultPrevented) return;
+    if (!$('viewer').hidden) { if (e.key === 'Escape' && !isNativeFS()) closeSite(); return; }
     const open = document.querySelector('.overlay.open');
     if (open) {
       if (e.key === 'Escape') closeOverlay(open.id);
@@ -836,6 +886,59 @@ Rules:
       if (!left && document.visibilityState === 'visible' && document.hasFocus()) toast('Didn’t open? Copy the link and paste it in your browser.', { label: 'Copy link', run: b => copyText(url, b, a) });
     }, 1600);
   });
+  // svetainės: išsaugom bendroje atmintyje, kad nuoroda veiktų ir kitame skirtuke ar kitam žmogui
+  const ensured = new Set();
+  function ensureSites(root) {
+    if (Mem.mode !== 'cloud') return;
+    root.querySelectorAll('.site[data-sid]').forEach(el => {
+      const id = el.dataset.sid, s = siteSrc.get(id);
+      if (!s || ensured.has(id)) return; ensured.add(id);
+      if (bytes(s.src) > 240000) return;
+      const ref = Mem.db.doc('sites/' + id);
+      ref.get().then(d => d.exists ? null : ref.set({ html: s.src, title: s.title, created: Date.now() }))
+        .catch(() => { ensured.delete(id); });
+    });
+  }
+  // izoliuotame iframe localStorage meta klaidą; žaidimai dažnai saugo rekordus, todėl duodam atmintinį pakaitalą
+  const STORAGE_SHIM = '<script>(function(){try{window.localStorage.length}catch(e){var m=function(){var d={};return{getItem:function(k){return Object.prototype.hasOwnProperty.call(d,k)?d[k]:null},setItem:function(k,v){d[k]=String(v)},removeItem:function(k){delete d[k]},clear:function(){d={}},key:function(i){return Object.keys(d)[i]||null},get length(){return Object.keys(d).length}}};try{Object.defineProperty(window,"localStorage",{value:m(),configurable:true});Object.defineProperty(window,"sessionStorage",{value:m(),configurable:true})}catch(_){}}})()<\/script>';
+  function withShim(src) {
+    if (/<head[^>]*>/i.test(src)) return src.replace(/<head[^>]*>/i, m => m + STORAGE_SHIM);
+    if (/<html[^>]*>/i.test(src)) return src.replace(/<html[^>]*>/i, m => m + STORAGE_SHIM);
+    if (/<!doctype[^>]*>/i.test(src)) return src.replace(/<!doctype[^>]*>/i, m => m + STORAGE_SHIM);
+    return STORAGE_SHIM + src;
+  }
+  let viewing = null;
+  function openSite(id, src, title) {
+    viewing = { id, title };
+    if (document.activeElement === input) input.blur();
+    $('vtitle').textContent = title; $('vframe').srcdoc = withShim(src); $('viewer').hidden = false;
+    $('vlink').hidden = Mem.mode !== 'cloud';
+  }
+  function closeSite() {
+    if (isNativeFS() || wantFull) exitFull();
+    $('viewer').hidden = true; $('vframe').srcdoc = ''; viewing = null;
+    if (/^#s-/.test(location.hash)) { try { window.history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+    focusIn();
+  }
+  async function openFromHash() {
+    const m = location.hash.match(/^#(s-[a-z0-9]+)$/); if (!m) return;
+    const id = m[1], local = siteSrc.get(id);
+    if (local) return openSite(id, local.src, local.title);
+    if (Mem.mode === 'cloud') {
+      try { const d = await Mem.db.doc('sites/' + id).get(); if (d.exists) { const v = d.data(); siteSrc.set(id, { src: v.html, title: v.title || 'Website' }); return openSite(id, v.html, v.title || 'Website'); } } catch (e) {}
+    }
+    toast('This website link doesn’t exist or isn’t shared with you.');
+  }
+  addEventListener('hashchange', openFromHash);
+  $('vclose').onclick = closeSite;
+  $('vfull').onclick = toggleFull;
+  $('vlink').onclick = () => { if (viewing) copyText(siteUrl(viewing.id), $('vlink')); };
+  log.addEventListener('click', e => {
+    const b = e.target.closest('button[data-site]'); if (!b) return;
+    const wrap = b.closest('.site-wrap'), card = wrap.querySelector('.site');
+    if (b.dataset.site === 'code') { const c = wrap.querySelector('.site-code'); c.hidden = !c.hidden; b.textContent = c.hidden ? 'code' : 'hide code'; return; }
+    const s = siteSrc.get(card.dataset.sid); if (s) openSite(card.dataset.sid, s.src, s.title);
+  });
   // kopijavimo mygtukai kodo blokuose ir nuorodų kortelėse
   log.addEventListener('click', e => {
     const b = e.target.closest('button[data-copy], button[data-url]'); if (!b) return;
@@ -912,11 +1015,12 @@ Rules:
     const placeCursor = () => {
       let el = txt.lastElementChild;
       if (el && el.classList.contains('list')) el = el.lastElementChild && el.lastElementChild.querySelector('.lc');
+      else if (el && el.classList.contains('site-wrap')) el = null;
       else if (el && el.classList.contains('code')) el = el.querySelector('code');
       else if (el && !/^(P|DIV)$/.test(el.tagName) || (el && el.classList.contains('tbl'))) el = null;
       (el || txt).appendChild(cur);
     };
-    const paint = () => { raf = 0; const stick = nearBottom(); txt.innerHTML = md(pending); placeCursor(); if (stick) scroll(); else jump.classList.add('show'); };
+    const paint = () => { raf = 0; const stick = nearBottom(); txt.innerHTML = md(pending, true); placeCursor(); if (stick) scroll(); else jump.classList.add('show'); };
     try {
       const res = await sample(msgs, {
         cache: false, signal: controller.signal, model: m.id, modelTier: m.tier, effort: settings.effort,
@@ -928,7 +1032,7 @@ Rules:
       });
       start(); cancelAnimationFrame(raf);
       const finalText = res.text || '';
-      const stick = nearBottom(); txt.innerHTML = md(finalText); if (stick) scroll();
+      const stick = nearBottom(); txt.innerHTML = md(finalText); if (stick) scroll(); ensureSites(txt);
       const used = appliedName(res, m), secs = ((performance.now() - t0) / 1000).toFixed(1), t = Date.now();
       history.push({ r: 'a', c: finalText, m: used, t });
       metaLine(finalText, used + (res.truncated ? ' · truncated' : ''), secs, t, txt);
@@ -1057,6 +1161,7 @@ Rules:
     await Promise.race([ready, sleep(1500)]);
     wait.remove();
     welcome(); restore(); welcomed = true;
+    await ready; openFromHash();
     input.disabled = false; focusIn();
   })();
 })();
