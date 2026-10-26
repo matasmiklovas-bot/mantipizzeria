@@ -29,12 +29,14 @@
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
-    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 14.5px; line-height: 1.65;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 14.5px; line-height: 1.65;
     -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; }
   body { display: flex; flex-direction: column; overflow: hidden;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   button { font: inherit; color: inherit; }
   ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+  :focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent); outline-offset: 2px; }
+  #in:focus-visible { outline: 0; }
 
   /* fonas: vos matomas taškų tinklelis + švelnus švytėjimas viršuje */
   .bgfx { position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -53,9 +55,9 @@
   .dots { display: flex; gap: 7px; }
   .dot { width: 11px; height: 11px; border-radius: 50%; background: #2a2a2f; transition: background .25s; }
   .dots:hover .dot:nth-child(1) { background: #ff5f57; } .dots:hover .dot:nth-child(2) { background: #febc2e; } .dots:hover .dot:nth-child(3) { background: #28c840; }
-  .brand { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+  .brand { display: flex; align-items: center; gap: 8px; color: var(--muted); min-width: 0; }
   .brand b { color: var(--text); font-weight: 600; }
-  .sq { width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transition: background .5s; }
+  .sq { width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transition: background .5s; flex: 0 0 auto; }
   .spacer { flex: 1; }
   .chip { display: inline-flex; align-items: center; gap: 8px; height: 32px; border: 1px solid var(--border); background: transparent;
     padding: 0 12px; border-radius: 9px; font-size: 12.5px; cursor: pointer; white-space: nowrap; color: var(--body);
@@ -67,7 +69,7 @@
   .icon-btn svg { width: 14px; height: 14px; }
 
   /* ================= ekranas ================= */
-  #screen { position: relative; z-index: 3; flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #screen { position: relative; z-index: 3; flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   #screen::-webkit-scrollbar { width: 6px; } #screen::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   #log { max-width: 880px; margin: 0 auto; padding: 28px 24px 16px; }
   .line { margin: 0; white-space: pre-wrap; word-break: break-word; animation: rise .4s var(--ease) both; }
@@ -75,24 +77,52 @@
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   .muted { color: var(--muted); } .faint { color: var(--faint); } .b { font-weight: 700; } .acc { color: var(--accent); }
   .ok { color: var(--ok); } .warn { color: var(--warn); } .err { color: var(--err); }
+  .small { font-size: 12px; }
 
-  .you { margin-top: 22px; display: flex; gap: 12px; color: var(--text); }
-  .you .arrow { color: var(--accent); flex: 0 0 auto; }
+  .you { margin-top: 22px; display: flex; gap: 12px; color: var(--text); font-weight: 500; }
+  .you .arrow { color: var(--accent); flex: 0 0 auto; font-weight: 400; }
+  .you > span:last-child { min-width: 0; }
   .ans { display: flex; gap: 12px; margin: 10px 0 2px; color: var(--body); }
   .ans .bullet { color: var(--accent); flex: 0 0 auto; font-size: 11px; line-height: 1.65rem; transform: translateY(1px); }
-  .ans .txt { min-width: 0; flex: 1; }
+  .ans .txt { min-width: 0; flex: 1; white-space: normal; }
   .ans code { background: var(--surface2); border: 1px solid var(--border); padding: 0 5px; border-radius: 5px; color: var(--accent-light); font-size: .95em; }
-  .tok { animation: tok .45s var(--ease) both; }
-  @keyframes tok { from { opacity: 0; } to { opacity: 1; } }
   .cursor { display: inline-block; width: .5em; height: 1.05em; vertical-align: text-bottom; margin-left: 2px; background: var(--accent); border-radius: 1px; animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
   .meta { display: flex; align-items: center; gap: 12px; font-size: 11.5px; color: var(--faint); padding-left: 23px; margin: 4px 0 4px; }
   .link { border: 0; background: none; padding: 0; color: var(--faint); cursor: pointer; font-size: 11.5px; transition: color .2s; }
   .link:hover { color: var(--text); }
+
+  /* nuorodos */
   .ans a, .you a, .links a { color: var(--accent-light); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
     text-underline-offset: 3px; overflow-wrap: anywhere; transition: text-decoration-color .2s; }
   .ans a:hover, .you a:hover, .links a:hover { text-decoration-color: currentColor; }
-  .links { display: flex; flex-direction: column; gap: 6px; }
+  .links { display: flex; flex-direction: column; gap: 8px; }
+  .links .row { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+  .links .row a { min-width: 0; }
+
+  /* atsakymo formatavimas */
+  .md > * + * { margin-top: .65em; }
+  .md p, .md .lc { margin: 0; white-space: pre-wrap; }
+  .md .h { margin-top: 1em; font-weight: 700; color: var(--text); }
+  .md .h:first-child { margin-top: 0; }
+  .md strong { color: var(--text); font-weight: 700; }
+  .md em { font-style: italic; }
+  .md .list { display: flex; flex-direction: column; gap: .3em; }
+  .md .li { display: flex; gap: .75em; padding-left: calc(var(--i, 0) * 1.5em); }
+  .md .mk { color: var(--accent); flex: 0 0 auto; min-width: 1ch; }
+  .md .lc { min-width: 0; flex: 1; }
+  .md blockquote { margin-left: 0; margin-right: 0; padding-left: 14px; border-left: 2px solid var(--border2); color: var(--muted); }
+  .md hr { border: 0; height: 1px; background: var(--border); margin: 1.1em 0; }
+  .code { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; overflow: hidden; }
+  .code-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 5px 12px; border-bottom: 1px solid var(--border);
+    font-size: 11.5px; color: var(--faint); background: var(--surface2); }
+  .code pre { margin: 0; padding: 12px 14px; overflow-x: auto; white-space: pre; font: inherit; font-size: 13px; line-height: 1.6; color: var(--text); tab-size: 4; }
+  .ans .code pre code { background: none; border: 0; padding: 0; border-radius: 0; color: inherit; font-size: inherit; }
+  .tbl { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  .tbl table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+  .tbl th, .tbl td { padding: 6px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+  .tbl th { color: var(--text); background: var(--surface2); font-weight: 600; }
+  .tbl tr:last-child td { border-bottom: 0; }
 
   .thinking { display: flex; gap: 12px; align-items: center; margin-top: 10px; color: var(--muted); }
   .star { color: var(--accent); display: inline-block; width: 1em; text-align: center; animation: twirl 2.4s linear infinite; }
@@ -117,10 +147,10 @@
 
   /* ================= hero ================= */
   .hero { display: flex; align-items: flex-end; gap: clamp(14px, 3vw, 26px); margin: 6px 0 18px; flex-wrap: wrap; }
-  .logo { display: flex; font-size: clamp(7.5px, 1.6vw, 13px); line-height: 1.12; font-weight: 700; }
-  .logo pre { margin: 0; font: inherit;
-    background: linear-gradient(180deg, var(--accent-light) 0%, var(--accent) 70%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  .logo { display: flex; align-items: flex-end; gap: clamp(2px, .5vw, 5px); }
+  .logo svg { display: block; height: clamp(44px, 8.4vw, 76px); width: auto; overflow: visible;
     animation: drop .7s var(--spring) both, hop 3s var(--ease) infinite; }
+  .logo .shade { fill: color-mix(in srgb, var(--accent) 30%, transparent); }
   @keyframes drop { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: none; } }
   @keyframes hop { 0%, 26%, 100% { transform: translateY(0); } 9% { transform: translateY(-7px); } 17% { transform: translateY(1px); } }
 
@@ -150,7 +180,7 @@
   .sug:active { transform: scale(.96); }
   .sug .k { color: var(--accent); margin-right: 6px; }
 
-  .card { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 14px 18px; margin: 10px 0 0; display: inline-block; max-width: 100%; }
+  .card { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 14px 18px; margin: 10px 0 0; display: inline-block; max-width: 100%; white-space: normal; }
   .kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 22px; }
   .kv > span:nth-child(odd) { color: var(--muted); }
 
@@ -179,7 +209,13 @@
   .ldot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--faint); margin-right: 7px; vertical-align: 1px; transition: background .3s; }
   .ldot.on { background: var(--ok); } .ldot.busy { background: var(--accent); animation: blink 1s steps(1) infinite; }
 
-  #palette { position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); background: var(--surface); border: 1px solid var(--border);
+  #jump { position: absolute; right: 0; bottom: calc(100% + 10px); width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--body); cursor: pointer; display: grid; place-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+    opacity: 0; transform: translateY(6px) scale(.9); pointer-events: none; transition: opacity .2s, transform .25s var(--spring); }
+  #jump.show { opacity: 1; transform: none; pointer-events: auto; }
+  #jump svg { width: 14px; height: 14px; }
+
+  #palette { position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); z-index: 2; background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; padding: 6px; box-shadow: 0 -12px 40px rgba(0,0,0,.5);
     opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity .18s, transform .22s var(--ease); max-height: 44vh; overflow-y: auto; }
   #palette.open { opacity: 1; transform: none; pointer-events: auto; }
@@ -210,20 +246,21 @@
   .seg button { position: relative; z-index: 1; border: 0; background: transparent; color: var(--muted); padding: 5px 16px; font-size: 12px; cursor: pointer; border-radius: 7px; transition: color .2s; }
   .seg button.sel { color: var(--text); }
   .seg .pillbg { position: absolute; top: 3px; bottom: 3px; border-radius: 7px; background: var(--surface2); border: 1px solid var(--border2); transition: left .3s var(--spring), width .3s var(--spring); }
-  .themes { display: flex; gap: 12px; padding: 2px; }
+  .themes { display: flex; gap: 12px; padding: 2px; flex-wrap: wrap; }
   .th { width: 26px; height: 26px; border-radius: 50%; border: 0; cursor: pointer; padding: 0; outline: 2px solid transparent; outline-offset: 3px; transition: transform .25s var(--spring), outline-color .2s; }
   .th:hover { transform: scale(1.1); } .th.sel { outline-color: var(--text); }
   .btns { display: flex; gap: 10px; }
   .btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: transparent; cursor: pointer; transition: all .2s; }
   .btn:hover { border-color: var(--border2); background: var(--surface2); }
-  .btn.primary { background: var(--accent); color: #0b0b0c; border-color: transparent; font-weight: 700; }
   .btn.danger { color: var(--err); }
 
-  /* ================= fullscreen ================= */
+  /* ================= fullscreen / focus ================= */
   body.zen #bar { margin-top: -60px; opacity: 0; pointer-events: none; }
   body.zen #statusline { display: none; }
-  #exitZen { position: fixed; top: calc(env(safe-area-inset-top) + 10px); right: calc(env(safe-area-inset-right) + 12px); z-index: 40; opacity: 0; pointer-events: none; transition: opacity .3s; background: var(--surface); }
-  body.zen #exitZen { opacity: .6; pointer-events: auto; } body.zen #exitZen:hover { opacity: 1; }
+  body.zen #log { padding-top: 56px; }
+  #exitZen { position: fixed; top: calc(env(safe-area-inset-top) + 10px); right: calc(env(safe-area-inset-right) + 12px); z-index: 40; opacity: 0; pointer-events: none;
+    transition: opacity .3s; background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  body.zen #exitZen { opacity: .7; pointer-events: auto; } body.zen #exitZen:hover { opacity: 1; }
   .fs-on { display: none; } body.fs .fs-on, body.zen .fs-on { display: block; } body.fs .fs-off, body.zen .fs-off { display: none; }
 
   #toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 120px); transform: translate(-50%, 12px); z-index: 80;
@@ -232,9 +269,11 @@
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
   #fx { position: fixed; inset: 0; z-index: 70; pointer-events: none; display: none; }
 
-  @media (max-width: 560px) { #log { padding: 20px 16px 12px; } #dock { padding: 8px 12px 10px; } .hide-sm { display: none; } .brand .hide-sm { display: none; } }
+  @media (max-width: 560px) { #log { padding: 20px 16px 12px; } body.zen #log { padding-top: 52px; } #dock { padding: 8px 12px 10px; } .hide-sm { display: none; } }
   @media (max-width: 380px) { .hide-xs { display: none; } #statusline { gap: 14px; } }
-  @media (prefers-reduced-motion: reduce) { .logo pre, .bot, .shadow, .glow, .line, .tok, .star { animation: none !important; } }
+  @media (prefers-reduced-motion: reduce) {
+    .logo svg, .bot, .bot-wrap, .shadow, .glow, .line, .star, .sug, .bot .eye, .bot .ant { animation: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -243,15 +282,15 @@
 
   <div id="bar">
     <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-    <div class="brand"><span class="sq"></span><b>claude</b><span class="hide-sm">~/matas</span></div>
+    <div class="brand"><span class="sq"></span><b>claude</b><span class="hide-sm" id="home">~/matas</span></div>
     <div class="spacer"></div>
-    <button class="chip" id="modelBtn" type="button"><span id="modelName">…</span><span class="caret">▼</span></button>
-    <button class="chip icon-btn" id="fsBtn" type="button" aria-label="Fullscreen" title="Fullscreen">
+    <button class="chip" id="modelBtn" type="button" aria-label="Model and settings"><span id="modelName">…</span><span class="caret">▼</span></button>
+    <button class="chip icon-btn" id="fsBtn" type="button" aria-label="Full screen" title="Full screen">
       <svg class="fs-off" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4"/></svg>
       <svg class="fs-on" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2v4H2M10 2v4h4M6 14v-4H2M10 14v-4h4"/></svg>
     </button>
   </div>
-  <button class="chip icon-btn" id="exitZen" type="button" aria-label="Exit fullscreen">
+  <button class="chip icon-btn" id="exitZen" type="button" aria-label="Exit full screen" title="Exit full screen">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2v4H2M10 2v4h4M6 14v-4H2M10 14v-4h4"/></svg>
   </button>
 
@@ -259,11 +298,14 @@
 
   <div id="dock">
     <div class="dock-inner">
-      <div id="palette" role="listbox"></div>
+      <button id="jump" type="button" aria-label="Scroll to the newest message">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5"/></svg>
+      </button>
+      <div id="palette" role="listbox" aria-label="Commands"></div>
       <div class="field" id="field">
         <form id="prompt" autocomplete="off">
           <span id="ps1">❯</span>
-          <textarea id="in" rows="1" placeholder="Ask anything · / for commands" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"></textarea>
+          <textarea id="in" rows="1" placeholder="Ask anything · / for commands" aria-label="Message" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"></textarea>
           <button id="send" type="submit" aria-label="Send">
             <svg class="go" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>
             <svg class="stop" viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
@@ -290,14 +332,6 @@
     </div>
   </div>
 
-  <div class="overlay" id="fsSheet" role="dialog" aria-modal="true" aria-label="Fullscreen">
-    <div class="sheet">
-      <h3>Fullscreen</h3>
-      <p>This browser blocked fullscreen here. Focus mode hides the top bar and status line instead.</p>
-      <div class="btns"><button class="btn" type="button" id="fsClose">Close</button><button class="btn primary" type="button" id="fsFocus">Focus mode</button></div>
-    </div>
-  </div>
-
   <div class="overlay" id="newSheet" role="dialog" aria-modal="true" aria-label="New conversation">
     <div class="sheet">
       <h3>New conversation</h3>
@@ -306,15 +340,16 @@
     </div>
   </div>
 
-  <div id="toast"></div>
+  <div id="toast" role="status"></div>
   <canvas id="fx"></canvas>
 
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const log = $('log'), screenEl = $('screen'), input = $('in'), form = $('prompt'), field = $('field'), pal = $('palette');
+  const log = $('log'), screenEl = $('screen'), input = $('in'), form = $('prompt'), field = $('field'), pal = $('palette'), jump = $('jump');
 
   // ================= duomenys =================
+  const ARTIFACT_URL = 'https://claude.ai/artifact/54ncrnz95vRCeD9ms6NuhC';
   const MODELS = {
     opus:   { id: 'claude-opus-5-5',   name: 'Opus 5.5',   tier: 'complex', desc: 'Most capable' },
     sonnet: { id: 'claude-sonnet-5-5', name: 'Sonnet 5.5', tier: 'default', desc: 'Fast and smart' },
@@ -330,30 +365,66 @@
   let settings = { model: 'sonnet', effort: 'medium', accent: 'coral' };
   let history = [];             // [{r:'u'|'a', c:'...', m:'Sonnet 5.5', t:ms}]
   let sample = null, samplePromise = Promise.resolve(null), busy = false, controller = null, welcomed = false;
+  let who = { name: 'Matas', handle: 'matas' };   // perrašoma iš user.me(), kai puslapį atidaro kitas žmogus
+  const warnedModels = new Set(); let linkNoteShown = false;
   const cmdHistory = []; let histIdx = -1;
 
-  const SYSTEM = `You are Claude, running inside a minimal terminal-style chat app.
+  const system = () => `You are Claude, chatting inside a small terminal-style app${who.name ? ` used by ${who.name}` : ''}.
+Today is ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.
 Rules:
 - ALWAYS reply in English, even when the user writes in Lithuanian or any other language.
-- Plain text only: no markdown (no **, no #, no tables). Use "-" for lists. Put code on its own lines without \`\`\` fences.
-- Be concise, direct and genuinely useful.
-- This conversation is saved between visits, so earlier messages may be from previous days.
-- Never pretend to actually hack anything or execute commands. Refuse real hacking requests.`;
+- Be concise, direct and genuinely useful. No filler.
+- Formatting: plain text by default. You may use **bold**, "-" or "1." lists, fenced code blocks with a language tag (\`\`\`python), and links. No images, no HTML, and tables only when asked.
+- Links: when a link helps, write the full https:// URL or [label](https://...). They are clickable here. Only give URLs you are confident exist; prefer official sites and docs.
+- You cannot open links, browse the web, or see files. If the user sends a URL, say plainly that you can't open it, then help with what the URL itself shows or what they paste. Never invent what a page says.
+- The conversation is saved between visits, so earlier messages may be from previous days.
+- Never pretend to hack anything or run commands. Refuse real hacking requests.`;
 
   // ================= pagalbinės =================
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const bytes = s => new TextEncoder().encode(s).length;
+  const nearBottom = () => screenEl.scrollHeight - screenEl.scrollTop - screenEl.clientHeight < 72;
   const scroll = () => { screenEl.scrollTop = screenEl.scrollHeight; };
   // planšetė / telefonas: programinis fokusas atidaro klaviatūrą (o iPadOS tada išeina iš fullscreen)
   const TOUCH = matchMedia('(pointer: coarse)').matches;
   const focusIn = () => { if (TOUCH) return; try { input.focus({ preventScroll: true }); } catch (e) {} };
-  const bytes = s => new TextEncoder().encode(s).length;
+  function line(html, cls) {
+    const stick = nearBottom();
+    const d = document.createElement('div'); d.className = 'line' + (cls ? ' ' + cls : '');
+    d.innerHTML = html; log.appendChild(d);
+    if (stick) scroll(); else jump.classList.add('show');
+    return d;
+  }
+  let toastT;
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+  function copyText(text, btn, selectEl) {
+    const done = () => { if (!btn) return toast('Copied'); const was = btn.textContent; btn.textContent = 'copied'; setTimeout(() => { btn.textContent = was; }, 1400); };
+    const fail = () => {
+      // kai kurios Claude programos neleidžia rašyti į iškarpinę: pažymim tekstą, kad galėtum nukopijuoti ranka
+      if (selectEl) { const r = document.createRange(); r.selectNodeContents(selectEl); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+      toast(selectEl ? 'Copy is blocked here · text selected, copy it by hand' : 'Copy is blocked here · press and hold the text to copy');
+    };
+    try { navigator.clipboard.writeText(text).then(done, fail); } catch (e) { fail(); }
+  }
+  const timeStr = t => {
+    const d = new Date(t), today = new Date().toDateString() === d.toDateString();
+    return d.toLocaleString('en-GB', today ? { hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  };
 
-  // nuorodos: tik http(s), atidaromos naujame skirtuke (window.open sandbox'e dažnai neveikia)
-  const URL_RE = /`([^`\n]+)`|\b((?:https?:\/\/|www\.)[^\s<>"'`]+)/gi;
-  function href(u, loose) {
-    if (loose && !/^[a-z][a-z\d+.-]*:\/\//i.test(u)) u = 'https://' + u;
-    else if (/^www\./i.test(u)) u = 'https://' + u;
+  // ================= nuorodos ir formatavimas =================
+  // tik http(s); atidaromos per <a target="_blank"> (window.open sandbox'e dažnai grąžina null)
+  const TLDS = 'com|org|net|io|dev|ai|app|co|lt|eu|uk|de|me|info|edu|gov|tv|gg|so|sh|xyz';
+  const URL_SRC = String.raw`(?:https?:\/\/|www\.)[^\s<>"'\x60]+|[a-z\d][a-z\d-]*(?:\.[a-z\d-]+)*\.(?:${TLDS})\b(?:\/[^\s<>"'\x60]*)?`;
+  const INLINE_RE = new RegExp(String.raw`\x60([^\x60\n]+)\x60` +                                          // 1 `code`
+    String.raw`|\[([^\]\n]+)\]\(\s*((?:https?:\/\/|www\.)[^\s()]*(?:\([^\s()]*\)[^\s()]*)*)\s*\)` +        // 2,3 [label](url)
+    String.raw`|\*\*(?=\S)([^*\n]*?\S)\*\*` +                                                             // 4 **bold**
+    String.raw`|(?<![\w*])\*(?=\S)([^*\n]*?\S)\*(?![\w*])` +                                              // 5 *italic*
+    String.raw`|(?<![@\w.\/-])(` + URL_SRC + ')', 'gi');                                                   // 6 nuoroda
+  const LINK_RE = new RegExp(String.raw`(?<![@\w.\/-])(` + URL_SRC + ')', 'gi');
+  const isUrl = s => /^(https?:\/\/|www\.)\S+$/i.test(s);
+  function href(u) {
+    if (!/^[a-z][a-z\d+.-]*:\/\//i.test(u)) u = 'https://' + u;
     try {
       const x = new URL(u);
       if (!/^https?:$/.test(x.protocol) || !(x.hostname.includes('.') || x.hostname === 'localhost')) return null;
@@ -362,37 +433,98 @@ Rules:
   }
   function trimUrl(u) {
     let tail = '';
-    while (/[.,;:!?)\]}]$/.test(u)) {
+    while (/[.,;:!?)\]}*_]$/.test(u)) {
       const c = u.slice(-1);
       if (c === ')' && (u.match(/\(/g) || []).length >= (u.match(/\)/g) || []).length) break;
       tail = c + tail; u = u.slice(0, -1);
     }
     return [u, tail];
   }
-  const aTag = (u, loose) => { const h = href(u, loose); return h ? `<a href="${esc(h)}" target="_blank" rel="noopener noreferrer">${esc(u)}</a>` : esc(u); };
-  function fmt(t, code = true) {
+  const aTag = (u, label) => { const h = href(u); return h ? `<a href="${esc(h)}" target="_blank" rel="noopener noreferrer">${label === undefined ? esc(u) : label}</a>` : (label === undefined ? esc(u) : label); };
+  function inline(t) {
     t = String(t); let out = '', last = 0;
-    for (const m of t.matchAll(URL_RE)) {
+    for (const m of t.matchAll(INLINE_RE)) {
       out += esc(t.slice(last, m.index)); last = m.index + m[0].length;
-      if (m[1] !== undefined) out += code ? `<code>${/^(https?:\/\/|www\.)\S+$/i.test(m[1]) ? aTag(m[1]) : esc(m[1])}</code>` : esc(m[0]);
-      else { const [u, tail] = trimUrl(m[2]); out += aTag(u) + esc(tail); }
+      if (m[1] !== undefined) out += `<code>${isUrl(m[1]) ? aTag(m[1]) : esc(m[1])}</code>`;
+      else if (m[2] !== undefined) out += aTag(m[3], inline(m[2]));
+      else if (m[4] !== undefined) out += `<strong>${inline(m[4])}</strong>`;
+      else if (m[5] !== undefined) out += `<em>${inline(m[5])}</em>`;
+      else { const [u, tail] = trimUrl(m[6]); out += aTag(u) + esc(tail); }
+    }
+    return out + esc(t.slice(last));
+  }
+  function linkify(t) {
+    t = String(t); let out = '', last = 0;
+    for (const m of t.matchAll(LINK_RE)) {
+      const [u, tail] = trimUrl(m[1]);
+      out += esc(t.slice(last, m.index)) + aTag(u) + esc(tail); last = m.index + m[0].length;
     }
     return out + esc(t.slice(last));
   }
   function linksIn(t) {
-    const seen = new Set();
-    for (const m of String(t).matchAll(URL_RE)) {
-      const u = m[2] !== undefined ? trimUrl(m[2])[0] : /^(https?:\/\/|www\.)\S+$/i.test(m[1]) ? m[1] : null;
-      if (u && href(u)) seen.add(u);
+    const seen = new Map();
+    for (const m of String(t).matchAll(INLINE_RE)) {
+      const u = m[3] !== undefined ? m[3] : m[6] !== undefined ? trimUrl(m[6])[0] : m[1] !== undefined && isUrl(m[1]) ? m[1] : null;
+      const h = u && href(u);
+      if (h && !seen.has(h)) seen.set(h, u);
     }
-    return [...seen];
+    return [...seen.values()];
   }
-  function line(html, cls) {
-    const d = document.createElement('div'); d.className = 'line' + (cls ? ' ' + cls : '');
-    d.innerHTML = html; log.appendChild(d); scroll(); return d;
+  const hasLink = t => { LINK_RE.lastIndex = 0; return [...String(t).matchAll(LINK_RE)].some(m => href(trimUrl(m[1])[0])); };
+
+  // markdown dalis, kurią Claude realiai naudoja: antraštės, sąrašai, kodas, citatos, lentelės
+  function codeBlock(body, lang) {
+    return `<div class="code"><div class="code-h"><span>${esc(lang || 'code')}</span><button class="link" type="button" data-copy="code">copy</button></div><pre><code>${esc(body)}</code></pre></div>`;
   }
-  let toastT;
-  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400); }
+  function table(rows) {
+    const cells = r => r.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+    const body = rows.filter(r => !/^\s*\|?\s*:?-{2,}/.test(r)).map(cells);
+    if (!body.length) return '';
+    const [head, ...rest] = body;
+    return `<div class="tbl"><table><thead><tr>${head.map(c => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${rest.map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+  function md(src) {
+    const L = String(src).replace(/\r\n?/g, '\n').split('\n');
+    let html = '', para = [], i = 0, m;
+    const flush = () => { if (para.length) { html += `<p>${para.map(inline).join('<br>')}</p>`; para = []; } };
+    while (i < L.length) {
+      const l = L[i];
+      if ((m = l.match(/^\s*(```|~~~)\s*([\w+#.-]*)\s*$/))) {
+        flush(); const fence = m[1], body = []; i++;
+        while (i < L.length && !new RegExp('^\\s*' + fence + '\\s*$').test(L[i])) body.push(L[i++]);
+        i++; html += codeBlock(body.join('\n'), m[2]); continue;
+      }
+      if (/^\s*$/.test(l)) { flush(); i++; continue; }
+      if ((m = l.match(/^\s{0,3}(#{1,6})\s+(.*?)\s*#*\s*$/))) { flush(); html += `<div class="h">${inline(m[2])}</div>`; i++; continue; }
+      if (/^\s{0,3}([-*_])(\s*\1){2,}\s*$/.test(l)) { flush(); html += '<hr>'; i++; continue; }
+      if (/^\s*>/.test(l)) {
+        flush(); const q = [];
+        while (i < L.length && /^\s*>/.test(L[i])) q.push(L[i++].replace(/^\s*>\s?/, ''));
+        html += `<blockquote>${md(q.join('\n'))}</blockquote>`; continue;
+      }
+      if (/^\s*\|.*\|\s*$/.test(l)) {
+        flush(); const rows = [];
+        while (i < L.length && /^\s*\|.*\|\s*$/.test(L[i])) rows.push(L[i++]);
+        html += table(rows); continue;
+      }
+      if (/^\s*([-*+•]|\d{1,3}[.)])\s+/.test(l)) {
+        flush(); let items = '';
+        while (i < L.length) {
+          const li = L[i].match(/^(\s*)([-*+•]|\d{1,3}[.)])\s+(.*)$/);
+          if (li) {
+            const lvl = Math.min(3, Math.floor(li[1].replace(/\t/g, '  ').length / 2));
+            const mk = /\d/.test(li[2]) ? li[2].replace(')', '.') : (lvl ? '◦' : '•');
+            items += `<div class="li" style="--i:${lvl}"><span class="mk">${esc(mk)}</span><span class="lc">${inline(li[3])}</span></div>`; i++;
+          } else if (/^\s{2,}\S/.test(L[i]) && items) {
+            items = items.replace(/<\/span><\/div>$/, '<br>' + inline(L[i].trim()) + '</span></div>'); i++;
+          } else break;
+        }
+        html += `<div class="list">${items}</div>`; continue;
+      }
+      para.push(l); i++;
+    }
+    flush(); return html;
+  }
 
   // ================= atmintis (paskyroje, kitaip įrenginyje) =================
   const Mem = {
@@ -401,6 +533,12 @@ Rules:
       if (use) {
         try {
           const [db, user] = await Promise.all([use('db').catch(() => null), use('user').catch(() => null)]);
+          if (user) {
+            const me = await user.me();
+            const first = String(me.name || '').trim().split(/\s+/)[0];
+            who.name = first || (me.isOwner ? 'Matas' : '');
+            who.handle = (who.name || 'guest').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '') || 'guest';
+          }
           const id = user ? await user.id() : null;
           if (db && id) { this.db = db; this.uid = id; this.mode = 'cloud'; return; }
         } catch (e) {}
@@ -419,7 +557,7 @@ Rules:
       try { localStorage.setItem(this.key(name), JSON.stringify(data)); } catch (e) {}
       if (this.mode !== 'cloud') return Promise.resolve();
       this.q[name] = (this.q[name] || Promise.resolve()).then(() => this.ref(name).set(data)).catch(e => {
-        if (e && e.code === 'quota_exceeded') toast('Memory is full — /new to start over');
+        if (e && e.code === 'quota_exceeded') toast('Memory is full · /new to start over');
       });
       return this.q[name];
     },
@@ -441,10 +579,12 @@ Rules:
     const m = MODELS[settings.model];
     $('modelName').textContent = m.name; $('sl-name').textContent = m.name; $('sl-effort').textContent = settings.effort;
     $('sl-mem').textContent = Mem.mode === 'off' ? 'off' : `${history.length} msg · ${Mem.mode === 'cloud' ? 'account' : 'this device'}`;
+    $('home').textContent = '~/' + who.handle;
   }
   function setLink(s) { $('sl-link').textContent = s; $('ldot').className = 'ldot' + (s === 'online' ? ' on' : s === 'thinking' ? ' busy' : ''); }
 
   // ================= logotipas =================
+  // ANSI Shadow raidės, piešiamos kaip pikselių SVG: šriftų rėmelio simboliai (╗║╚) iPad'e lūždavo
   const LETTERS = {
     C: [' ██████╗', '██╔════╝', '██║     ', '██║     ', '╚██████╗', ' ╚═════╝'],
     L: ['██╗     ', '██║     ', '██║     ', '██║     ', '███████╗', '╚══════╝'],
@@ -453,6 +593,22 @@ Rules:
     D: ['██████╗ ', '██╔══██╗', '██║  ██║', '██║  ██║', '██████╔╝', '╚═════╝ '],
     E: ['███████╗', '██╔════╝', '█████╗  ', '██╔══╝  ', '███████╗', '╚══════╝'],
   };
+  let logoSeq = 0;
+  function letterSvg(ch, i) {
+    const rows = LETTERS[ch].map(r => [...r]), w = Math.max(...rows.map(r => r.length)) - 1;
+    let d = '';
+    rows.forEach((r, y) => {
+      for (let x = 0; x < r.length; x++) {
+        if (r[x] !== '█') continue;
+        let e = x; while (r[e] === '█') e++;
+        d += `M${x} ${y * 2}h${e - x}v2h${x - e}z`; x = e - 1;
+      }
+    });
+    const id = 'lg' + (++logoSeq);
+    return `<svg viewBox="0 0 ${w + .7} 13" shape-rendering="crispEdges" aria-hidden="true" style="animation-delay:${(i * .07).toFixed(2)}s,${(.9 + i * .1).toFixed(2)}s">` +
+      `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent-light)"/><stop offset=".72" style="stop-color:var(--accent)"/></linearGradient></defs>` +
+      `<path class="shade" d="${d}" transform="translate(.7 1)"/><path d="${d}" fill="url(#${id})"/></svg>`;
+  }
   const BOT = `<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true">
     <g style="fill:var(--accent)">
       <rect class="ant" x="5.5" y="0.4" width="1" height="1.8"/>
@@ -464,9 +620,8 @@ Rules:
     <g fill="#0b0b0c"><rect class="eye" x="3" y="4" width="2" height="2"/><rect class="eye" x="7" y="4" width="2" height="2"/><rect x="4.5" y="6.8" width="3" height=".6"/></g>
   </svg>`;
   function hero() {
-    const letters = [...'CLAUDE'].map((ch, i) =>
-      `<pre style="animation-delay:${(i * .07).toFixed(2)}s,${(.9 + i * .1).toFixed(2)}s">${esc(LETTERS[ch].join('\n'))}</pre>`).join('');
-    const h = line(`<div class="hero"><div class="logo" aria-label="Claude">${letters}</div><div class="bot-wrap"><div class="bot" title="tap me">${BOT}</div><div class="shadow"></div></div></div>`, 'still');
+    const letters = [...'CLAUDE'].map(letterSvg).join('');
+    const h = line(`<div class="hero"><div class="logo" role="img" aria-label="Claude">${letters}</div><div class="bot-wrap"><div class="bot" title="tap me">${BOT}</div><div class="shadow"></div></div></div>`, 'still');
     const bot = h.querySelector('.bot');
     bot.addEventListener('click', () => { bot.classList.remove('flip'); void bot.offsetWidth; bot.classList.add('flip'); setTimeout(() => bot.classList.remove('flip'), 820); });
   }
@@ -497,32 +652,32 @@ Rules:
   function welcome() {
     hero();
     const returning = history.length > 0;
-    line(`<div class="welcome">${returning ? 'Welcome back' : 'Hello'}, <b>Matas</b>.</div><div class="sub">${esc(MODELS[settings.model].name)} · ${settings.effort} effort · type / for commands</div>`);
+    line(`<div class="welcome">${returning ? 'Welcome back' : 'Hello'}${who.name ? `, <b>${esc(who.name)}</b>` : ''}.</div><div class="sub">${esc(MODELS[settings.model].name)} · ${settings.effort} effort · type / for commands</div>`);
     if (!returning) {
       const row = line('', 'sugs');
       [['?', 'What can you do?'], ['→', 'Explain black holes in 3 sentences'], ['→', 'Write a tiny Python game'], ['/', 'hack']].forEach(([k, q], i) => {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'sug'; b.style.animationDelay = (.9 + i * .07) + 's';
         b.innerHTML = `<span class="k">${k}</span>${esc(q)}`;
-        b.onclick = () => { input.value = k === '/' ? '/' + q : q; submit(); };
+        b.onclick = () => { if (busy) return; input.value = k === '/' ? '/' + q : q; submit(); };
         row.appendChild(b);
       });
     }
   }
 
   function renderTurn(msg, still) {
-    if (msg.r === 'u') line(`<span class="arrow">❯</span><span>${fmt(msg.c, false)}</span>`, 'you' + (still ? ' still' : ''));
+    if (msg.r === 'u') line(`<span class="arrow">❯</span><span>${linkify(msg.c)}</span>`, 'you' + (still ? ' still' : ''));
     else {
-      line(`<span class="bullet">●</span><span class="txt">${fmt(msg.c)}</span>`, 'ans' + (still ? ' still' : ''));
-      metaLine(msg.c, msg.m, null, still);
+      const a = line(`<span class="bullet">●</span><div class="txt md">${md(msg.c)}</div>`, 'ans' + (still ? ' still' : ''));
+      metaLine(msg.c, msg.m, null, msg.t, a.querySelector('.txt'), still);
     }
   }
   function restore() {
     if (!history.length) return;
     const last = history[history.length - 1];
-    const when = last.t ? new Date(last.t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-    line(`saved conversation${when ? ' · ' + when : ''}`, 'divider still');
+    line(`saved conversation${last.t ? ' · ' + timeStr(last.t) : ''}`, 'divider still');
     history.forEach(m => renderTurn(m, true));
     line('resumed', 'divider');
+    scroll();
   }
 
   // ================= nustatymai =================
@@ -541,56 +696,72 @@ Rules:
     });
     const th = $('themes'); th.innerHTML = '';
     Object.entries(ACCENTS).forEach(([k, c]) => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'th' + (k === settings.accent ? ' sel' : ''); b.title = k; b.style.background = c;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'th' + (k === settings.accent ? ' sel' : ''); b.title = k; b.setAttribute('aria-label', k + ' accent'); b.style.background = c;
       b.onclick = () => { applyAccent(k); saveSettings(); buildPicker(); }; th.appendChild(b);
     });
     requestAnimationFrame(() => { const s = seg.querySelector('button.sel'), pb = $('pillbg'); if (s) { pb.style.left = s.offsetLeft + 'px'; pb.style.width = s.offsetWidth + 'px'; } });
   }
-  function openOverlay(id) { if (id === 'picker') buildPicker(); if (document.activeElement === input) input.blur(); $(id).classList.add('open'); }
+  function openOverlay(id) {
+    if (id === 'picker') buildPicker();
+    if (document.activeElement === input) input.blur();
+    $(id).classList.add('open');
+    const f = $(id).querySelector('.opt.sel, .btn'); if (f && !TOUCH) f.focus({ preventScroll: true });
+  }
   function closeOverlay(id) { $(id).classList.remove('open'); focusIn(); }
   function setModel(k, quiet) {
     settings.model = k; saveSettings(); renderStatus();
     if (!quiet) line(`<span class="muted">Model →</span> <span class="acc">${esc(MODELS[k].name)}</span>`);
   }
-  function setEffort(e) { settings.effort = e; saveSettings(); renderStatus(); toast('Effort: ' + e); }
+  function setEffort(e) { settings.effort = e; saveSettings(); renderStatus(); }
   $('modelBtn').onclick = () => openOverlay('picker'); $('sl-model').onclick = () => openOverlay('picker'); $('sl-eff').onclick = () => openOverlay('picker');
   document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeOverlay(o.id); }));
   document.addEventListener('keydown', e => {
+    if (e.defaultPrevented) return;
     const open = document.querySelector('.overlay.open');
     if (open) {
       if (e.key === 'Escape') closeOverlay(open.id);
       if (open.id === 'picker') { const keys = Object.keys(MODELS), n = parseInt(e.key, 10); if (n >= 1 && n <= keys.length) { setModel(keys[n - 1]); closeOverlay('picker'); } }
-    } else if (controller && (e.key === 'Escape' || (e.key === 'c' && e.ctrlKey && !window.getSelection().toString()))) { e.preventDefault(); controller.abort(); }
+    } else if (controller && (e.key === 'Escape' || (e.key === 'c' && e.ctrlKey && !getSelection().toString()))) { e.preventDefault(); controller.abort(); }
     else if (e.key === 'Escape' && document.body.classList.contains('zen')) exitFull();
   });
 
   // ================= fullscreen =================
+  // Kur leidžiama, tikras fullscreen + paslėptos juostos (Focus). iPadOS išmeta iš fullscreen, kai atsidaro
+  // klaviatūra, todėl tada Focus lieka, o fullscreen grąžinamas po kito bakstelėjimo ne į įvesties lauką.
+  const root = document.documentElement;
   const isNativeFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
-  let fsPending = false;
-  function enterFull() {
-    const el = document.documentElement; fsPending = true;
-    const fail = () => { if (!fsPending) return; fsPending = false; if (!isNativeFS()) openOverlay('fsSheet'); };
+  const canNative = () => !!(root.requestFullscreen || root.webkitRequestFullscreen) && !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  let wantFull = false, fsDropped = false, lastFocus = 0;
+  function requestNative() {
+    if (!canNative()) return false;
     try {
-      if (el.requestFullscreen) { const p = el.requestFullscreen({ navigationUI: 'hide' }); if (p && p.catch) p.catch(fail); }
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(window.Element && Element.ALLOW_KEYBOARD_INPUT);
-      else return fail();
-    } catch (e) { return fail(); }
-    setTimeout(() => { if (fsPending && !isNativeFS()) fail(); }, 900);
+      if (root.requestFullscreen) { const p = root.requestFullscreen({ navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); }
+      else root.webkitRequestFullscreen();
+      return true;
+    } catch (e) { return false; }
+  }
+  function enterFull() {
+    wantFull = true; fsDropped = false; document.body.classList.add('zen');
+    if (!requestNative()) return toast('Focus mode · this view blocks real full screen');
+    setTimeout(() => { if (wantFull && !isNativeFS() && !fsDropped) toast('Focus mode · this view blocks real full screen'); }, 900);
   }
   function exitFull() {
-    document.body.classList.remove('zen');
-    if (isNativeFS()) { const ex = document.exitFullscreen || document.webkitExitFullscreen; try { ex && ex.call(document); } catch (e) {} }
+    wantFull = false; fsDropped = false; document.body.classList.remove('zen');
+    if (isNativeFS()) { const ex = document.exitFullscreen || document.webkitExitFullscreen; try { const p = ex && ex.call(document); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
   }
-  function onFsChange() { const on = isNativeFS(); if (on) fsPending = false; document.body.classList.toggle('fs', on); }
+  function onFsChange() {
+    const on = isNativeFS(); document.body.classList.toggle('fs', on);
+    if (on || !wantFull) return;
+    if (TOUCH && (document.activeElement === input || Date.now() - lastFocus < 1500)) fsDropped = true;
+    else exitFull();   // Esc arba naršyklės mygtukas: vartotojas pats išėjo
+  }
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, onFsChange));
-  ['fullscreenerror', 'webkitfullscreenerror'].forEach(ev => document.addEventListener(ev, () => { if (fsPending) { fsPending = false; openOverlay('fsSheet'); } }));
-  // iPadOS išmeta iš element-fullscreen vos tik atsiranda klaviatūra, o pokalbiui jos reikia,
-  // todėl liečiamuose įrenginiuose ⛶ įjungia Focus mode
-  const enterZen = () => { document.body.classList.add('zen'); };
-  const toggleFull = () => (isNativeFS() || document.body.classList.contains('zen')) ? exitFull() : TOUCH ? enterZen() : enterFull();
+  document.addEventListener('click', e => {
+    if (!fsDropped || !wantFull || isNativeFS() || document.activeElement === input || e.target.closest('#dock, button, a, .overlay')) return;
+    fsDropped = false; requestNative();
+  }, true);
+  const toggleFull = () => (isNativeFS() || wantFull) ? exitFull() : enterFull();
   $('fsBtn').onclick = toggleFull; $('exitZen').onclick = exitFull;
-  $('fsClose').onclick = () => closeOverlay('fsSheet');
-  $('fsFocus').onclick = () => { closeOverlay('fsSheet'); enterZen(); };
 
   // ================= naujas pokalbis =================
   $('newCancel').onclick = () => closeOverlay('newSheet');
@@ -602,16 +773,20 @@ Rules:
   // ================= komandos =================
   const PALETTE = [
     ['help', 'all commands'], ['model', 'switch model'], ['effort', 'low · medium · high'], ['accent', 'change color'],
-    ['full', 'fullscreen'], ['new', 'erase memory, start over'], ['clear', 'clear screen (memory stays)'],
-    ['history', 'show the saved conversation'], ['open', 'open a link · no URL = links in last answer'],
+    ['full', 'full screen'], ['open', 'links from the last answer, or /open site.com'], ['share', 'link to this page'],
+    ['new', 'erase memory, start over'], ['clear', 'clear screen (memory stays)'], ['history', 'show the saved conversation'],
     ['neofetch', 'system info'], ['hack', 'fake hacking sequence'], ['party', 'confetti'],
   ];
+  const linkRows = urls => '<div class="card links">' + urls.map(u => {
+    const h = href(u);
+    return `<div class="row">${aTag(u)}<button class="link" type="button" data-url="${esc(h)}">copy</button></div>`;
+  }).join('') + '</div>';
   const COMMANDS = {
     help() {
       line('<div class="card"><div class="kv">' + PALETTE.map(([k, d]) => `<span style="color:var(--text)">/${k}</span><span>${d}</span>`).join('') + '</div></div>');
-      line('<span class="faint" style="font-size:12px">Esc stops a reply · ↑/↓ history · /model opus · /effort high · /accent violet · /open example.com</span>');
+      line(`<span class="faint small">${TOUCH ? 'Tap ■ to stop a reply' : 'Esc stops a reply · ↑/↓ history'} · /model opus · /effort high · /accent violet</span>`);
     },
-    clear() { log.innerHTML = ''; },
+    clear() { log.innerHTML = ''; jump.classList.remove('show'); },
     history() { log.innerHTML = ''; welcome(); restore(); },
     new() { if (history.length) openOverlay('newSheet'); else line('<span class="muted">Nothing to erase.</span>'); },
     full() { toggleFull(); },
@@ -632,38 +807,6 @@ Rules:
       else if (!a) openOverlay('picker');
       else line(`<span class="err">Unknown color.</span> <span class="muted">Try ${Object.keys(ACCENTS).join(', ')}</span>`);
     },
-    neofetch() {
-      const m = MODELS[settings.model];
-      const ipad = /iPad|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
-      line(`<div class="card" style="display:flex;gap:22px;align-items:center">
-        <div style="width:54px;flex:0 0 auto">${BOT}</div>
-        <div class="kv">
-          <span>user</span><span class="acc">matas@claude</span>
-          <span>os</span><span>NovaOS 26.1 arm64</span>
-          <span>shell</span><span>zsh 5.9</span>
-          <span>model</span><span>${esc(m.name)} · ${settings.effort}</span>
-          <span>device</span><span>${ipad ? 'iPad' : 'terminal'} · ${innerWidth}×${innerHeight}</span>
-          <span>memory</span><span>${history.length} messages</span>
-        </div></div>`);
-    },
-    async hack() {
-      input.disabled = true;
-      const tgt = ['mainframe.local', '10.0.13.37', 'orbital-uplink-7', 'vault.internal'][Math.floor(Math.random() * 4)];
-      line(`<span class="muted">target</span> <span class="acc">${tgt}</span>`);
-      const spin = ['·', '✢', '✳', '✻', '✽', '✻', '✳', '✢'];
-      for (const s of ['scanning ports', 'bypassing firewall', 'decrypting keys', 'escalating privileges']) {
-        const row = line(`<span class="boot-row on" style="opacity:1"><span class="st">·</span><span>${s}</span><span class="faint pct">0%</span></span>`);
-        const st = row.querySelector('.st'), pct = row.querySelector('.pct'); let k = 0;
-        for (let p = 0; p <= 100; p += 10) { pct.textContent = p + '%'; st.textContent = spin[k++ % spin.length]; await sleep(35 + Math.random() * 45); }
-        st.textContent = '✓'; row.firstChild.classList.add('done'); pct.remove();
-      }
-      await sleep(180);
-      line('<span class="acc b" style="font-size:1.5em;letter-spacing:.16em">ACCESS GRANTED</span>');
-      line('<span class="faint">just an animation · nothing was hacked</span>');
-      confetti(80);
-      input.disabled = false; focusIn();
-    },
-    party() { confetti(160); },
     open(arg) {
       let urls = arg ? arg.split(/\s+/) : [];
       if (!urls.length) {
@@ -671,17 +814,57 @@ Rules:
         urls = last ? linksIn(last.c) : [];
         if (!urls.length) return line('<span class="muted">No links in the last answer. Usage:</span> /open example.com');
       }
-      const ok = urls.filter(u => href(u, true)), bad = urls.filter(u => !href(u, true));
+      const ok = urls.filter(href), bad = urls.filter(u => !href(u));
       if (ok.length) {
-        line('<div class="card links">' + ok.map(u => aTag(u, true) + ' <span class="faint">↗</span>').join('<br>') + '</div>');
-        line('<span class="faint" style="font-size:12px">tap a link to open it in a new tab</span>');
+        line(linkRows(ok));
+        line('<span class="faint small">tap a link to open it in a new tab</span>');
       }
       if (bad.length) line(`<span class="err">Not a web address:</span> <span class="muted">${esc(bad.join(' '))}</span>`);
     },
+    share() {
+      line(linkRows([ARTIFACT_URL]));
+      line('<span class="faint small">Only people you add in the artifact’s Share menu can open it. Each person chats on their own Claude account and gets their own memory.</span>');
+    },
+    neofetch() {
+      const m = MODELS[settings.model];
+      const ipad = /iPad|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
+      line(`<div class="card" style="display:flex;gap:22px;align-items:center">` +
+        `<div style="width:54px;flex:0 0 auto">${BOT}</div>` +
+        `<div class="kv"><span>user</span><span class="acc">${esc(who.handle)}@claude</span><span>os</span><span>NovaOS 26.1 arm64</span>` +
+        `<span>shell</span><span>zsh 5.9</span><span>model</span><span>${esc(m.name)} · ${settings.effort}</span>` +
+        `<span>device</span><span>${ipad ? 'iPad' : TOUCH ? 'phone' : 'terminal'} · ${innerWidth}×${innerHeight}</span>` +
+        `<span>memory</span><span>${history.length} messages</span></div></div>`);
+    },
+    async hack() {
+      busy = true;
+      try {
+        const tgt = ['mainframe.local', '10.0.13.37', 'orbital-uplink-7', 'vault.internal'][Math.floor(Math.random() * 4)];
+        line(`<span class="muted">target</span> <span class="acc">${tgt}</span>`);
+        const spin = ['·', '✢', '✳', '✻', '✽', '✻', '✳', '✢'];
+        for (const s of ['scanning ports', 'bypassing firewall', 'decrypting keys', 'escalating privileges']) {
+          const row = line(`<span class="boot-row on" style="opacity:1"><span class="st">·</span><span>${s}</span><span class="faint pct">0%</span></span>`);
+          const st = row.querySelector('.st'), pct = row.querySelector('.pct'); let k = 0;
+          for (let p = 0; p <= 100; p += 10) { pct.textContent = p + '%'; st.textContent = spin[k++ % spin.length]; await sleep(35 + Math.random() * 45); }
+          st.textContent = '✓'; row.firstChild.classList.add('done'); pct.remove();
+        }
+        await sleep(180);
+        line('<span class="acc b" style="font-size:1.5em;letter-spacing:.16em">ACCESS GRANTED</span>');
+        line('<span class="faint">just an animation · nothing was hacked</span>');
+        confetti(80);
+      } finally { busy = false; }
+    },
+    party() { confetti(160); },
   };
+  // kopijavimo mygtukai kodo blokuose ir nuorodų kortelėse
+  log.addEventListener('click', e => {
+    const b = e.target.closest('button[data-copy], button[data-url]'); if (!b) return;
+    if (b.dataset.url) return copyText(b.dataset.url, b, b.previousElementSibling);
+    const code = b.closest('.code').querySelector('code'); copyText(code.textContent, b, code);
+  });
 
   // ================= konfeti =================
   function confetti(n) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const cv = $('fx'), ctx = cv.getContext('2d');
     cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; cv.style.display = 'block';
     ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
@@ -709,64 +892,72 @@ Rules:
     const tier = res && res.modelTierApplied;
     return tier ? TIER_NAMES[tier] || tier + ' model' : m.name;
   }
-  function metaLine(text, model, secs, still) {
-    const meta = line(`<span>${esc(model || '')}${secs ? ' · ' + secs + 's' : ''}</span>`, 'meta' + (still ? ' still' : ''));
+  function metaLine(text, model, secs, t, txtEl, still) {
+    const meta = line(`<span>${esc(model || '')}${secs ? ' · ' + secs + 's' : ''}${t ? ' · ' + timeStr(t) : ''}</span>`, 'meta' + (still ? ' still' : ''));
     const cp = document.createElement('button'); cp.type = 'button'; cp.className = 'link'; cp.textContent = 'copy';
-    cp.onclick = () => {
-      try { navigator.clipboard.writeText(text).then(() => { cp.textContent = 'copied'; setTimeout(() => cp.textContent = 'copy', 1400); }, () => toast('Copy is blocked here')); }
-      catch (e) { toast('Copy is blocked here'); }
-    };
+    cp.onclick = () => copyText(text, cp, txtEl);
     meta.appendChild(cp);
     return meta;
   }
   function buildContext() {
+    const sys = system();
     let ctx = history.slice(-CONTEXT_MSGS);
-    while (ctx.length > 1 && bytes(SYSTEM + ctx.map(x => x.c).join('')) > MAX_PROMPT) ctx.shift();
+    while (ctx.length > 1 && bytes(sys + ctx.map(x => x.c).join('')) > MAX_PROMPT) ctx.shift();
     while (ctx.length && ctx[0].r !== 'u') ctx.shift();
-    return ctx.map((x, i) => ({ role: x.r === 'u' ? 'user' : 'assistant', content: i === 0 ? SYSTEM + '\n\n---\n\n' + x.c : x.c }));
+    // instrukcijos eina atskiru pirmu user turn'u (sample neturi system rolės)
+    return [{ role: 'user', content: sys }, ...ctx.map(x => ({ role: x.r === 'u' ? 'user' : 'assistant', content: x.c }))];
   }
   async function ask(q) {
-    if (!sample) { busy = true; input.disabled = true; sample = await samplePromise; busy = false; input.disabled = false; }
-    if (!sample) { line('<span class="err">Can’t reach Claude.</span> <span class="muted">Open this page through claude.ai while signed in.</span>'); return; }
-    busy = true; input.disabled = true; field.classList.add('busy'); setLink('thinking');
+    busy = true;
+    if (!sample) sample = await samplePromise;
+    if (!sample) { busy = false; line('<span class="err">Can’t reach Claude.</span> <span class="muted">Open this page through claude.ai while signed in.</span>'); return; }
+    field.classList.add('busy'); setLink('thinking'); $('send').setAttribute('aria-label', 'Stop');
     const m = MODELS[settings.model], t0 = performance.now();
-    const think = line(`<span class="star">✻</span><span class="verb">${VERBS[0]}…</span><span class="hint">esc to stop</span>`, 'thinking');
+    const think = line(`<span class="star">✻</span><span class="verb">${VERBS[0]}…</span><span class="hint">${TOUCH ? 'tap ■ to stop' : 'esc to stop'}</span>`, 'thinking');
     const verb = think.querySelector('.verb'); let vi = 0;
     const vt = setInterval(() => { vi = (vi + 1) % VERBS.length; verb.style.opacity = 0; setTimeout(() => { verb.textContent = VERBS[vi] + '…'; verb.style.opacity = 1; }, 220); }, 2000);
     const out = document.createElement('div'); out.className = 'line ans';
-    out.innerHTML = '<span class="bullet">●</span><span class="txt"></span>';
+    out.innerHTML = '<span class="bullet">●</span><div class="txt md"></div>'; out.setAttribute('aria-busy', 'true');
     const txt = out.querySelector('.txt');
     const cur = document.createElement('span'); cur.className = 'cursor';
     history.push({ r: 'u', c: q, t: Date.now() }); renderStatus();
     const msgs = buildContext();
     controller = new AbortController();
-    let started = false, shown = 0;
-    const start = () => { if (started) return; started = true; clearInterval(vt); think.remove(); txt.appendChild(cur); log.appendChild(out); };
+    let started = false, pending = '', raf = 0;
+    const start = () => {
+      if (started) return; started = true; clearInterval(vt);
+      const stick = nearBottom(); think.remove(); log.appendChild(out); if (stick) scroll();
+    };
+    const placeCursor = () => {
+      let el = txt.lastElementChild;
+      if (el && el.classList.contains('list')) el = el.lastElementChild && el.lastElementChild.querySelector('.lc');
+      else if (el && el.classList.contains('code')) el = el.querySelector('code');
+      else if (el && !/^(P|DIV)$/.test(el.tagName) || (el && el.classList.contains('tbl'))) el = null;
+      (el || txt).appendChild(cur);
+    };
+    const paint = () => { raf = 0; const stick = nearBottom(); txt.innerHTML = md(pending); placeCursor(); if (stick) scroll(); else jump.classList.add('show'); };
     try {
       const res = await sample(msgs, {
         cache: false, signal: controller.signal, model: m.id, modelTier: m.tier, effort: settings.effort,
         onText: ({ text }) => {
           if (!text || text === 'Thinking...') return;
-          start();
-          if (text.length < shown) { txt.textContent = ''; txt.appendChild(cur); shown = 0; }
-          const delta = text.slice(shown); shown = text.length;
-          if (delta) { const s = document.createElement('span'); s.className = 'tok'; s.textContent = delta; txt.insertBefore(s, cur); }
-          scroll();
+          start(); pending = text;
+          if (!raf) raf = requestAnimationFrame(paint);
         },
       });
-      start();
+      start(); cancelAnimationFrame(raf);
       const finalText = res.text || '';
-      setTimeout(() => { txt.innerHTML = fmt(finalText); }, 400);
-      const used = appliedName(res, m), secs = ((performance.now() - t0) / 1000).toFixed(1);
-      history.push({ r: 'a', c: finalText, m: used, t: Date.now() });
-      metaLine(finalText, used + (res.truncated ? ' · truncated' : ''), secs);
-      if (used !== m.name) toast(`${m.name} unavailable · ${used} answered`);
+      const stick = nearBottom(); txt.innerHTML = md(finalText); if (stick) scroll();
+      const used = appliedName(res, m), secs = ((performance.now() - t0) / 1000).toFixed(1), t = Date.now();
+      history.push({ r: 'a', c: finalText, m: used, t });
+      metaLine(finalText, used + (res.truncated ? ' · truncated' : ''), secs, t, txt);
+      if (used !== m.name && !warnedModels.has(m.name)) { warnedModels.add(m.name); toast(`${m.name} unavailable · ${used} answered`); }
       saveChat();
     } catch (e) {
-      clearInterval(vt); think.remove(); history.pop();
+      clearInterval(vt); cancelAnimationFrame(raf); think.remove(); history.pop();
       const code = e && e.code;
       // dalinį atsakymą paliekam ekrane (ne atmintyje); refused atveju jis atšauktas
-      if (started && code !== 'refused' && e.text) { setTimeout(() => { txt.innerHTML = fmt(e.text); }, 0); }
+      if (started && code !== 'refused' && e.text) txt.innerHTML = md(e.text);
       else if (started) out.remove();
       if (code === 'cancelled' || (e && e.name === 'AbortError')) line('<span class="muted">stopped · not saved</span>');
       else if (code === 'not_granted') line('<span class="err">Claude access was declined.</span> <span class="muted">Reload the page and choose Allow.</span>');
@@ -777,8 +968,8 @@ Rules:
       else if (code === 'prompt_too_large') line('<span class="err">Message too long.</span> <span class="muted">Send a shorter one, or /new to start over.</span>');
       else line('<span class="err">Error:</span> <span class="muted">' + esc((e && e.message) || 'unknown') + '</span>');
     } finally {
-      busy = false; controller = null; input.disabled = false; field.classList.remove('busy');
-      setLink(sample ? 'online' : 'offline'); renderStatus(); focusIn();
+      busy = false; controller = null; field.classList.remove('busy'); $('send').setAttribute('aria-label', 'Send'); out.removeAttribute('aria-busy');
+      setLink(sample ? 'online' : 'offline'); renderStatus(); syncSend(); focusIn();
     }
   }
 
@@ -792,49 +983,66 @@ Rules:
     palItems = PALETTE.filter(([k]) => k.startsWith(f));
     if (!palItems.length) return hidePal();
     palIdx = Math.min(palIdx, palItems.length - 1);
-    pal.innerHTML = palItems.map(([k, d], i) => `<button type="button" class="pi${i === palIdx ? ' sel' : ''}" data-k="${k}"><span class="pk">/${k}</span><span class="pd">${d}</span></button>`).join('');
+    pal.innerHTML = palItems.map(([k, d], i) => `<button type="button" role="option" aria-selected="${i === palIdx}" class="pi${i === palIdx ? ' sel' : ''}" data-k="${k}"><span class="pk">/${k}</span><span class="pd">${d}</span></button>`).join('');
     pal.classList.add('open');
+    const sel = pal.querySelector('.sel'); if (sel) sel.scrollIntoView({ block: 'nearest' });
   }
   function choosePal(k) { hidePal(); input.value = '/' + k; submit(); }
   pal.addEventListener('pointerdown', e => e.preventDefault());
   pal.addEventListener('click', e => { const b = e.target.closest('.pi'); if (b) choosePal(b.dataset.k); });
 
   // ================= įvestis =================
-  async function submit() {
+  async function submit(fromKey) {
     hidePal();
-    if (busy) { if (controller) controller.abort(); return; }
+    if (busy) {
+      if (!fromKey && controller) controller.abort();
+      else if (fromKey && input.value.trim()) toast(!controller ? 'One moment · still running' : TOUCH ? 'Claude is still answering · tap ■ to stop' : 'Claude is still answering · Esc stops it');
+      return;
+    }
     const q = input.value.trim(); input.value = ''; autosize();
     if (!q) return;
-    cmdHistory.unshift(q); histIdx = -1;
+    if (cmdHistory[0] !== q) cmdHistory.unshift(q); histIdx = -1;
     const slash = q.startsWith('/');
     const [name, ...rest] = (slash ? q.slice(1) : q).split(/\s+/); const key = name.toLowerCase();
     const cmd = Object.prototype.hasOwnProperty.call(COMMANDS, key) ? COMMANDS[key] : null;
     const takesArg = ['model', 'effort', 'accent', 'open'].includes(key);
     const isCmd = slash && cmd && (rest.length === 0 || takesArg);
-    if (key !== 'clear' && key !== 'history' || !isCmd) line(`<span class="arrow">❯</span><span>${fmt(q, false)}</span>`, 'you');
+    if (key !== 'clear' && key !== 'history' || !isCmd) { line(`<span class="arrow">❯</span><span>${linkify(q)}</span>`, 'you'); scroll(); jump.classList.remove('show'); }
     if (isCmd) await cmd(rest.join(' '));
     else if (slash) line(`<span class="err">Unknown command /${esc(name)}.</span> <span class="muted">Type /help</span>`);
-    else await ask(q);
+    else {
+      if (!linkNoteShown && hasLink(q)) { linkNoteShown = true; line('<span class="faint small">Claude can’t open web pages from here. Paste the page text if it needs the content.</span>'); }
+      await ask(q);
+    }
   }
-  form.addEventListener('submit', e => { e.preventDefault(); submit(); });
+  form.addEventListener('submit', e => { e.preventDefault(); submit(false); });
   input.addEventListener('keydown', e => {
+    if (e.isComposing || e.keyCode === 229) return;
     if (pal.classList.contains('open') && palItems.length) {
       if (e.key === 'ArrowDown') { e.preventDefault(); palIdx = (palIdx + 1) % palItems.length; return updatePal(); }
       if (e.key === 'ArrowUp') { e.preventDefault(); palIdx = (palIdx - 1 + palItems.length) % palItems.length; return updatePal(); }
       if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) { e.preventDefault(); return choosePal(palItems[palIdx][0]); }
       if (e.key === 'Escape') { e.preventDefault(); return hidePal(); }
     }
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
-    else if (e.key === 'ArrowUp' && cmdHistory.length && !input.value.includes('\n')) { e.preventDefault(); histIdx = Math.min(histIdx + 1, cmdHistory.length - 1); input.value = cmdHistory[histIdx]; syncSend(); }
-    else if (e.key === 'ArrowDown' && histIdx >= 0) { e.preventDefault(); histIdx--; input.value = histIdx >= 0 ? cmdHistory[histIdx] : ''; syncSend(); }
-    else if (e.key === 'l' && e.ctrlKey) { e.preventDefault(); log.innerHTML = ''; }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(true); }
+    else if (e.key === 'ArrowUp' && cmdHistory.length && !input.value.includes('\n') && (histIdx >= 0 || !input.value)) { e.preventDefault(); histIdx = Math.min(histIdx + 1, cmdHistory.length - 1); input.value = cmdHistory[histIdx]; autosize(); }
+    else if (e.key === 'ArrowDown' && histIdx >= 0) { e.preventDefault(); histIdx--; input.value = histIdx >= 0 ? cmdHistory[histIdx] : ''; autosize(); }
+    else if (e.key === 'l' && e.ctrlKey) { e.preventDefault(); COMMANDS.clear(); }
   });
   function autosize() { input.style.height = '1.65em'; input.style.height = Math.min(input.scrollHeight, 128) + 'px'; syncSend(); }
-  function syncSend() { $('send').classList.toggle('ready', input.value.trim().length > 0); }
-  input.addEventListener('input', () => { palIdx = 0; autosize(); updatePal(); });
-  input.addEventListener('focus', () => field.classList.add('focus'));
+  function syncSend() { $('send').classList.toggle('ready', !busy && input.value.trim().length > 0); }
+  input.addEventListener('input', () => { palIdx = 0; histIdx = -1; autosize(); updatePal(); });
+  input.addEventListener('focus', () => { lastFocus = Date.now(); field.classList.add('focus'); });
   input.addEventListener('blur', () => { field.classList.remove('focus'); setTimeout(hidePal, 150); });
-  screenEl.addEventListener('click', e => { if (!e.target.closest('button, a') && !window.getSelection().toString()) focusIn(); });
+  screenEl.addEventListener('click', e => { if (!e.target.closest('button, a') && !getSelection().toString()) focusIn(); });
+  screenEl.addEventListener('scroll', () => { jump.classList.toggle('show', !nearBottom()); }, { passive: true });
+  jump.onclick = () => { screenEl.scrollTo({ top: screenEl.scrollHeight, behavior: 'smooth' }); jump.classList.remove('show'); };
+  // klaviatūra ar pasukimas keičia aukštį: jei buvai apačioje, ten ir lieki
+  let wasBottom = true;
+  screenEl.addEventListener('scroll', () => { wasBottom = nearBottom(); }, { passive: true });
+  const onResize = () => { if (wasBottom) scroll(); };
+  addEventListener('resize', onResize);
+  if (window.visualViewport) visualViewport.addEventListener('resize', onResize);
 
   // ================= start =================
   async function getUse() {
@@ -858,7 +1066,7 @@ Rules:
       applyAccent(settings.accent);
     }
     if (c && Array.isArray(c.messages)) {
-      const saved = c.messages.filter(x => x && (x.r === 'u' || x.r === 'a') && typeof x.c === 'string');
+      const saved = c.messages.filter(x => x && (x.r === 'u' || x.r === 'a') && typeof x.c === 'string' && x.c);
       history = saved.concat(history);   // atmintis užsikrovė vėliau nei pasisveikinimas: nieko neprarandam
       if (welcomed && saved.length) toast('Saved conversation loaded · /history shows it');
     }
