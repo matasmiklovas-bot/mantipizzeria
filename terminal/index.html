@@ -267,6 +267,9 @@
     background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 8px 14px; font-size: 12.5px;
     opacity: 0; transition: opacity .25s, transform .3s var(--spring); pointer-events: none; box-shadow: 0 12px 34px rgba(0,0,0,.5); max-width: 90vw; text-align: center; }
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #toast.act { display: flex; align-items: center; gap: 14px; text-align: left; }
+  #toast.act.show { pointer-events: auto; }
+  #toast .tbtn { flex: 0 0 auto; border: 0; border-radius: 7px; padding: 4px 10px; background: var(--accent); color: #0b0b0c; font-size: 12px; font-weight: 700; cursor: pointer; }
   #fx { position: fixed; inset: 0; z-index: 70; pointer-events: none; display: none; }
 
   @media (max-width: 560px) { #log { padding: 20px 16px 12px; } body.zen #log { padding-top: 52px; } #dock { padding: 8px 12px 10px; } .hide-sm { display: none; } }
@@ -397,7 +400,14 @@ Rules:
     return d;
   }
   let toastT;
-  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+  function toast(msg, action) {
+    const t = $('toast'); t.textContent = msg; t.classList.toggle('act', !!action);
+    if (action) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tbtn'; b.textContent = action.label;
+      b.onclick = () => action.run(b); t.appendChild(b);
+    }
+    t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), action ? 6000 : 2600);
+  }
   function copyText(text, btn, selectEl) {
     const done = () => { if (!btn) return toast('Copied'); const was = btn.textContent; btn.textContent = 'copied'; setTimeout(() => { btn.textContent = was; }, 1400); };
     const fail = () => {
@@ -855,6 +865,18 @@ Rules:
     },
     party() { confetti(160); },
   };
+  // Jei po bakstelėjimo į nuorodą puslapis lieka matomas ir su fokusu, naujas skirtukas neatsidarė
+  // (kai kurios Claude programos blokuoja nuorodas): pasiūlom nukopijuoti adresą.
+  log.addEventListener('click', e => {
+    const a = e.target.closest('a[href]'); if (!a) return;
+    const url = a.href; let left = false;
+    const away = () => { left = true; };
+    document.addEventListener('visibilitychange', away, { once: true }); addEventListener('blur', away, { once: true });
+    setTimeout(() => {
+      document.removeEventListener('visibilitychange', away); removeEventListener('blur', away);
+      if (!left && document.visibilityState === 'visible' && document.hasFocus()) toast('Didn’t open? Copy the link and paste it in your browser.', { label: 'Copy link', run: b => copyText(url, b, a) });
+    }, 1600);
+  });
   // kopijavimo mygtukai kodo blokuose ir nuorodų kortelėse
   log.addEventListener('click', e => {
     const b = e.target.closest('button[data-copy], button[data-url]'); if (!b) return;
