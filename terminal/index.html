@@ -15,7 +15,7 @@
     --claude: #d77757; --claude-hi: #f0a585; --sugg: #b1b9f9; --ok: #4eba65; --err: #ff6b80; --warn: #ffc107;
     --bash: #fd5db1; --plan: #48968c; --pborder: #888888; --userbg: #373737; --sel: rgba(177,185,249,.28);
     --hl-kw: #c678dd; --hl-str: #98c379; --hl-num: #d19a66; --hl-com: #7f848e; --hl-tag: #e06c75; --hl-fn: #61afef;
-    --tbar: #323232; --tbar-edge: #161616; --ttitle: rgba(255,255,255,.55); --winedge: rgba(255,255,255,.16);
+    --tbar: #323232; --tbar-edge: #161616; --ttitle: rgba(255,255,255,.55); --winedge: rgba(255,255,255,.16); --tl-off: #4c4c4c;
     --wall: radial-gradient(120% 90% at 20% 10%, #2a3346 0%, #151a24 55%, #0b0d12 100%);
     --font: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, "JetBrains Mono", Consolas, monospace;
     --fs: 13px; --lh: 1.3;
@@ -26,7 +26,7 @@
     --claude: #d77757; --claude-hi: #b5512f; --sugg: #5769f7; --ok: #2c7a39; --err: #ab2b3f; --warn: #966c1e;
     --bash: #ff0087; --plan: #006666; --pborder: #999999; --userbg: #f0f0f0; --sel: rgba(87,105,247,.18);
     --hl-kw: #a626a4; --hl-str: #50a14f; --hl-num: #986801; --hl-com: #a0a1a7; --hl-tag: #e45649; --hl-fn: #4078f2;
-    --tbar: #e8e8e8; --tbar-edge: #c9c9c9; --ttitle: rgba(0,0,0,.55); --winedge: rgba(0,0,0,.18);
+    --tbar: #e8e8e8; --tbar-edge: #c9c9c9; --ttitle: rgba(0,0,0,.55); --winedge: rgba(0,0,0,.18); --tl-off: #cfcfcf;
     --wall: radial-gradient(120% 90% at 20% 10%, #dfe7f5 0%, #b9c6dd 60%, #95a3bd 100%);
     color-scheme: light;
   }
@@ -160,11 +160,18 @@
   #box.bash { border-color: var(--bash); } #box.mem { border-color: var(--sugg); }
   #ps { flex: 0 0 2ch; color: var(--fg); }
   #box.bash #ps { color: var(--bash); } #box.mem #ps { color: var(--sugg); }
-  #in { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; resize: none; padding: 0; margin: 0;
-    font: inherit; font-size: max(16px, var(--fs)); line-height: var(--lh); color: var(--fg); caret-color: var(--fg);
-    height: calc(var(--lh) * 1em); max-height: calc(var(--lh) * 10em); overflow-y: auto; }
-  @media (hover: hover) and (pointer: fine) { #in { font-size: var(--fs); } }
+  .inp { font: inherit; font-size: var(--ifs, var(--fs)); line-height: var(--lh); letter-spacing: 0; }
+  #field { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+  #in { display: block; width: 100%; background: transparent; border: 0; outline: 0; resize: none; padding: 0; margin: 0;
+    color: var(--fg); caret-color: transparent; height: calc(var(--lh) * 1em); max-height: calc(var(--lh) * 10em); overflow-y: auto; }
   #in::placeholder { color: var(--dim); opacity: 1; }
+  /* Terminal.app bloko kursorius: tekstas po juo invertuojamas */
+  #mirror { position: absolute; left: 0; top: 0; visibility: hidden; white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; pointer-events: none; }
+  #cur { position: absolute; left: 0; top: 0; min-width: 1ch; height: calc(var(--lh) * 1em); background: var(--fg); color: var(--bg); white-space: pre;
+    pointer-events: none; will-change: transform; animation: curblink 1.06s steps(1) infinite; }
+  #cur.typing { animation: none; }
+  #cur.off { background: none; color: transparent; box-shadow: inset 0 0 0 1px var(--dim); animation: none; }
+  @keyframes curblink { 50% { opacity: 0; } }
   #foot { display: flex; justify-content: space-between; gap: 2ch; padding: 0 0 0 2ch; color: var(--dim); white-space: nowrap; min-height: calc(var(--lh) * 1em); }
   #fl { overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
   #fr { overflow: hidden; text-overflow: ellipsis; text-align: right; }
@@ -188,12 +195,12 @@
   [hidden] { display: none !important; }
 
   /* ================= fullscreen / focus ================= */
-  body.zen #tbar { display: none; }
+  body.zen #tbar { margin-top: -29px; opacity: 0; pointer-events: none; }
   body.zen #desk { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: var(--bg); }
   body.zen #win { border-radius: 0; box-shadow: none; }
   #reveal { position: fixed; left: 0; right: 0; top: 0; height: 12px; z-index: 30; display: none; }
   body.zen #reveal { display: block; }
-  body.zen.peek #tbar { display: flex; position: fixed; left: 0; right: 0; top: env(safe-area-inset-top); z-index: 31; }
+  body.zen.peek #tbar { margin-top: 0; opacity: 1; pointer-events: auto; }
 
   /* ================= svetainės peržiūra (Safari langas) ================= */
   #viewer { position: fixed; inset: 0; z-index: 90; display: flex; background: rgba(0,0,0,.35);
@@ -212,11 +219,35 @@
   #vframe { flex: 1; width: 100%; border: 0; background: #fff; }
   @media (max-width: 560px) { #vtitle { max-width: calc(100% - 190px); } }
 
-  @media (pointer: coarse) { :root { --fs: 16px; } }
-  @media (pointer: coarse) and (max-width: 560px) { :root { --fs: 14px; } }
+  @media (pointer: coarse) { :root { --fs: 14px; } }
+  @media (pointer: coarse) and (max-width: 699px) { :root { --ifs: 16px; } }
   @media (pointer: fine) and (max-width: 560px) { :root { --fs: 12px; } }
   @media (max-width: 560px) { #term { padding: 6px 8px 12px; } }
-  @media (prefers-reduced-motion: reduce) { .spin .sv { animation: none; color: var(--claude); background: none; } .dot.run { animation: none; } }
+  /* ================= animacijos (kaip macOS: trumpos, be šokinėjimo) ================= */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  .anim { animation: fadeUp .22s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes winIn { from { opacity: 0; transform: scale(.965) translateY(8px); } to { opacity: 1; transform: none; } }
+  #win.opening { animation: winIn .45s cubic-bezier(.2,.9,.25,1) both; }
+  #menu:not([hidden]), #panel:not([hidden]), #panelHint:not([hidden]) { animation: fadeUp .16s ease-out both; }
+  #fr.flash { animation: fadeUp .2s ease-out both; }
+  @keyframes pop { 0% { transform: scale(.3); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+  .dot.pop { animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; }
+  .clawd { cursor: pointer; transform-origin: 50% 100%; }
+  .clawd .lid { opacity: 0; animation: lid 5.4s infinite; }
+  @keyframes lid { 0%, 92%, 100% { opacity: 0; } 94%, 97% { opacity: 1; } }
+  .clawd.hop { animation: hop .55s cubic-bezier(.3,1.5,.5,1); }
+  @keyframes hop { 35% { transform: translateY(-28%) scaleY(1.04); } 70% { transform: translateY(0) scaleY(.94); } 100% { transform: none; } }
+  #tbar { transition: margin-top .32s cubic-bezier(.2,.8,.2,1), opacity .25s, background-color .25s; }
+  #desk { transition: padding .38s cubic-bezier(.2,.8,.2,1); }
+  #win { transition: border-radius .38s, box-shadow .38s, background-color .25s; }
+  body, #term, .user, #box { transition: background-color .25s, color .25s, border-color .25s; }
+  /* neaktyvus langas: pilki šviesoforai, kaip macOS */
+  body.inactive .lights:not(:hover) .tl { background: var(--tl-off); box-shadow: inset 0 0 0 .5px rgba(0,0,0,.18); }
+  body.inactive #wtitle { opacity: .55; }
+  @media (prefers-reduced-motion: reduce) {
+    .spin .sv { animation: none; color: var(--claude); background: none; } .dot.run, .anim, #win.opening, .dot.pop, .clawd .lid, .clawd.hop, #cur, #fr.flash,
+    #menu:not([hidden]), #panel:not([hidden]), #panelHint:not([hidden]) { animation: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -237,7 +268,11 @@
           <div id="queued" class="queued" hidden></div>
           <div id="box">
             <span id="ps">&gt;</span>
-            <textarea id="in" rows="1" aria-label="Message" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"></textarea>
+            <div id="field">
+              <textarea id="in" class="inp" rows="1" aria-label="Message" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"></textarea>
+              <div id="mirror" class="inp" aria-hidden="true"></div>
+              <span id="cur" class="inp" aria-hidden="true"></span>
+            </div>
           </div>
           <div id="panel" hidden></div>
           <div id="panelHint" hidden></div>
@@ -294,6 +329,7 @@
   let files = {};          // virtualūs failai: name -> {id, lines, bytes, t}
   let who = { name: 'Matas', handle: 'matas' };
   let prevSeen = 0;        // ankstesnio apsilankymo laikas „Last login“ eilutei
+  let lastReply = null;    // { name, ok }: kuris modelis iš tikrųjų atsakė (pagal sample modelApplied)
   let sample = null, samplePromise = Promise.resolve(null), busy = false, controller = null, mode = 'normal', plan = false;
   const session = { id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), start: Date.now(), apiMs: 0, inTok: 0, outTok: 0, warned: new Set() };
   const cmdHistory = []; let histIdx = -1;
@@ -307,20 +343,24 @@
   const tok = n => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'k' : String(n);
   const estTok = s => Math.ceil(String(s).length / 4);
   const TOUCH = matchMedia('(pointer: coarse)').matches;
+  // iPad su klaviatūra ir pele/trackpad'u elgiasi kaip Mac: fokusas laikomas įvestyje, veikia Esc
+  const KEYS = matchMedia('(any-pointer: fine)').matches;
   const nearBottom = () => term.scrollHeight - term.scrollTop - term.clientHeight < 80;
   const toBottom = () => { term.scrollTop = term.scrollHeight; };
-  const focusIn = () => { if (TOUCH) return; try { input.focus({ preventScroll: true }); } catch (e) {} };
+  const focusIn = () => { if (!KEYS) return; try { input.focus({ preventScroll: true }); } catch (e) {} };
   const ago = t => { const s = Math.max(1, Math.round((Date.now() - t) / 1000)); return s < 60 ? s + 's ago' : s < 3600 ? Math.round(s / 60) + 'm ago' : s < 86400 ? Math.round(s / 3600) + 'h ago' : Math.round(s / 86400) + 'd ago'; };
   const dur = ms => { const s = Math.round(ms / 1000); return s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + (s % 60) + 's'; };
+  let quiet = false;   // perpiešiant ekraną eilutės neanimuojamos
   function add(html, cls) {
     const stick = nearBottom();
-    const d = document.createElement('div'); d.className = 'blk' + (cls ? ' ' + cls : ''); d.innerHTML = html; out.appendChild(d);
+    const d = document.createElement('div'); d.className = 'blk' + (cls ? ' ' + cls : '') + (quiet ? '' : ' anim'); d.innerHTML = html; out.appendChild(d);
     if (stick) toBottom(); return d;
   }
   const res = (html, cls) => add(html, 'tight res' + (cls ? ' ' + cls : ''));
   let notifyT;
   function notify(text, action) {
-    footR.textContent = text; clearTimeout(notifyT);
+    footR.textContent = text; clearTimeout(notifyT); footR.title = '';
+    footR.classList.remove('flash'); void footR.offsetWidth; footR.classList.add('flash');
     if (action) { const b = document.createElement('button'); b.type = 'button'; b.textContent = action.label; b.onclick = () => action.run(b); footR.append(' ', b); }
     notifyT = setTimeout(renderFoot, action ? 7000 : 3200);
   }
@@ -576,7 +616,7 @@ Rules:
     const link = Mem.mode === 'cloud' ? ` · <a href="${esc(siteUrl(id))}" target="_blank" rel="noopener noreferrer">Link ↗</a> · <button class="act" type="button" data-url="${esc(siteUrl(id))}">Copy link</button>` : '';
     return `<div class="blk msg tool" data-sid="${id}"><span class="dot ${p.closed ? 'ok' : 'bad'}"></span><div class="mc"><span class="b">${kind}</span>(${esc(name)})` +
       `<div class="res">${head}${p.closed ? '' : ' <span class="err">· cut off, ask for a shorter version</span>'}</div>` +
-      `<div class="prev">${hl(first, 'html')}</div>` + (L.length > 4 ? `<div class="more" role="button" tabindex="0">… +${L.length - 4} lines (${TOUCH ? 'tap' : 'ctrl+o'} to expand)</div>` : '') +
+      `<div class="prev">${hl(first, 'html')}</div>` + (L.length > 4 ? `<div class="more" role="button" tabindex="0">… +${L.length - 4} lines (${KEYS ? 'ctrl+o' : 'tap'} to expand)</div>` : '') +
       `<div class="full">${hl(p.src, 'html')}</div>` +
       `<div class="acts"><button class="act" type="button" data-open="${id}">Open ${esc(name)}</button>${link}</div></div></div>`;
   }
@@ -618,6 +658,7 @@ Rules:
       const b = QB[ch] || 0;
       [[1, 0, 0], [2, 1, 0], [4, 0, 1], [8, 1, 1]].forEach(([bit, dx, dy]) => { if (b & bit) r += `<rect x="${x * 2 + dx}" y="${y * 2 + dy}" width="1.02" height="1.02"/>`; });
     }));
+    r += '<rect class="lid" x="5" y="1" width="1.02" height="1.02"/><rect class="lid" x="12" y="1" width="1.02" height="1.02"/>';   // vokai užmerkia akis
     return `<svg class="clawd" viewBox="0 0 18 6" preserveAspectRatio="none" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
   })();
 
@@ -640,10 +681,10 @@ Rules:
     else { const wrap = add(answerHtml(msg.c, false, msg.f), 'turn'); ensureSites(wrap); }
   }
   function redraw() {
-    out.innerHTML = ''; welcome();
+    quiet = true; out.innerHTML = ''; welcome();
     if (summary && !history.length) res('<span class="dim">Conversation compacted · earlier messages are summarized in context</span>');
     history.forEach(renderTurn);
-    toBottom();
+    quiet = false; toBottom();
   }
 
   // ================= lango antraštė: vartotojas — claude — stulpeliai×eilutės =================
@@ -668,13 +709,17 @@ Rules:
     else if (plan) footL.innerHTML = '<span class="teal">⏸︎ plan mode on</span> <span class="dim">(shift+tab to cycle)</span>';
     else footL.textContent = '? for shortcuts';
     const ctxLeft = 100 - Math.round(contextBytes() / MAX_PROMPT * 100);
-    footR.innerHTML = ctxLeft < 25 ? `<span class="warn">Context left until auto-compact: ${Math.max(0, ctxLeft)}%</span>` : settings.thinking ? '<span class="acc">✻ Thinking on</span>' : '';
+    const right = [];
+    if (settings.thinking) right.push('<span class="acc">✻ Thinking on</span>');
+    if (lastReply) right.push(lastReply.ok ? `${esc(lastReply.name)} <span class="ok">✓</span>` : `<span class="warn">⚠ ${esc(lastReply.name)} answered</span>`);
+    footR.innerHTML = ctxLeft < 25 ? `<span class="warn">Context left until auto-compact: ${Math.max(0, ctxLeft)}%</span>` : right.join('<span class="dim"> · </span>');
+    footR.title = lastReply ? (lastReply.ok ? `Claude confirmed the last reply came from ${lastReply.name}` : `Your chosen model was unavailable; the ${lastReply.name} answered`) : '';
   }
   function setMode(m) {
     mode = m; box.className = m === 'bash' ? 'bash' : m === 'mem' ? 'mem' : '';
     $('ps').textContent = m === 'bash' ? '!' : m === 'mem' ? '#' : '>';
     input.placeholder = m === 'normal' ? `Try "${TIPS[Math.floor(Math.random() * TIPS.length)]}"` : '';
-    renderFoot();
+    renderFoot(); if (typeof drawCursor === 'function') requestAnimationFrame(() => drawCursor());
   }
   footL.onclick = () => { if (plan) { plan = false; renderFoot(); } else toggleShortcuts(); };
 
@@ -848,7 +893,7 @@ Rules:
         settings.model = key; saveSettings(); return res(`Set model to <span class="b">${esc(MODELS[key].name)}</span> <span class="dim">(${MODELS[key].id})</span>`);
       }
       const keys = Object.keys(MODELS);
-      openPanel({ title: 'Select model', desc: 'Switch between Claude models. Applies to this session and future sessions.', idx: keys.indexOf(settings.model),
+      openPanel({ title: 'Select model', desc: 'Switch between Claude models. Applies to this session and future sessions.' + (lastReply ? (lastReply.ok ? ` Last reply came from ${lastReply.name} ✓` : ` Last reply came from the ${lastReply.name}.`) : ''), idx: keys.indexOf(settings.model),
         items: keys.map(k => ({ label: MODELS[k].label, desc: MODELS[k].desc, check: k === settings.model })),
         onPick(it, i) { settings.model = keys[i]; saveSettings(); closePanel(`Set model to <span class="b">${esc(MODELS[keys[i]].name)}</span> <span class="dim">(${MODELS[keys[i]].id})</span>`); } });
     },
@@ -878,6 +923,7 @@ Rules:
       res(kv([['Version', 'Claude Terminal ' + VERSION], ['Session ID', session.id], ['cwd', '/Users/' + esc(who.handle)],
         ['Account', (who.name ? esc(who.name) + ' · ' : '') + 'Claude account'], ['Model', `${esc(MODELS[settings.model].name)} <span class="dim">(${MODELS[settings.model].id})</span>`],
         ['Thinking', settings.thinking ? 'on' : 'off'], ['Memory', `${notes.length} note${notes.length === 1 ? '' : 's'} · ${Mem.mode === 'cloud' ? 'Claude account' : Mem.mode === 'device' ? 'this device' : 'off'}`],
+        ['Last reply', lastReply ? (lastReply.ok ? `${esc(lastReply.name)} <span class="ok">✓ confirmed by Claude</span>` : `<span class="warn">${esc(lastReply.name)} (your chosen model was unavailable)</span>`) : '<span class="dim">no reply yet</span>'],
         ['Files', String(Object.keys(files).length)], ['Messages', String(history.length)]]));
     },
   };
@@ -945,7 +991,7 @@ Rules:
     const el = document.createElement('div'); el.className = 'spin'; el.setAttribute('role', 'status');
     const frames = ['·', '✢', '✳︎', '✶', '✻', '✽', '✻', '✶', '✳︎', '✢'];
     const t0 = Date.now(); let k = 0, toks = 0;
-    const hint = TOUCH ? 'tap to interrupt' : 'esc to interrupt';
+    const hint = KEYS ? 'esc to interrupt' : 'tap to interrupt';
     const draw = () => {
       const s = Math.floor((Date.now() - t0) / 1000);
       el.innerHTML = `<span class="sg">${frames[k++ % frames.length]}</span><span class="sv">${esc(verb)}…</span> <span class="sd">(${hint}${s ? ' · ' + s + 's' : ''}${toks ? ' · ↓ ' + tok(toks) + ' tokens' : ''})</span>`;
@@ -997,6 +1043,8 @@ Rules:
       const stick = nearBottom(); wrap.innerHTML = answerHtml(text, false, ops); if (stick) toBottom(); ensureSites(wrap);
       const used = appliedName(r, m);
       history.push(Object.assign({ r: 'a', c: text, m: used, t: Date.now() }, ops.length ? { f: ops } : {}));
+      lastReply = { name: used, ok: !!r.modelApplied };
+      wrap.querySelectorAll('.dot.ok').forEach(d => d.classList.add('pop'));
       session.outTok += estTok(text);
       if (r.truncated) res('<span class="warn">Response was cut off at the length limit</span>');
       if (used !== m.name && !session.warned.has(m.name)) { session.warned.add(m.name); res(`<span class="dim">${esc(m.name)} is unavailable · answered by the ${esc(used)}</span>`); }
@@ -1104,7 +1152,7 @@ Rules:
   function toggleExpand() { expanded = !expanded; document.querySelectorAll('.tool').forEach(t => t.classList.toggle('expanded', expanded)); }
   document.addEventListener('keydown', e => {
     if (e.defaultPrevented) return;
-    if (!$('viewer').hidden) { if (e.key === 'Escape' && !isNativeFS()) closeSite(); return; }
+    if (!$('viewer').hidden) { if (e.key === 'Escape' && !isNativeFS() && viewing) closeSite(); return; }
     if (panel) {
       const n = parseInt(e.key, 10);
       if (e.key === 'ArrowDown') { e.preventDefault(); panel.idx = (panel.idx + 1) % Math.max(1, panel.items.length); drawPanel(); }
@@ -1117,7 +1165,25 @@ Rules:
     if (e.key === 'Escape' && controller) { e.preventDefault(); controller.abort(); }
     else if (e.ctrlKey && e.key === 'o') { e.preventDefault(); toggleExpand(); }
   });
-  function autosize() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, cellH * 10) + 'px'; }
+  function autosize() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, cellH * 10) + 'px'; drawCursor(); }
+  // Terminal.app bloko kursorius: tekstas iki kursoriaus atkartojamas nematomame veidrodyje, kad gautume tikslią vietą
+  const mirror = $('mirror'), cur = $('cur'); let curT;
+  function drawCursor() {
+    if (box.hidden) return;
+    const a = input.selectionStart, b = input.selectionEnd;
+    if (a !== b) { cur.hidden = true; return; }
+    cur.hidden = false;
+    const v = input.value;
+    mirror.style.width = input.clientWidth + 'px';
+    mirror.textContent = v.slice(0, a);
+    const mk = document.createElement('span'); mk.textContent = '\u200b'; mirror.appendChild(mk);
+    cur.textContent = v ? (v[a] && v[a] !== '\n' ? v[a] : ' ') : (input.placeholder[0] || ' ');
+    cur.style.transform = `translate(${mk.offsetLeft}px, ${mk.offsetTop - input.scrollTop}px)`;
+    cur.classList.toggle('off', document.activeElement !== input);
+    cur.classList.add('typing'); clearTimeout(curT); curT = setTimeout(() => cur.classList.remove('typing'), 550);
+  }
+  ['keyup', 'click', 'focus', 'blur', 'select', 'scroll'].forEach(ev => input.addEventListener(ev, () => requestAnimationFrame(drawCursor)));
+  document.addEventListener('selectionchange', () => { if (document.activeElement === input) drawCursor(); });
   input.addEventListener('input', () => {
     histIdx = -1;
     if (mode === 'normal' && input.value.startsWith('!')) { input.value = input.value.slice(1); setMode('bash'); }
@@ -1141,7 +1207,7 @@ Rules:
   });
   out.addEventListener('click', e => {
     const more = e.target.closest('.more'); if (more) { more.closest('.tool').classList.add('expanded'); return; }
-    const op = e.target.closest('[data-open]'); if (op) { const id = op.dataset.open, s = siteSrc.get(id); if (s) openSite(id, s.src, toolName(op)); return; }
+    const op = e.target.closest('[data-open]'); if (op) { const id = op.dataset.open, s = siteSrc.get(id); if (s) openSite(id, s.src, toolName(op), op); return; }
     const cp = e.target.closest('[data-url]'); if (cp) { copyText(cp.dataset.url, 'Link copied'); return; }
     const a = e.target.closest('a[href]'); if (a) linkProbe(a.href);
   });
@@ -1163,14 +1229,35 @@ Rules:
     return STORAGE_SHIM + src;
   }
   let viewing = null;
-  function openSite(id, src, name) {
-    viewing = { id }; if (document.activeElement === input) input.blur();
+  const MOTION = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function zoomFrames(from) {
+    const v = $('vwin').getBoundingClientRect();
+    if (!from || !v.width) return null;
+    const s = Math.max(.06, Math.min(1, from.width / v.width));
+    const dx = from.left + from.width / 2 - (v.left + v.width / 2), dy = from.top + from.height / 2 - (v.top + v.height / 2);
+    return [{ transform: `translate(${dx}px, ${dy}px) scale(${s})`, opacity: 0 }, { transform: 'none', opacity: 1 }];
+  }
+  function openSite(id, src, name, fromEl) {
+    viewing = { id, from: fromEl && fromEl.getBoundingClientRect ? fromEl.getBoundingClientRect() : null };
+    if (document.activeElement === input) input.blur();
     $('vtitle').textContent = name || siteTitle(src); $('vframe').srcdoc = withShim(src); $('viewer').hidden = false;
     $('vlink').hidden = Mem.mode !== 'cloud';
+    if (MOTION && $('viewer').animate) {
+      $('viewer').animate([{ backgroundColor: 'rgba(0,0,0,0)' }, { backgroundColor: 'rgba(0,0,0,.35)' }], { duration: 260, easing: 'ease-out' });
+      const f = zoomFrames(viewing.from) || [{ transform: 'scale(.94)', opacity: 0 }, { transform: 'none', opacity: 1 }];
+      $('vwin').animate(f, { duration: 340, easing: 'cubic-bezier(.2,.9,.25,1)' });
+    }
   }
   function closeSite() {
     if (isNativeFS() || wantFull) exitFull();
-    $('viewer').hidden = true; $('vframe').srcdoc = ''; viewing = null;
+    const done = () => { $('viewer').hidden = true; $('vframe').srcdoc = ''; };
+    if (MOTION && $('vwin').animate && !$('viewer').hidden) {
+      const f = zoomFrames(viewing && viewing.from) || [{ transform: 'scale(.94)', opacity: 0 }, { transform: 'none', opacity: 1 }];
+      $('viewer').animate([{ backgroundColor: 'rgba(0,0,0,.35)' }, { backgroundColor: 'rgba(0,0,0,0)' }], { duration: 200, easing: 'ease-in', fill: 'forwards' });
+      const a = $('vwin').animate(f.slice().reverse(), { duration: 210, easing: 'cubic-bezier(.4,0,.8,.4)', fill: 'forwards' });
+      a.onfinish = () => { done(); a.cancel(); $('viewer').getAnimations().forEach(x => x.cancel()); };
+    } else done();
+    viewing = null;
     if (/^#s-/.test(location.hash)) { try { window.history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
     focusIn();
   }
@@ -1190,7 +1277,7 @@ Rules:
   const root = document.documentElement;
   const isNativeFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
   const canNative = () => !!(root.requestFullscreen || root.webkitRequestFullscreen) && !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
-  let wantFull = false, fsDropped = false, lastFocus = 0;
+  let wantFull = false, fsDropped = false, lastFocus = 0, fsExplained = false;
   function requestNative() {
     if (!canNative()) return false;
     try {
@@ -1201,9 +1288,13 @@ Rules:
   }
   function enterFull() {
     wantFull = true; fsDropped = false; document.body.classList.add('zen'); setTimeout(setTitle, 50);
-    const msg = TOUCH ? 'Full screen · tap the top edge for the window bar' : 'Full screen · press Esc to exit';
-    if (!requestNative()) return notify('This app blocks real full screen · window bar hidden instead');
-    setTimeout(() => { if (wantFull && !isNativeFS() && !fsDropped) notify('This app blocks real full screen · window bar hidden instead'); else notify(msg); }, 900);
+    const msg = KEYS ? 'Full screen · press Esc to exit' : 'Full screen · tap the top edge for the window bar';
+    const blocked = () => {
+      notify('Full screen is blocked here · window bar hidden instead');
+      if (!fsExplained) { fsExplained = true; res('<span class="dim">This browser view doesn’t let pages go full screen, so the window bar is hidden instead. For more room, use the expand button in Claude’s top bar. Tap the top edge (or move the pointer there) to show the window bar.</span>'); }
+    };
+    if (!requestNative()) return blocked();
+    setTimeout(() => { if (wantFull && !isNativeFS() && !fsDropped) blocked(); else if (wantFull) notify(msg); }, 900);
   }
   function exitFull() {
     wantFull = false; fsDropped = false; document.body.classList.remove('zen', 'peek'); setTimeout(setTitle, 50);
@@ -1223,6 +1314,11 @@ Rules:
     fsDropped = false; requestNative();
   }, true);
   $('fsBtn').onclick = toggleFull;
+  $('tbar').addEventListener('dblclick', e => { if (!e.target.closest('.lights')) toggleFull(); });   // kaip macOS: dvigubas paspaudimas antraštėje
+  // neaktyvus langas: pilki šviesoforai (tik po tikro fokuso praradimo)
+  addEventListener('blur', () => { if (!$('viewer').hidden) return; document.body.classList.add('inactive'); });
+  addEventListener('focus', () => document.body.classList.remove('inactive'));
+  document.addEventListener('pointerdown', () => document.body.classList.remove('inactive'), true);
   let peekT;
   const peek = () => { document.body.classList.add('peek'); clearTimeout(peekT); peekT = setTimeout(() => document.body.classList.remove('peek'), 3500); };
   $('reveal').addEventListener('mouseenter', peek); $('reveal').addEventListener('click', peek);
@@ -1255,13 +1351,20 @@ Rules:
     if (mem && Array.isArray(mem.notes)) notes = mem.notes.filter(n => n && typeof n.text === 'string');
     if (cv && Array.isArray(cv.list)) convs = cv.list;
     if (fl && fl.files && typeof fl.files === 'object') files = fl.files;
+    const la = [...history].reverse().find(x => x.r === 'a' && x.m);
+    if (la) lastReply = { name: la.m, ok: Object.values(MODELS).some(m => m.name === la.m) };
   })().catch(() => {});
+  out.addEventListener('click', e => {
+    const c = e.target.closest('.clawd'); if (!c) return;
+    c.classList.remove('hop'); void c.getBoundingClientRect(); c.classList.add('hop');
+  });
   (async () => {
+    $('win').classList.add('opening'); setTimeout(() => $('win').classList.remove('opening'), 600);
     applyTheme(); measure(); setMode('normal');
     input.disabled = true;
     await Promise.race([ready, sleep(1500)]);
     applyTheme(); measure(); setTitle(); redraw();
-    input.disabled = false; renderFoot(); focusIn();
+    input.disabled = false; renderFoot(); focusIn(); drawCursor();
     settings.lastSeen = Date.now(); saveSettings();
     await ready; openFromHash();
   })();
