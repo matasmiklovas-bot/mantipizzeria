@@ -344,7 +344,7 @@
   const footL = $('fl'), footR = $('fr'), queuedEl = $('queued'), pa = $('pa');
 
   // ================= duomenys =================
-  const VERSION = '3.1.0';
+  const VERSION = '3.1.1';
   const ARTIFACT_URL = 'https://claude.ai/artifact/54ncrnz95vRCeD9ms6NuhC';
   const MODELS = {
     sonnet: { id: 'claude-sonnet-5-5', name: 'Sonnet 5.5', tier: 'default', label: 'Default (recommended)', desc: 'Sonnet 5.5 · Best for everyday tasks' },
@@ -752,8 +752,8 @@ Rules:
     if (msg.k) parts.push('↓ ' + tok(msg.k) + ' tokens');
     return `<div class="rmeta">${parts.join(' · ')}</div>`;
   }
-  function redraw() {
-    quiet = true; out.innerHTML = ''; welcome();
+  function redraw(draw) {
+    quiet = true; out.innerHTML = ''; welcome({ draw: draw && MOTION });
     if (summary && !history.length) res('<span class="dim">Conversation compacted · earlier messages are summarized in context</span>');
     history.forEach(renderTurn);
     quiet = false; toBottom();
@@ -910,7 +910,7 @@ Rules:
         `<div class="cmdlist">${COMMANDS.map(([k, d]) => `<span>  /${k}</span><span class="dim">${esc(d)}</span>`).join('')}</div>\n<span class="dim">Press ? for keyboard shortcuts</span>`);
     },
     clear() {
-      archive(); history = []; summary = ''; saveChat(); redraw();
+      archive(); history = []; summary = ''; queue.length = 0; drawQueue(); saveChat(); redraw(true);
     },
     async compact(arg) {
       if (!history.length) return res('<span class="dim">Nothing to compact yet</span>');
@@ -991,7 +991,7 @@ Rules:
         onPick(it, i) { settings.theme = keys[i]; applyTheme(); saveSettings(); closePanel(`Set theme to <span class="b">${esc(THEMES[keys[i]])}</span>`); } });
     },
     'release-notes'() {
-      res(`<span class="b">Version 3.1.0</span>\n• Full screen keeps working on iPad while you type on a hardware keyboard\n• Every reply shows which model answered (✓ = confirmed by Claude), time and tokens\n• Model badge in the corner: tap to switch, or press ⌥P\n• Themes with live preview: Claude Dark, Claude Light, Pro, Homebrew, Ocean, Solarized Dark (/theme)\n• Launch animation, block cursor, smoother windows and menus\n<span class="b">Version 3.0.0</span>\n• Rebuilt as a Claude Code style terminal in a macOS window\n• Slash commands: /model /clear /compact /resume /rewind /context /cost /status /doctor /memory /config /export\n• # memory, ! browser shell, @ file attachments, pasted text placeholders, queued messages\n• Websites and games appear as Write(...) and open with one tap\n<span class="b">Version 2.0.0</span>\n• Formatted answers, clickable links, full screen, website links`);
+      res(`<span class="b">Version 3.1.1</span>\n• clear works like in a terminal: /clear, clear or cls, even while Claude is answering\n<span class="b">Version 3.1.0</span>\n• Full screen keeps working on iPad while you type on a hardware keyboard\n• Every reply shows which model answered (✓ = confirmed by Claude), time and tokens\n• Model badge in the corner: tap to switch, or press ⌥P\n• Themes with live preview: Claude Dark, Claude Light, Pro, Homebrew, Ocean, Solarized Dark (/theme)\n• Launch animation, block cursor, smoother windows and menus\n<span class="b">Version 3.0.0</span>\n• Rebuilt as a Claude Code style terminal in a macOS window\n• Slash commands: /model /clear /compact /resume /rewind /context /cost /status /doctor /memory /config /export\n• # memory, ! browser shell, @ file attachments, pasted text placeholders, queued messages\n• Websites and games appear as Write(...) and open with one tap\n<span class="b">Version 2.0.0</span>\n• Formatted answers, clickable links, full screen, website links`);
     },
     resume() {
       openPanel({ title: 'Resume conversation', empty: 'No earlier conversations', items: convs.map(c => ({ label: c.title, desc: `${ago(c.t)} · ${c.n} messages` })),
@@ -1108,6 +1108,7 @@ Rules:
     }[code];
     res(`<span class="err">${esc(msg || 'API Error: ' + ((e && e.message) || 'unknown'))}</span>`);
   }
+  let clearAfterAbort = false;
   async function ask(display, full) {
     busy = true;
     if (!(await ensureSample())) { busy = false; return; }
@@ -1152,7 +1153,9 @@ Rules:
       errorLine(e);
     } finally {
       session.apiMs += performance.now() - t0; wrap.removeAttribute('aria-busy');
-      sp.stop(); busy = false; controller = null; renderFoot(); pump();
+      sp.stop(); busy = false; controller = null; renderFoot();
+      if (clearAfterAbort) { clearAfterAbort = false; RUN.clear(); }
+      pump();
     }
   }
   function pump() {
@@ -1167,6 +1170,12 @@ Rules:
     if (!fromQueue) hideMenu();
     let q = (fromQueue ? queued : input.value).replace(/\s+$/, '');
     if (!q.trim() && mode === 'normal') return;
+    // kaip terminale: „clear“ / „cls“ be brūkšnio irgi išvalo; tarpai prieš /komandą nesvarbu
+    if (mode === 'normal') { if (/^\s*(clear|cls)$/i.test(q)) q = '/clear'; else if (/^\s+\//.test(q)) q = q.trimStart(); }
+    // /clear atsakymo metu: nutraukia atsakymą ir išvalo iškart, o ne laukia eilėje
+    if (busy && mode === 'normal' && /^\/clear\b/i.test(q) && controller) {
+      queue.length = 0; drawQueue(); clearAfterAbort = true; input.value = ''; autosize(); hideMenu(); controller.abort(); return;
+    }
     // kol Claude atsako: komandos, kurios nekeičia pokalbio, # ir ! vykdomi iškart; kita laukia eilėje
     const SAFE = /^\/(help|status|context|cost|doctor|model|config|memory|export|share|release-notes)\b/i;
     if (busy && !(mode !== 'normal' || SAFE.test(q))) {
