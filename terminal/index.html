@@ -283,6 +283,13 @@
   /* neaktyvus langas: pilki šviesoforai, kaip macOS */
   body.inactive .lights:not(:hover) .tl { background: var(--tl-off); box-shadow: inset 0 0 0 .5px rgba(0,0,0,.18); }
   body.inactive #wtitle { opacity: .55; }
+  /* /compare: tas pats klausimas visiems modeliams */
+  .cmp { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 36ch), 1fr)); gap: calc(var(--lh) * .5em) 2ch; margin-top: calc(var(--lh) * .4em); white-space: normal; }
+  .cc { border: 1px solid color-mix(in srgb, var(--dim) 45%, transparent); border-radius: 7px; padding: calc(var(--lh) * .35em) 1.2ch calc(var(--lh) * .45em); min-width: 0; animation: fadeUp .35s calc(var(--i) * 80ms) ease-out both; transition: border-color .4s; }
+  .cc.done { border-color: color-mix(in srgb, var(--ok) 55%, transparent); } .cc.bad { border-color: color-mix(in srgb, var(--err) 55%, transparent); }
+  .cc .ch { display: flex; gap: 1ch; align-items: baseline; flex-wrap: wrap; } .cc .ch .dot { align-self: center; margin: 0; }
+  .cc .cs { font-size: .92em; } .cc .cb { margin-top: calc(var(--lh) * .3em); overflow-wrap: anywhere; } .cc .cb:empty { display: none; }
+  @media (prefers-reduced-motion: reduce) { .cc { animation: none; } }
   @media (prefers-reduced-motion: reduce) {
     .spin .sv { animation: none; color: var(--claude); background: none; } .dot.run, .anim, #win.opening, .dot.pop, .clawd .lid, .clawd.hop, #cur, #fr.flash,
     #menu:not([hidden]), #panel:not([hidden]), #panelHint:not([hidden]) { animation: none !important; }
@@ -344,7 +351,7 @@
   const footL = $('fl'), footR = $('fr'), queuedEl = $('queued'), pa = $('pa');
 
   // ================= duomenys =================
-  const VERSION = '3.1.1';
+  const VERSION = '3.2.0';
   const ARTIFACT_URL = 'https://claude.ai/artifact/54ncrnz95vRCeD9ms6NuhC';
   const MODELS = {
     sonnet: { id: 'claude-sonnet-5-5', name: 'Sonnet 5.5', tier: 'default', label: 'Default (recommended)', desc: 'Sonnet 5.5 · Best for everyday tasks' },
@@ -805,6 +812,7 @@ Rules:
   const COMMANDS = [
     ['clear', 'Clear conversation history and free up context'],
     ['compact', 'Clear conversation history but keep a summary in context. Optional: /compact [instructions for summarization]'],
+    ['compare', 'Ask every model the same question side by side. Optional: /compare [question]'],
     ['config', 'Open config panel'],
     ['context', 'Visualize current context usage as a colored grid'],
     ['cost', 'Show the total cost and duration of the current session'],
@@ -912,6 +920,34 @@ Rules:
     clear() {
       archive(); history = []; summary = ''; queue.length = 0; drawQueue(); saveChat(); redraw(true);
     },
+    async compare(arg) {
+      if (!(await ensureSample())) return;
+      const qn = arg || 'A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost? Show your reasoning in two short sentences, then write one line of poetry about it.';
+      const keys = Object.keys(MODELS), sec = t0 => ((performance.now() - t0) / 1000).toFixed(1) + 's';
+      const box = add(`<div class="dim">Same question to all ${keys.length} models${arg ? '' : ' · /compare [your question] to ask your own'}</div><div class="cmp">` +
+        keys.map((k, i) => `<div class="cc" style="--i:${i}"><div class="ch"><span class="dot run"></span><span class="b">${esc(MODELS[k].name)}</span><span class="dim cs">waiting…</span></div><div class="cb md"></div></div>`).join('') + '</div>', 'turn');
+      busy = true; controller = new AbortController();
+      const sig = controller.signal, sp = spinner('Comparing'), t00 = performance.now();
+      const prompt = 'Answer directly in plain English, under 120 words. Do not say which model you are.\n\n' + qn;
+      await Promise.all(keys.map(async (k, i) => {
+        const m = MODELS[k], card = box.querySelectorAll('.cc')[i], body = card.querySelector('.cb'), st = card.querySelector('.cs'), dot = card.querySelector('.dot'), t0 = performance.now();
+        const tick = setInterval(() => { st.textContent = sec(t0); }, 100);
+        try {
+          const r = await sample([{ role: 'user', content: prompt }], { cache: false, signal: sig, model: m.id, modelTier: m.tier, effort: 'medium',
+            onText: ({ text }) => { if (text && text !== 'Thinking...') { const stick = nearBottom(); body.innerHTML = md(text); if (stick) toBottom(); } } });
+          clearInterval(tick);
+          const text = r.text || '', used = appliedName(r, m), ok = !!r.modelApplied, stick = nearBottom();
+          body.innerHTML = md(text); if (stick) toBottom();
+          dot.className = 'dot ' + (ok ? 'ok pop' : 'bad'); card.classList.add(ok ? 'done' : 'bad');
+          st.innerHTML = (ok ? `<span class="ok">✓ ${esc(m.id)}</span>` : `<span class="warn">unavailable · answered by the ${esc(used)}</span>`) + ` · ${sec(t0)} · ↓ ${tok(estTok(text))} tokens`;
+          session.outTok += estTok(text);
+        } catch (e) {
+          clearInterval(tick); dot.className = 'dot bad'; card.classList.add('bad');
+          st.innerHTML = `<span class="err">${e && (e.code === 'cancelled' || e.name === 'AbortError') ? 'Interrupted' : esc((e && (e.code || e.message)) || 'error')}</span>`;
+        }
+      }));
+      session.apiMs += performance.now() - t00; sp.stop(); busy = false; controller = null; renderFoot(); pump();
+    },
     async compact(arg) {
       if (!history.length) return res('<span class="dim">Nothing to compact yet</span>');
       if (!(await ensureSample())) return;
@@ -956,7 +992,10 @@ Rules:
         `└ Memory: ${Mem.mode === 'cloud' ? '<span class="ok">✔︎ saved to your Claude account</span>' : Mem.mode === 'device' ? '<span class="warn">⚠ this device only</span>' : '<span class="err">✘ off</span>'}\n` +
         `└ Full screen: ${fsOk ? '<span class="ok">✔︎ available (green button)</span>' : '<span class="warn">⚠ blocked by this app · the window bar hides instead</span>'}\n` +
         `└ Website links: ${Mem.mode === 'cloud' ? '<span class="ok">✔︎ saved and shareable</span>' : '<span class="warn">⚠ open only on this device</span>'}\n` +
-        `└ Shell: <span class="dim">runs inside the page, not on your computer</span>`);
+        `└ Shell: <span class="dim">runs inside the page, not on your computer</span>\n` +
+        `└ Device: <span class="dim">${TOUCH ? 'touch screen' : 'pointer'} · hardware keyboard ${hwKeys ? 'seen' : 'not seen yet'} · full screen now: ${isNativeFS() ? 'on' : wantFull ? 'window bar hidden (not native)' : 'off'}</span>\n` +
+        `<span class="b">Full screen log</span> <span class="dim">· if full screen closes by itself, run /doctor and send this</span>\n` +
+        (fsLog.length ? `<span class="dim">${esc(fsLog.join('\n'))}</span>` : '<span class="dim">  (empty · tap the green button first)</span>'));
     },
     export() {
       if (!history.length) return res('<span class="dim">Nothing to export yet</span>');
@@ -991,7 +1030,7 @@ Rules:
         onPick(it, i) { settings.theme = keys[i]; applyTheme(); saveSettings(); closePanel(`Set theme to <span class="b">${esc(THEMES[keys[i]])}</span>`); } });
     },
     'release-notes'() {
-      res(`<span class="b">Version 3.1.1</span>\n• clear works like in a terminal: /clear, clear or cls, even while Claude is answering\n<span class="b">Version 3.1.0</span>\n• Full screen keeps working on iPad while you type on a hardware keyboard\n• Every reply shows which model answered (✓ = confirmed by Claude), time and tokens\n• Model badge in the corner: tap to switch, or press ⌥P\n• Themes with live preview: Claude Dark, Claude Light, Pro, Homebrew, Ocean, Solarized Dark (/theme)\n• Launch animation, block cursor, smoother windows and menus\n<span class="b">Version 3.0.0</span>\n• Rebuilt as a Claude Code style terminal in a macOS window\n• Slash commands: /model /clear /compact /resume /rewind /context /cost /status /doctor /memory /config /export\n• # memory, ! browser shell, @ file attachments, pasted text placeholders, queued messages\n• Websites and games appear as Write(...) and open with one tap\n<span class="b">Version 2.0.0</span>\n• Formatted answers, clickable links, full screen, website links`);
+      res(`<span class="b">Version 3.2.0</span>\n• /compare asks every model the same question side by side and shows which model really answered\n• /doctor shows a full screen log: when and why full screen closed\n<span class="b">Version 3.1.1</span>\n• clear works like in a terminal: /clear, clear or cls, even while Claude is answering\n<span class="b">Version 3.1.0</span>\n• Full screen keeps working on iPad while you type on a hardware keyboard\n• Every reply shows which model answered (✓ = confirmed by Claude), time and tokens\n• Model badge in the corner: tap to switch, or press ⌥P\n• Themes with live preview: Claude Dark, Claude Light, Pro, Homebrew, Ocean, Solarized Dark (/theme)\n• Launch animation, block cursor, smoother windows and menus\n<span class="b">Version 3.0.0</span>\n• Rebuilt as a Claude Code style terminal in a macOS window\n• Slash commands: /model /clear /compact /resume /rewind /context /cost /status /doctor /memory /config /export\n• # memory, ! browser shell, @ file attachments, pasted text placeholders, queued messages\n• Websites and games appear as Write(...) and open with one tap\n<span class="b">Version 2.0.0</span>\n• Formatted answers, clickable links, full screen, website links`);
     },
     resume() {
       openPanel({ title: 'Resume conversation', empty: 'No earlier conversations', items: convs.map(c => ({ label: c.title, desc: `${ago(c.t)} · ${c.n} messages` })),
@@ -1435,13 +1474,17 @@ Rules:
   const isNativeFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
   const canNative = () => !!(root.requestFullscreen || root.webkitRequestFullscreen) && !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
   let wantFull = false, fsDropped = false, lastFocus = 0, fsExplained = false;
+  // įvykių žurnalas /doctor'iui: tiksliai matosi, kada ir kodėl tikrame įrenginyje dingsta fullscreen
+  const fsLog = [], fsT0 = performance.now();
+  const flog = ev => { fsLog.push(`${((performance.now() - fsT0) / 1000).toFixed(1).padStart(6)}s  ${ev}`); if (fsLog.length > 24) fsLog.shift(); };
   function requestNative() {
     if (!canNative()) return false;
     try {
-      if (root.requestFullscreen) { const p = root.requestFullscreen({ navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); }
+      flog('request full screen');
+      if (root.requestFullscreen) { const p = root.requestFullscreen({ navigationUI: 'hide' }); if (p && p.catch) p.catch(e => flog('refused: ' + ((e && (e.name + ' ' + e.message)) || 'unknown'))); }
       else root.webkitRequestFullscreen();
       return true;
-    } catch (e) { return false; }
+    } catch (e) { flog('threw: ' + (e && e.message)); return false; }
   }
   function enterFull() {
     wantFull = true; fsDropped = false; document.body.classList.add('zen'); setTimeout(setTitle, 50);
@@ -1464,6 +1507,8 @@ Rules:
   document.addEventListener('keydown', e => { if (e.target !== input && !e.metaKey && e.key.length === 1) hwKeys = true; }, true);
   function onFsChange() {
     const on = isNativeFS();
+    const ae = document.activeElement;
+    flog((on ? 'ENTERED full screen' : 'LEFT full screen') + ` · focus: ${ae === input ? 'text field' : ae && ae !== document.body ? ae.tagName.toLowerCase() : 'none'} · typing mode: ${capture ? 'on' : 'off'} · keyboard seen: ${hwKeys ? 'yes' : 'no'}`);
     $('fsBtn').title = on || wantFull ? 'Exit Full Screen' : 'Enter Full Screen';
     if (on && TOUCH && hwKeys) { setCapture(true); notify('Full screen · just start typing'); }
     if (!on) { setCapture(false); if (!wantFull) focusIn(); }
@@ -1472,6 +1517,9 @@ Rules:
     else exitFull();
   }
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, onFsChange));
+  ['fullscreenerror', 'webkitfullscreenerror'].forEach(ev => document.addEventListener(ev, () => flog('full screen error event')));
+  input.addEventListener('focus', () => { if (wantFull) flog('text field focused'); });
+  document.addEventListener('visibilitychange', () => { if (wantFull) flog('page ' + document.visibilityState); });
   document.addEventListener('click', e => {
     if (!fsDropped || !wantFull || isNativeFS() || document.activeElement === input || e.target.closest('#pa, button, a, #viewer')) return;
     fsDropped = false; requestNative();
