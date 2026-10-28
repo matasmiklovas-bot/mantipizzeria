@@ -30,6 +30,28 @@
     --wall: radial-gradient(120% 90% at 20% 10%, #dfe7f5 0%, #b9c6dd 60%, #95a3bd 100%);
     color-scheme: light;
   }
+  :root[data-theme="pro"] {
+    --bg: #0c0c0c; --fg: #f2f2f2; --dim: #8e8e8e; --inactive: #5e5e5e; --userbg: #262626; --pborder: #7a7a7a;
+    --tbar: #2a2a2a; --tbar-edge: #000; --wall: radial-gradient(120% 90% at 20% 10%, #2b2b2b 0%, #121212 60%, #050505 100%);
+  }
+  :root[data-theme="homebrew"] {
+    --bg: #000000; --fg: #28fe14; --dim: #1f9e12; --inactive: #136b0b; --claude: #5dff4d; --claude-hi: #c6ffbf; --sugg: #9dff92;
+    --ok: #28fe14; --err: #ff5f5f; --warn: #e6ff4d; --bash: #7dffb8; --plan: #3ee6c1; --pborder: #1f9e12; --userbg: #0a2607; --sel: rgba(40,254,20,.25);
+    --hl-kw: #9dff92; --hl-str: #d7ff9a; --hl-num: #e6ff4d; --hl-com: #1f9e12; --hl-tag: #5dff4d; --hl-fn: #b8ffd0;
+    --tbar: #1c1c1c; --tbar-edge: #000; --wall: radial-gradient(120% 90% at 20% 10%, #12301a 0%, #07130a 60%, #020502 100%);
+  }
+  :root[data-theme="ocean"] {
+    --bg: #224fbc; --fg: #ffffff; --dim: #bccbf0; --inactive: #8aa2dc; --claude: #ffbf9a; --claude-hi: #ffe2d1; --sugg: #dfe4ff;
+    --ok: #8ff0a4; --err: #ffb0bb; --warn: #ffe082; --bash: #ffb3dc; --plan: #a7f3e6; --pborder: #a9bbea; --userbg: #2e5fd4; --sel: rgba(255,255,255,.28);
+    --hl-kw: #ffd0f7; --hl-str: #c6ffcf; --hl-num: #ffe082; --hl-com: #a9bbea; --hl-tag: #ffc2c2; --hl-fn: #d6f1ff;
+    --tbar: #1c43a3; --tbar-edge: #14327c; --ttitle: rgba(255,255,255,.72); --wall: radial-gradient(120% 90% at 20% 10%, #3e6fe0 0%, #17368a 60%, #0b1c4d 100%);
+  }
+  :root[data-theme="solarized"] {
+    --bg: #002b36; --fg: #93a1a1; --dim: #657b83; --inactive: #4b5f66; --claude: #cb4b16; --claude-hi: #f08a5d; --sugg: #268bd2;
+    --ok: #859900; --err: #dc322f; --warn: #b58900; --bash: #d33682; --plan: #2aa198; --pborder: #586e75; --userbg: #073642; --sel: rgba(38,139,210,.3);
+    --hl-kw: #859900; --hl-str: #2aa198; --hl-num: #d33682; --hl-com: #586e75; --hl-tag: #268bd2; --hl-fn: #b58900;
+    --tbar: #073642; --tbar-edge: #001e26; --wall: radial-gradient(120% 90% at 20% 10%, #0b4a5a 0%, #002b36 60%, #00161c 100%);
+  }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; background: var(--bg); }
   body { overflow: hidden; color: var(--fg); font-family: var(--font); font-size: var(--fs); line-height: var(--lh);
@@ -74,6 +96,17 @@
 
   /* zsh eilutės prieš paleidimą */
   .shell .pr { color: var(--fg); }
+  .tcur { display: inline-block; width: 1ch; height: calc(var(--lh) * 1em); vertical-align: top; background: var(--fg); }
+  @keyframes drawBox { from { clip-path: inset(-1em 100% 0 0); } to { clip-path: inset(-1em 0 0 0); } }
+  .wbox.draw { animation: drawBox .55s cubic-bezier(.65,0,.35,1) both; }
+  .wbox.draw .clawd { animation: clawdIn .55s .38s cubic-bezier(.3,1.55,.5,1) both; }
+  .wbox.draw .wr > *, .wbox.draw .wl > div { animation: fadeUp .3s ease-out both; }
+  .wbox.draw .wr > :nth-child(2), .wbox.draw .wl > div:last-child { animation-delay: .32s; }
+  .wbox.draw .wr > :nth-child(3) { animation-delay: .38s; } .wbox.draw .wr > :nth-child(4) { animation-delay: .44s; }
+  .wbox.draw .wr > :nth-child(n+5) { animation-delay: .5s; }
+  @keyframes clawdIn { from { transform: translateY(45%) scale(.55); opacity: 0; } to { transform: none; opacity: 1; } }
+  #pa { transition: opacity .35s ease-out; }
+  body.booting #pa { opacity: 0; }
 
   /* pasisveikinimo dėžutė */
   .wbox { position: relative; border: 1px solid var(--claude); border-radius: 7px; margin-top: calc(var(--lh) * .9em); padding: calc(var(--lh) * .55em) 1ch calc(var(--lh) * .45em); max-width: 100%; white-space: normal; }
@@ -176,6 +209,12 @@
   #fl { overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
   #fr { overflow: hidden; text-overflow: ellipsis; text-align: right; }
   #fr button { color: var(--sugg); text-decoration: underline; }
+  #fr .mb { color: var(--dim); text-decoration: none; border-radius: 4px; padding: 0 .5ch; margin-right: -.5ch; transition: background-color .15s, color .15s; display: inline-block; }
+  #fr .mb:hover { color: var(--fg); background: rgba(128,128,128,.16); }
+  #fr .mb.flip { animation: flipIn .45s cubic-bezier(.3,1.4,.5,1) both; }
+  @keyframes flipIn { from { transform: rotateX(90deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  .rmeta { color: var(--dim); padding-left: 2ch; font-size: .92em; }
+  .rmeta .ok { color: var(--ok); }
   #menu { padding-left: 2ch; }
   #menu .mi { display: grid; grid-template-columns: var(--w, 20ch) minmax(0, 1fr); column-gap: 2ch; cursor: pointer; }
   #menu .mi > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -305,7 +344,7 @@
   const footL = $('fl'), footR = $('fr'), queuedEl = $('queued'), pa = $('pa');
 
   // ================= duomenys =================
-  const VERSION = '3.0.0';
+  const VERSION = '3.1.0';
   const ARTIFACT_URL = 'https://claude.ai/artifact/54ncrnz95vRCeD9ms6NuhC';
   const MODELS = {
     sonnet: { id: 'claude-sonnet-5-5', name: 'Sonnet 5.5', tier: 'default', label: 'Default (recommended)', desc: 'Sonnet 5.5 · Best for everyday tasks' },
@@ -343,11 +382,12 @@
   const tok = n => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'k' : String(n);
   const estTok = s => Math.ceil(String(s).length / 4);
   const TOUCH = matchMedia('(pointer: coarse)').matches;
+  const MOTION = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   // iPad su klaviatūra ir pele/trackpad'u elgiasi kaip Mac: fokusas laikomas įvestyje, veikia Esc
   const KEYS = matchMedia('(any-pointer: fine)').matches;
   const nearBottom = () => term.scrollHeight - term.scrollTop - term.clientHeight < 80;
   const toBottom = () => { term.scrollTop = term.scrollHeight; };
-  const focusIn = () => { if (!KEYS) return; try { input.focus({ preventScroll: true }); } catch (e) {} };
+  const focusIn = () => { if (!KEYS || capture) return; try { input.focus({ preventScroll: true }); } catch (e) {} };
   const ago = t => { const s = Math.max(1, Math.round((Date.now() - t) / 1000)); return s < 60 ? s + 's ago' : s < 3600 ? Math.round(s / 60) + 'm ago' : s < 86400 ? Math.round(s / 3600) + 'h ago' : Math.round(s / 86400) + 'd ago'; };
   const dur = ms => { const s = Math.round(ms / 1000); return s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + (s % 60) + 's'; };
   let quiet = false;   // perpiešiant ekraną eilutės neanimuojamos
@@ -379,7 +419,8 @@ Rules:
 - Files the user attaches with @name arrive as <file name="..."> blocks. To change one, return the whole updated file under the same name.
 - Write Python only when the user asks for Python.
 - Links: write full https:// URLs, only ones you are confident exist. You cannot open links or browse; if asked, say so and never invent what a page says.
-- You cannot run commands or read the user's computer. Never pretend you did.${plan ? '\n- PLAN MODE IS ON: do not write files or full code. Reply with a short numbered plan and ask the user to approve it.' : ''}${notes.length ? '\nThings the user asked you to remember:\n' + notes.map(n => '- ' + n.text).join('\n') : ''}${summary ? '\nSummary of the earlier conversation:\n' + summary : ''}`;
+- You cannot run commands or read the user's computer. Never pretend you did.
+- This app requested the model ${MODELS[settings.model].name} (${MODELS[settings.model].id}) for this reply. If asked which model you are, say that is the model the app requested, and that the app marks each reply with ✓ when Claude's platform confirms which model answered.${plan ? '\n- PLAN MODE IS ON: do not write files or full code. Reply with a short numbered plan and ask the user to approve it.' : ''}${notes.length ? '\nThings the user asked you to remember:\n' + notes.map(n => '- ' + n.text).join('\n') : ''}${summary ? '\nSummary of the earlier conversation:\n' + summary : ''}`;
   };
 
   // ================= nuorodos ir markdown =================
@@ -663,22 +704,53 @@ Rules:
   })();
 
   // ================= ekranas =================
-  function welcome() {
-    const m = MODELS[settings.model];
+  function shellLine(cmd, cursor) {
     const last = prevSeen ? new Date(prevSeen) : new Date();
     const d = last.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '') + ' ' + last.toTimeString().slice(0, 8);
-    add(`<div class="shell">Last login: ${esc(d)} on ttys000\n<span class="pr">${esc(who.handle)}@MacBook-Pro ~ % </span>claude</div>`, 'tight');
+    return `<div class="shell">Last login: ${esc(d)} on ttys000\n<span class="pr">${esc(who.handle)}@MacBook-Pro ~ % </span><span class="cmd">${esc(cmd)}</span>${cursor ? '<span class="tcur"></span>' : ''}</div>`;
+  }
+  function welcome(opts) {
+    const m = MODELS[settings.model];
+    if (!(opts && opts.noShell)) add(shellLine('claude'), 'tight');
     const recent = convs.slice(0, 3).map(c => `<div><span class="dim">${esc(ago(c.t))}</span>  ${esc(c.title)}</div>`).join('') || '<div class="dim">No recent activity</div>';
     const wb = add(`<div class="wbox"><span class="wt">Claude Terminal v${VERSION}</span><div class="wcols">` +
       `<div class="wl"><div class="b">${who.name ? 'Welcome back ' + esc(who.name) + '!' : 'Welcome back!'}</div>${CLAWD_SVG}<div class="dim">${esc(m.name)} · Claude account</div><div class="dim">/Users/${esc(who.handle)}</div></div>` +
       `<div class="wr"><div class="wh">Tips for getting started</div><div>Ask for a website or game, then open it with one tap</div><div>Start a line with <span class="sug">#</span> to save it to memory</div><div>Type <span class="sug">/</span> for commands, <span class="sug">?</span> for shortcuts</div>` +
       `<div class="wsep"></div><div class="wh">Recent activity</div>${recent}</div></div></div>`, 'tight');
     fitWelcome(wb.querySelector('.wbox'));
+    if (opts && opts.draw) wb.querySelector('.wbox').classList.add('draw');
+  }
+  // tikras paleidimas: zsh eilutėje įrašoma „claude“, tada nusipiešia pasisveikinimo dėžutė; bet koks klavišas ar bakstelėjimas praleidžia
+  async function launch() {
+    if (!MOTION || /^#s-/.test(location.hash)) return redraw();
+    let skip = false; const sk = () => { skip = true; };
+    addEventListener('keydown', sk, { once: true, capture: true }); addEventListener('pointerdown', sk, { once: true, capture: true });
+    document.body.classList.add('booting'); quiet = true; out.innerHTML = '';
+    const sh = add(shellLine('', true), 'tight'), cmd = sh.querySelector('.cmd');
+    if (!skip) await sleep(320);
+    for (const ch of 'claude') { cmd.textContent += ch; if (!skip) await sleep(60 + Math.random() * 55); }
+    if (!skip) await sleep(260);
+    sh.querySelector('.tcur').remove();
+    welcome({ noShell: true, draw: !skip });
+    if (summary && !history.length) res('<span class="dim">Conversation compacted · earlier messages are summarized in context</span>');
+    history.forEach(renderTurn);
+    quiet = false; toBottom();
+    if (!skip) await sleep(380);
+    document.body.classList.remove('booting');
+    removeEventListener('keydown', sk, { capture: true }); removeEventListener('pointerdown', sk, { capture: true });
   }
   function fitWelcome(el) { if (el) el.classList.toggle('narrow', cols() < 76); }
   function renderTurn(msg) {
     if (msg.r === 'u') add(`<span class="gt">&gt;</span>${linkify(msg.c)}`, 'user');
-    else { const wrap = add(answerHtml(msg.c, false, msg.f), 'turn'); ensureSites(wrap); }
+    else { const wrap = add(answerHtml(msg.c, false, msg.f) + replyMeta(msg), 'turn'); ensureSites(wrap); }
+  }
+  // po kiekvienu atsakymu: kuris modelis atsakė (✓ = patvirtino Claude platforma), kiek truko ir kiek žetonų
+  function replyMeta(msg) {
+    if (!msg.m) return '';
+    const parts = [msg.v ? `${esc(msg.m)} <span class="ok">✓</span>` : msg.v === false && msg.q ? `<span class="warn">${esc(msg.m)} · ${esc(msg.q)} was unavailable</span>` : esc(msg.m)];
+    if (msg.d) parts.push((msg.d / 1000).toFixed(1) + 's');
+    if (msg.k) parts.push('↓ ' + tok(msg.k) + ' tokens');
+    return `<div class="rmeta">${parts.join(' · ')}</div>`;
   }
   function redraw() {
     quiet = true; out.innerHTML = ''; welcome();
@@ -711,10 +783,16 @@ Rules:
     const ctxLeft = 100 - Math.round(contextBytes() / MAX_PROMPT * 100);
     const right = [];
     if (settings.thinking) right.push('<span class="acc">✻ Thinking on</span>');
-    if (lastReply) right.push(lastReply.ok ? `${esc(lastReply.name)} <span class="ok">✓</span>` : `<span class="warn">⚠ ${esc(lastReply.name)} answered</span>`);
+    // pasirinktas modelis; ✓ kai platforma patvirtino, kad paskutinį atsakymą parašė būtent jis
+    const sel = MODELS[settings.model].name, same = lastReply && lastReply.req === sel;
+    const badge = same && !lastReply.ok ? `<span class="warn">⚠ ${esc(sel)} unavailable</span>` : `${esc(sel)}${same && lastReply.ok ? ' <span class="ok">✓</span>' : ''}`;
+    right.push(`<button class="mb${modelFlip ? ' flip' : ''}" type="button" data-model title="${same ? (lastReply.ok ? 'Claude confirmed the last reply came from ' + esc(sel) : esc(sel) + ' was unavailable; the ' + esc(lastReply.name) + ' answered') : 'Switch model (⌥P)'}">${badge}</button>`);
+    modelFlip = false;
     footR.innerHTML = ctxLeft < 25 ? `<span class="warn">Context left until auto-compact: ${Math.max(0, ctxLeft)}%</span>` : right.join('<span class="dim"> · </span>');
-    footR.title = lastReply ? (lastReply.ok ? `Claude confirmed the last reply came from ${lastReply.name}` : `Your chosen model was unavailable; the ${lastReply.name} answered`) : '';
+    footR.title = '';
   }
+  let modelFlip = false;
+  footR.addEventListener('click', e => { if (e.target.closest('[data-model]')) RUN.model(); });
   function setMode(m) {
     mode = m; box.className = m === 'bash' ? 'bash' : m === 'mem' ? 'mem' : '';
     $('ps').textContent = m === 'bash' ? '!' : m === 'mem' ? '#' : '>';
@@ -740,6 +818,7 @@ Rules:
     ['rewind', 'Restore the conversation to a previous point'],
     ['share', 'Copy the link to this terminal'],
     ['status', 'Show version, model, account and memory'],
+    ['theme', 'Change the color theme'],
   ];
   let menu = null;   // { kind, items, idx }
   function showMenu(kind, items) {
@@ -766,7 +845,7 @@ Rules:
     menuEl.hidden = false; $('foot').hidden = true; toBottom();
   }
   function updateMenu() {
-    const v = input.value, pos = input.selectionStart;
+    const v = input.value, pos = caretPos();
     if (mode === 'normal' && v.startsWith('/') && !/\s/.test(v)) {
       const f = v.slice(1).toLowerCase();
       const hits = COMMANDS.filter(([k]) => k.startsWith(f)).concat(f ? COMMANDS.filter(([k]) => !k.startsWith(f) && k.includes(f)) : []);
@@ -785,8 +864,8 @@ Rules:
     const it = menu.items[i]; if (!it) return;
     if (menu.kind === 'cmd') { input.value = '/' + it.v + (run ? '' : ' '); hideMenu(); autosize(); if (run) submit(); return; }
     if (menu.kind === 'file') {
-      const pos = input.selectionStart, before = input.value.slice(0, pos).replace(/@[\w.-]*$/, '@' + it.v + ' ');
-      input.value = before + input.value.slice(pos); input.setSelectionRange(before.length, before.length); hideMenu(); autosize();
+      const pos = caretPos(), before = input.value.slice(0, pos).replace(/@[\w.-]*$/, '@' + it.v + ' ');
+      input.value = before + input.value.slice(pos); setCaret(before.length); hideMenu(); autosize();
     }
   }
   menuEl.addEventListener('pointerdown', e => e.preventDefault());
@@ -814,8 +893,13 @@ Rules:
     if (msg) res(msg);
     renderFoot(); focusIn(); toBottom();
   }
-  panelEl.addEventListener('click', e => { const r = e.target.closest('.po'); if (!r || !panel) return; panel.idx = +r.dataset.i; const p = panel; p.onPick(p.items[p.idx], p.idx); });
-  panelHint.onclick = () => { if (TOUCH && panel) closePanel(); };
+  panelEl.addEventListener('click', e => {
+    const r = e.target.closest('.po'); if (!r || !panel) return;
+    const i = +r.dataset.i, p = panel;
+    if (p.onMove && p.idx !== i) { p.idx = i; drawPanel(); p.onMove(i); return; }   // peržiūra: pirmas bakstelėjimas rodo, antras pasirenka
+    p.idx = i; p.onPick(p.items[i], i);
+  });
+  panelHint.onclick = () => { if (TOUCH && panel) { if (panel.onCancel) panel.onCancel(); closePanel(); } };
 
   // ================= komandos =================
   const kv = rows => `<div class="kv">${rows.map(([k, v]) => `<span>${esc(k)}</span><span>${v}</span>`).join('')}</div>`;
@@ -842,12 +926,12 @@ Rules:
     },
     config() {
       const items = () => [
-        { label: 'Theme', desc: settings.theme === 'dark' ? 'Dark mode' : 'Light mode', key: 'theme' },
+        { label: 'Theme', desc: THEMES[settings.theme] || 'Claude Dark', key: 'theme' },
         { label: 'Thinking', desc: settings.thinking ? 'On · more careful answers' : 'Off', key: 'thinking' },
         { label: 'Model', desc: MODELS[settings.model].name, key: 'model' },
       ];
       openPanel({ title: 'Settings', items: items(), hint: 'Enter to change · Esc to exit', onPick(it) {
-        if (it.key === 'theme') { settings.theme = settings.theme === 'dark' ? 'light' : 'dark'; applyTheme(); }
+        if (it.key === 'theme') { closePanel(); return RUN.theme(); }
         else if (it.key === 'thinking') settings.thinking = !settings.thinking;
         else if (it.key === 'model') { closePanel(); return RUN.model(); }
         saveSettings(); panel.items = items(); drawPanel(); renderFoot();
@@ -890,15 +974,24 @@ Rules:
         const k = arg.toLowerCase().replace(/^claude-?/, '').split(/[-\s.]/)[0];
         const key = k === 'default' ? 'sonnet' : k;
         if (!MODELS[key]) return res(`<span class="err">Unknown model: ${esc(arg)}</span> <span class="dim">· try ${Object.keys(MODELS).join(', ')}</span>`);
-        settings.model = key; saveSettings(); return res(`Set model to <span class="b">${esc(MODELS[key].name)}</span> <span class="dim">(${MODELS[key].id})</span>`);
+        settings.model = key; saveSettings(); modelFlip = true; renderFoot(); return res(`Set model to <span class="b">${esc(MODELS[key].name)}</span> <span class="dim">(${MODELS[key].id})</span>`);
       }
       const keys = Object.keys(MODELS);
       openPanel({ title: 'Select model', desc: 'Switch between Claude models. Applies to this session and future sessions.' + (lastReply ? (lastReply.ok ? ` Last reply came from ${lastReply.name} ✓` : ` Last reply came from the ${lastReply.name}.`) : ''), idx: keys.indexOf(settings.model),
         items: keys.map(k => ({ label: MODELS[k].label, desc: MODELS[k].desc, check: k === settings.model })),
-        onPick(it, i) { settings.model = keys[i]; saveSettings(); closePanel(`Set model to <span class="b">${esc(MODELS[keys[i]].name)}</span> <span class="dim">(${MODELS[keys[i]].id})</span>`); } });
+        onPick(it, i) { settings.model = keys[i]; saveSettings(); modelFlip = true; closePanel(`Set model to <span class="b">${esc(MODELS[keys[i]].name)}</span> <span class="dim">(${MODELS[keys[i]].id})</span>`); } });
+    },
+    theme() {
+      const keys = Object.keys(THEMES), was = settings.theme;
+      const DESC = { dark: 'Claude Code dark', light: 'Claude Code light', pro: 'Terminal.app Pro · pure black', homebrew: 'Terminal.app Homebrew · green phosphor', ocean: 'Terminal.app Ocean · deep blue', solarized: 'Ethan Schoonover’s Solarized' };
+      openPanel({ title: 'Theme', desc: 'Preview a theme with ↑/↓, Enter to keep it, Esc to cancel.', idx: Math.max(0, keys.indexOf(was)),
+        items: keys.map(k => ({ label: THEMES[k], desc: DESC[k], check: k === was })),
+        onMove(i) { applyTheme(keys[i]); },
+        onCancel() { applyTheme(was); },
+        onPick(it, i) { settings.theme = keys[i]; applyTheme(); saveSettings(); closePanel(`Set theme to <span class="b">${esc(THEMES[keys[i]])}</span>`); } });
     },
     'release-notes'() {
-      res(`<span class="b">Version 3.0.0</span>\n• Rebuilt as a Claude Code style terminal in a macOS window\n• Slash commands: /model /clear /compact /resume /rewind /context /cost /status /doctor /memory /config /export\n• # memory, ! browser shell, @ file attachments, pasted text placeholders, queued messages\n• Websites and games appear as Write(...) and open with one tap\n<span class="b">Version 2.0.0</span>\n• Formatted answers, clickable links, full screen, website links`);
+      res(`<span class="b">Version 3.1.0</span>\n• Full screen keeps working on iPad while you type on a hardware keyboard\n• Every reply shows which model answered (✓ = confirmed by Claude), time and tokens\n• Model badge in the corner: tap to switch, or press ⌥P\n• Themes with live preview: Claude Dark, Claude Light, Pro, Homebrew, Ocean, Solarized Dark (/theme)\n• Launch animation, block cursor, smoother windows and menus\n<span class="b">Version 3.0.0</span>\n• Rebuilt as a Claude Code style terminal in a macOS window\n• Slash commands: /model /clear /compact /resume /rewind /context /cost /status /doctor /memory /config /export\n• # memory, ! browser shell, @ file attachments, pasted text placeholders, queued messages\n• Websites and games appear as Write(...) and open with one tap\n<span class="b">Version 2.0.0</span>\n• Formatted answers, clickable links, full screen, website links`);
     },
     resume() {
       openPanel({ title: 'Resume conversation', empty: 'No earlier conversations', items: convs.map(c => ({ label: c.title, desc: `${ago(c.t)} · ${c.n} messages` })),
@@ -1041,9 +1134,11 @@ Rules:
       if (!started) out.appendChild(wrap);
       const text = r.text || '', ops = await commitFiles(text);
       const stick = nearBottom(); wrap.innerHTML = answerHtml(text, false, ops); if (stick) toBottom(); ensureSites(wrap);
-      const used = appliedName(r, m);
-      history.push(Object.assign({ r: 'a', c: text, m: used, t: Date.now() }, ops.length ? { f: ops } : {}));
-      lastReply = { name: used, ok: !!r.modelApplied };
+      const used = appliedName(r, m), ms = Math.round(performance.now() - t0), k = estTok(text);
+      const entry = Object.assign({ r: 'a', c: text, m: used, v: !!r.modelApplied, q: m.name, d: ms, k, t: Date.now() }, ops.length ? { f: ops } : {});
+      history.push(entry);
+      lastReply = { name: used, ok: !!r.modelApplied, req: m.name };
+      wrap.insertAdjacentHTML('beforeend', replyMeta(entry));
       wrap.querySelectorAll('.dot.ok').forEach(d => d.classList.add('pop'));
       session.outTok += estTok(text);
       if (r.truncated) res('<span class="warn">Response was cut off at the length limit</span>');
@@ -1106,7 +1201,54 @@ Rules:
 
   // ================= klaviatūra =================
   let lastEsc = 0, expanded = false;
-  input.addEventListener('keydown', e => {
+  // Fullscreen'e iPad'e jokio fokusuoto teksto lauko: iPadOS išeina iš fullscreen vos tik fokusuojamas laukas
+  // (net su fizine klaviatūra). Todėl tada klavišus gaudom patys ir redaguojam input.value be fokuso.
+  let capture = false, cpos = 0;
+  let hwKeys = KEYS;   // fizinė klaviatūra: trackpad/pelė, arba bet koks klavišas be fokusuoto lauko
+  const caretPos = () => capture ? cpos : input.selectionStart;
+  function setCaret(n) { if (capture) { cpos = n; drawCursor(); } else input.setSelectionRange(n, n); }
+  function setCapture(on) {
+    if (capture === on) return;
+    capture = on;
+    if (on) { cpos = input.value.length; if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur(); }
+    drawCursor();
+  }
+  function editText(fn) {   // keičia tekstą capture režime ir paleidžia tą pačią logiką kaip įprastas įvedimas
+    const r = fn(input.value, cpos); input.value = r[0]; cpos = r[1]; onInput();
+  }
+  function captureKey(e) {
+    // pirmas fizinės klaviatūros klavišas fullscreen'e: įjungiam gaudymą ir to klavišo neprarandam
+    if (!capture && TOUCH && isNativeFS() && e.target !== input && !e.metaKey && !e.ctrlKey && (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace')) { hwKeys = true; setCapture(true); }
+    if (!capture || panel || !$('viewer').hidden || e.isComposing) return;
+    if (document.activeElement && document.activeElement !== document.body && document.activeElement !== input) document.activeElement.blur();
+    const before = input.value;
+    onKey(e);
+    if (e.defaultPrevented) { if (input.value !== before) cpos = input.value.length; drawCursor(); return; }
+    const k = e.key;
+    if (e.metaKey || e.ctrlKey) return;
+    if (k.length === 1 || (k === 'Enter' && (e.shiftKey || e.altKey))) {
+      const t = k === 'Enter' ? '\n' : k;
+      editText((v, c) => [v.slice(0, c) + t + v.slice(c), c + t.length]);
+    } else if (k === 'Backspace') {
+      if (!input.value && mode !== 'normal') setMode('normal');
+      else if (e.altKey) editText((v, c) => { const b = v.slice(0, c).replace(/\S+\s*$|\s+$/, ''); return [b + v.slice(c), b.length]; });
+      else if (cpos > 0) editText((v, c) => [v.slice(0, c - 1) + v.slice(c), c - 1]);
+    } else if (k === 'Delete') editText((v, c) => [v.slice(0, c) + v.slice(c + 1), c]);
+    else if (k === 'ArrowLeft') cpos = Math.max(0, cpos - 1);
+    else if (k === 'ArrowRight') cpos = Math.min(input.value.length, cpos + 1);
+    else if (k === 'Home') cpos = 0;
+    else if (k === 'End') cpos = input.value.length;
+    else return;
+    e.preventDefault(); drawCursor();
+  }
+  document.addEventListener('keydown', captureKey, true);
+  document.addEventListener('paste', e => {
+    if (!capture || e.target === input) return;
+    const t = (e.clipboardData || window.clipboardData).getData('text'); if (!t) return;
+    e.preventDefault(); const tag = pasteTag(t);
+    editText((v, c) => [v.slice(0, c) + tag + v.slice(c), c + tag.length]);
+  });
+  function onKey(e) {
     if (e.isComposing || e.keyCode === 229) return;
     if (menu && menu.kind !== 'keys' && menu.items.length) {
       if (e.key === 'ArrowDown') { e.preventDefault(); menu.idx = (menu.idx + 1) % menu.items.length; return drawMenu(); }
@@ -1117,7 +1259,7 @@ Rules:
     }
     if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
       e.preventDefault();
-      if (input.value.endsWith('\\')) { const p = input.selectionStart; input.value = input.value.slice(0, -1) + '\n'; autosize(); return; }
+      if (input.value.endsWith('\\')) { input.value = input.value.slice(0, -1) + '\n'; cpos = input.value.length; autosize(); return; }
       return submit();
     }
     if (e.key === 'Tab' && e.shiftKey) { e.preventDefault(); plan = !plan; renderFoot(); return; }
@@ -1138,12 +1280,14 @@ Rules:
     }
     if (e.ctrlKey && e.key === 'c') {
       if (controller && !getSelection().toString()) { e.preventDefault(); return controller.abort(); }
-      if (input.value && input.selectionStart === input.selectionEnd) { e.preventDefault(); input.value = ''; autosize(); setMode('normal'); }
+      if (input.value && (capture || input.selectionStart === input.selectionEnd)) { e.preventDefault(); input.value = ''; cpos = 0; autosize(); setMode('normal'); }
       return;
     }
     if (e.ctrlKey && e.key === 'l') { e.preventDefault(); out.innerHTML = ''; return; }
-    if (e.ctrlKey && e.key === 'o') { e.preventDefault(); toggleExpand(); }
-  });
+    if (e.ctrlKey && e.key === 'o') { e.preventDefault(); toggleExpand(); return; }
+    if (e.altKey && (e.code === 'KeyP' || e.key === 'p' || e.key === 'π')) { e.preventDefault(); return RUN.model(); }   // ⌥P: modelio pasirinkimas
+  }
+  input.addEventListener('keydown', onKey);
   function loadHist() {
     const v = histIdx >= 0 ? cmdHistory[histIdx] : '';
     setMode(v.startsWith('!') ? 'bash' : v.startsWith('#') ? 'mem' : 'normal');
@@ -1155,11 +1299,11 @@ Rules:
     if (!$('viewer').hidden) { if (e.key === 'Escape' && !isNativeFS() && viewing) closeSite(); return; }
     if (panel) {
       const n = parseInt(e.key, 10);
-      if (e.key === 'ArrowDown') { e.preventDefault(); panel.idx = (panel.idx + 1) % Math.max(1, panel.items.length); drawPanel(); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); panel.idx = (panel.idx - 1 + panel.items.length) % Math.max(1, panel.items.length); drawPanel(); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); panel.idx = (panel.idx + 1) % Math.max(1, panel.items.length); drawPanel(); if (panel.onMove) panel.onMove(panel.idx); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); panel.idx = (panel.idx - 1 + panel.items.length) % Math.max(1, panel.items.length); drawPanel(); if (panel.onMove) panel.onMove(panel.idx); }
       else if (e.key === 'Enter' && panel.items.length) { e.preventDefault(); panel.onPick(panel.items[panel.idx], panel.idx); }
       else if (n >= 1 && n <= panel.items.length) { e.preventDefault(); panel.idx = n - 1; panel.onPick(panel.items[n - 1], n - 1); }
-      else if (e.key === 'Escape') { e.preventDefault(); closePanel(); }
+      else if (e.key === 'Escape') { e.preventDefault(); if (panel.onCancel) panel.onCancel(); closePanel(); }
       return;
     }
     if (e.key === 'Escape' && controller) { e.preventDefault(); controller.abort(); }
@@ -1170,7 +1314,7 @@ Rules:
   const mirror = $('mirror'), cur = $('cur'); let curT;
   function drawCursor() {
     if (box.hidden) return;
-    const a = input.selectionStart, b = input.selectionEnd;
+    const a = caretPos(), b = capture ? cpos : input.selectionEnd;
     if (a !== b) { cur.hidden = true; return; }
     cur.hidden = false;
     const v = input.value;
@@ -1179,28 +1323,33 @@ Rules:
     const mk = document.createElement('span'); mk.textContent = '\u200b'; mirror.appendChild(mk);
     cur.textContent = v ? (v[a] && v[a] !== '\n' ? v[a] : ' ') : (input.placeholder[0] || ' ');
     cur.style.transform = `translate(${mk.offsetLeft}px, ${mk.offsetTop - input.scrollTop}px)`;
-    cur.classList.toggle('off', document.activeElement !== input);
+    cur.classList.toggle('off', !capture && document.activeElement !== input);
     cur.classList.add('typing'); clearTimeout(curT); curT = setTimeout(() => cur.classList.remove('typing'), 550);
   }
   ['keyup', 'click', 'focus', 'blur', 'select', 'scroll'].forEach(ev => input.addEventListener(ev, () => requestAnimationFrame(drawCursor)));
   document.addEventListener('selectionchange', () => { if (document.activeElement === input) drawCursor(); });
-  input.addEventListener('input', () => {
+  function onInput() {
     histIdx = -1;
-    if (mode === 'normal' && input.value.startsWith('!')) { input.value = input.value.slice(1); setMode('bash'); }
-    else if (mode === 'normal' && input.value.startsWith('#')) { input.value = input.value.slice(1); setMode('mem'); }
+    if (mode === 'normal' && input.value.startsWith('!')) { input.value = input.value.slice(1); cpos = Math.max(0, cpos - 1); setMode('bash'); }
+    else if (mode === 'normal' && input.value.startsWith('#')) { input.value = input.value.slice(1); cpos = Math.max(0, cpos - 1); setMode('mem'); }
     if (menu && menu.kind === 'keys') hideMenu();
     autosize(); updateMenu();
-  });
+  }
+  input.addEventListener('input', onInput);
   input.addEventListener('click', updateMenu);
+  function pasteTag(t) {   // ilgas įklijavimas virsta žyma, kaip Claude Code
+    const lines = t.split('\n').length;
+    if (lines <= 8 && t.length <= 1200) return t;
+    pastes.set(++pasteN, t); return `[Pasted text #${pasteN} +${lines} lines]`;
+  }
   input.addEventListener('paste', e => {
     const t = (e.clipboardData || window.clipboardData).getData('text');
-    const lines = t.split('\n').length;
-    if (lines <= 8 && t.length <= 1200) return;
-    e.preventDefault(); pastes.set(++pasteN, t);
-    const tag = `[Pasted text #${pasteN} +${lines} lines]`, a = input.selectionStart, b = input.selectionEnd;
+    const tag = pasteTag(t); if (tag === t) return;
+    e.preventDefault(); const a = input.selectionStart, b = input.selectionEnd;
     input.value = input.value.slice(0, a) + tag + input.value.slice(b); input.setSelectionRange(a + tag.length, a + tag.length); autosize();
   });
   input.addEventListener('focus', () => { lastFocus = Date.now(); });
+  $('field').addEventListener('pointerdown', e => { if (capture) e.preventDefault(); });
   term.addEventListener('click', e => {
     if (e.target.closest('button, a, .more, #panel')) return;
     if (!getSelection().toString()) focusIn();
@@ -1229,7 +1378,6 @@ Rules:
     return STORAGE_SHIM + src;
   }
   let viewing = null;
-  const MOTION = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   function zoomFrames(from) {
     const v = $('vwin').getBoundingClientRect();
     if (!from || !v.width) return null;
@@ -1300,10 +1448,16 @@ Rules:
     wantFull = false; fsDropped = false; document.body.classList.remove('zen', 'peek'); setTimeout(setTitle, 50);
     if (isNativeFS()) { const ex = document.exitFullscreen || document.webkitExitFullscreen; try { const p = ex && ex.call(document); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
   }
-  function toggleFull() { (isNativeFS() || wantFull) ? exitFull() : enterFull(); }
+  function toggleFull() {
+    if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();   // kad tarpas nepaspaustų mygtuko
+    (isNativeFS() || wantFull) ? exitFull() : enterFull();
+  }
+  document.addEventListener('keydown', e => { if (e.target !== input && !e.metaKey && e.key.length === 1) hwKeys = true; }, true);
   function onFsChange() {
     const on = isNativeFS();
     $('fsBtn').title = on || wantFull ? 'Exit Full Screen' : 'Enter Full Screen';
+    if (on && TOUCH && hwKeys) { setCapture(true); notify('Full screen · just start typing'); }
+    if (!on) { setCapture(false); if (!wantFull) focusIn(); }
     if (on || !wantFull) return;
     if (TOUCH && (document.activeElement === input || Date.now() - lastFocus < 1500)) fsDropped = true;
     else exitFull();
@@ -1325,7 +1479,8 @@ Rules:
   $('tbar').addEventListener('mouseleave', () => { if (document.body.classList.contains('peek')) { clearTimeout(peekT); peekT = setTimeout(() => document.body.classList.remove('peek'), 800); } });
 
   // ================= tema, dydis =================
-  function applyTheme() { root.dataset.theme = settings.theme === 'light' ? 'light' : 'dark'; }
+  const THEMES = { dark: 'Claude Dark', light: 'Claude Light', pro: 'Pro', homebrew: 'Homebrew', ocean: 'Ocean', solarized: 'Solarized Dark' };
+  function applyTheme(t) { root.dataset.theme = THEMES[t || settings.theme] ? (t || settings.theme) : 'dark'; }
   let wasBottom = true;
   term.addEventListener('scroll', () => { wasBottom = nearBottom(); }, { passive: true });
   const onResize = () => { measure(); setTitle(); if (wasBottom) toBottom(); };
@@ -1343,7 +1498,7 @@ Rules:
     if (s) {
       if (MODELS[s.model]) settings.model = s.model;
       settings.thinking = typeof s.thinking === 'boolean' ? s.thinking : s.effort === 'high';
-      if (s.theme === 'light' || s.theme === 'dark') settings.theme = s.theme;
+      if (THEMES[s.theme]) settings.theme = s.theme;
       if (s.lastSeen) prevSeen = s.lastSeen;
     }
     if (c && Array.isArray(c.messages)) history = c.messages.filter(x => x && (x.r === 'u' || x.r === 'a') && typeof x.c === 'string' && x.c).concat(history);
@@ -1352,7 +1507,7 @@ Rules:
     if (cv && Array.isArray(cv.list)) convs = cv.list;
     if (fl && fl.files && typeof fl.files === 'object') files = fl.files;
     const la = [...history].reverse().find(x => x.r === 'a' && x.m);
-    if (la) lastReply = { name: la.m, ok: Object.values(MODELS).some(m => m.name === la.m) };
+    if (la) lastReply = { name: la.m, ok: la.v !== undefined ? la.v : Object.values(MODELS).some(m => m.name === la.m), req: la.q || la.m };
   })().catch(() => {});
   out.addEventListener('click', e => {
     const c = e.target.closest('.clawd'); if (!c) return;
@@ -1363,7 +1518,7 @@ Rules:
     applyTheme(); measure(); setMode('normal');
     input.disabled = true;
     await Promise.race([ready, sleep(1500)]);
-    applyTheme(); measure(); setTitle(); redraw();
+    applyTheme(); measure(); setTitle(); await launch();
     input.disabled = false; renderFoot(); focusIn(); drawCursor();
     settings.lastSeen = Date.now(); saveSettings();
     await ready; openFromHash();
