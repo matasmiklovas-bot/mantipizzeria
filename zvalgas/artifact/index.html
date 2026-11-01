@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Žvalgas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400&family=Instrument+Serif:ital@0;1&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+:root{
+  --paper:#f2f0eb;--surface:#faf9f6;--ink:#161513;--ink-2:#3b3934;--muted:#7a766d;
+  --line:#e0dcd3;--line-2:#cfcabf;--accent:#d9461b;
+  --s-new:#9a958b;--s-no_answer:#c08a1e;--s-declined:#b5432f;--s-thinking:#3d6aa3;--s-interested:#2e7a4e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+body{font-family:Geist,ui-sans-serif,system-ui,sans-serif;font-size:14px;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit;background:none;border:0}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--ink);color:var(--paper)}
+:focus-visible{outline:1.5px solid var(--ink);outline-offset:2px}
+.mono{font-family:"Geist Mono",ui-monospace,monospace}
+.serif{font-family:"Instrument Serif",Georgia,serif}
+.tnum{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+@media(min-width:768px){.wrap{padding:0 40px}}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid var(--line);padding:32px 0 20px}
+h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:44px;line-height:.9;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+.sub{margin-top:8px;font-size:13px;color:var(--muted)}
+.stats{display:none;gap:32px;text-align:right}
+@media(min-width:640px){.stats{display:flex}h1{font-size:56px}header{padding-top:48px}}
+.stat b{display:block;font-family:"Instrument Serif",serif;font-weight:400;font-size:32px;line-height:1}
+.stat small,.lbl{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.stat small{margin-top:4px}
+
+.grid{display:grid;gap:24px;padding:24px 0 40px}
+@media(min-width:1024px){.grid{grid-template-columns:320px minmax(0,1fr);gap:56px;padding-top:32px}aside{position:sticky;top:32px;align-self:start}}
+
+.toggle{display:flex;width:100%;height:44px;align-items:center;justify-content:space-between;border:1px solid var(--line-2);border-radius:8px;padding:0 16px;font-weight:500}
+@media(min-width:1024px){.toggle{display:none}}
+.panel{display:none;flex-direction:column;gap:24px;margin-top:24px}
+.panel.open{display:flex}
+@media(min-width:1024px){.panel{display:flex;margin-top:0}}
+.lbl{margin-bottom:8px}
+.inp{height:40px;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:0 12px;font-size:16px}
+@media(min-width:1024px){.inp{font-size:14px}}
+.inp:focus{border-color:var(--ink);outline:none}
+.inp::placeholder,textarea::placeholder{color:#7a766db3}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{height:32px;border:1px solid var(--line);border-radius:999px;padding:0 12px;font-size:13px;color:var(--ink-2)}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px}
+.seg button{height:28px;width:48px;border-radius:999px;font-size:13px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.primary{display:flex;height:44px;align-items:center;justify-content:space-between;border-radius:8px;padding:0 16px;background:var(--accent);color:#fff;font-weight:500}
+.primary:active{background:#c23d16}
+.note{font-size:12px;line-height:1.55;color:var(--muted)}
+.copied{font-size:12px;color:var(--s-interested)}
+.req{display:none;width:100%;min-height:120px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:10px;font-size:12px;line-height:1.5}
+
+nav{display:flex;gap:4px;overflow-x:auto;margin:0 -4px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+nav button{display:flex;flex-shrink:0;height:32px;align-items:center;gap:8px;border-radius:999px;padding:0 12px;font-size:13px;color:var(--muted)}
+nav button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+nav .n{font-family:"Geist Mono",monospace;font-size:11px;opacity:.6}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-top:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.bar input{flex:1 1 220px;min-width:0;height:36px;font-size:16px}
+.bar input:focus{outline:none}
+.tools{display:flex;gap:16px;font-size:12.5px;color:var(--muted)}
+
+ul{list-style:none}
+li.row{border-bottom:1px solid var(--line)}
+li.row:last-child{border-bottom:0}
+.line{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px 16px;padding:16px 4px}
+@media(min-width:900px){.line{grid-template-columns:minmax(0,1.6fr) minmax(0,1.1fr) minmax(0,1.2fr) 9.5rem 1.5rem}}
+.name{min-width:0;text-align:left}
+.name .t{display:flex;align-items:center;gap:8px}
+.name strong{font-weight:500;font-size:15px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.name .m,.trunc{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.fresh{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.contacts{grid-column:span 2;display:flex;flex-direction:column;gap:2px;min-width:0}
+.contacts .ph{font-family:"Geist Mono",monospace;font-size:13px}
+.need{display:none;min-width:0}
+.need div:first-child{font-size:13px;color:var(--ink-2)}
+.st-m{width:9rem}.st-d,.chev{display:none}
+@media(min-width:900px){.contacts{grid-column:auto}.need,.st-d{display:block}.st-m{display:none}.chev{display:flex}}
+.chev{width:24px;height:24px;align-items:center;justify-content:center;border-radius:50%;color:var(--muted)}
+.pick{position:relative}
+.pill{display:flex;width:100%;height:34px;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:0 10px 0 12px;font-size:13px;color:var(--ink-2)}
+.pill svg{margin-left:auto;width:10px;height:10px;color:var(--muted)}
+.menu{position:absolute;right:0;z-index:30;margin-top:6px;width:240px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:4px;box-shadow:0 12px 32px -12px rgba(22,21,19,.25);animation:rise .3s cubic-bezier(.2,.7,.2,1) both}
+.menu button{display:flex;width:100%;align-items:center;gap:10px;border-radius:8px;padding:10px;text-align:left;font-size:13px;color:var(--ink-2)}
+.menu button:hover,.menu button[aria-selected=true]{background:var(--paper);color:var(--ink)}
+.menu kbd{margin-left:auto;font-family:"Geist Mono",monospace;font-size:10px;color:var(--muted)}
+.detail{display:grid;gap:20px;padding:0 4px 20px;animation:rise .3s both}
+@media(min-width:900px){.detail{grid-template-columns:minmax(0,1.6fr) minmax(0,2.3fr);gap:32px}}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:start}
+.facts .v{font-size:13px;color:var(--ink-2);word-break:break-word}
+.facts .lbl{margin-bottom:4px}
+.u{text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:2px}
+textarea{width:100%;resize:vertical;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:12px;font-size:16px;line-height:1.55}
+@media(min-width:1024px){textarea{font-size:13.5px}}
+textarea:focus{outline:none;border-color:var(--ink)}
+.del{display:block;margin:12px 0 0 auto;font-size:12px;color:var(--muted)}
+.del.warn{color:var(--accent)}
+.empty{padding:96px 0;text-align:center}
+.empty p:first-child{font-family:"Instrument Serif",serif;font-style:italic;font-size:28px;color:var(--ink-2)}
+.empty p:last-child{margin-top:8px;font-size:13px;color:var(--muted)}
+form.add{display:grid;gap:10px;margin-bottom:24px;border:1px solid var(--line);border-radius:12px;background:#faf9f699;padding:16px;animation:rise .3s both}
+@media(min-width:640px){form.add{grid-template-columns:1fr 1fr}}
+form.add .inp{height:38px}
+form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+@media(min-width:640px){form.add .acts{grid-column:span 2}}
+.btn-ink{height:36px;border-radius:8px;background:var(--ink);color:var(--paper);padding:0 16px;font-size:13px;font-weight:500}
+.foot{margin-top:40px;border-top:1px solid var(--line);padding-top:16px;font-size:11.5px;color:var(--muted)}
+.banner{margin-top:16px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--ink-2);background:var(--surface)}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Žvalgas<span>.</span></h1>
+      <p class="sub">Verslai, kuriems reikia svetainės ar sistemos.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b class="tnum" id="st-all">–</b><small>kontaktų</small></div>
+      <div class="stat"><b class="tnum" id="st-called">–</b><small>paskambinta</small></div>
+      <div class="stat"><b class="tnum" id="st-yes" style="color:var(--s-interested)">–</b><small>nori</small></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <aside>
+      <button class="toggle" id="toggle" aria-expanded="false">Ieškoti naujų įmonių
+        <svg viewBox="0 0 10 10" width="10" height="10"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+      </button>
+      <section class="panel" id="panel">
+        <div><span class="lbl">Sritis</span><input class="inp" id="f-industry" placeholder="kirpyklos, autoservisai, kavinės…"></div>
+        <div><span class="lbl">Miestas</span><input class="inp" id="f-city" value="Vilnius" placeholder="Visa Lietuva"></div>
+        <div><span class="lbl">Metinės pajamos</span><div class="chips" id="f-revenue"></div>
+          <p class="note" id="rev-note" style="margin-top:8px">Nepasirinkus – bet kokios.</p></div>
+        <div><span class="lbl">Ko trūksta</span><div class="chips" id="f-needs"></div></div>
+        <div><span class="lbl">Kiekis</span><div class="seg" id="f-count"></div></div>
+        <button class="primary" id="go"><span>Paruošti paiešką</span><span class="mono" style="font-size:12px;opacity:.8">→</span></button>
+        <p class="copied" id="copied" hidden>Nukopijuota. Įklijuok į pokalbį su Claude.</p>
+        <textarea class="req" id="req" readonly></textarea>
+        <p class="note">Ši versija veikia Claude programėlėje, todėl pati internete ieškoti negali. Mygtukas nukopijuoja užklausą: įklijuok ją į pokalbį su Claude, ir jis suras įmones bei įrašys jas į šį sąrašą. Kontaktus patikrink prieš skambindamas.</p>
+      </section>
+    </aside>
+
+    <main style="min-width:0">
+      <nav id="filters"></nav>
+      <div class="bar">
+        <input id="q" placeholder="Filtruoti pagal pavadinimą, tel., pastabas…">
+        <div class="tools">
+          <button id="add-btn">+ Pridėti</button>
+          <button id="csv-btn">Kopijuoti CSV</button>
+        </div>
+      </div>
+      <div id="banner"></div>
+      <div style="padding-top:20px">
+        <div id="add-slot"></div>
+        <ul id="list"></ul>
+        <div class="empty" id="empty" hidden><p></p><p></p></div>
+      </div>
+      <p class="foot" id="foot">Kraunama…</p>
+    </main>
+  </div>
+</div>
+
+<script>
+const STATUSES=[
+  {id:"new",label:"Neskambinta",short:"Neskambinta"},
+  {id:"no_answer",label:"Skambinta — neatsiliepė",short:"Neatsiliepė"},
+  {id:"declined",label:"Skambinta — nenori",short:"Nenori"},
+  {id:"thinking",label:"Skambinta — pagalvos",short:"Pagalvos"},
+  {id:"interested",label:"Skambinta — nori",short:"Nori"},
+];
+const NEEDS=["Svetainė","Svetainės atnaujinimas","Rezervacijų sistema","El. parduotuvė","Vidinė sistema / CRM"];
+const REVENUE=["iki 50 tūkst. €","50–150 tūkst. €","150–500 tūkst. €","0,5–1 mln. €","1–5 mln. €","5 mln. € +"];
+const COUNTS=[5,10,15];
+const LS="zvalgas.leads.v1";
+const $=s=>document.getElementById(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const color=id=>`var(--s-${id})`;
+const stat=id=>STATUSES.find(s=>s.id===id)||STATUSES[0];
+const chev=`<svg viewBox="0 0 10 10"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>`;
+const host=u=>{try{return new URL(/^https?:/.test(u)?u:"https://"+u).hostname.replace(/^www\./,"")}catch{return u}};
+const href=u=>/^https?:/.test(u)?u:"https://"+u;
+
+let leads=[];let db=null;let col=null;
+const ui={filter:"all",q:"",open:new Set(),menu:null,confirm:null,adding:false};
+const form={revenue:[],needs:[],count:10};
+
+/* ---------- storage ---------- */
+function lsLoad(){try{const v=JSON.parse(localStorage.getItem(LS)||"[]");return Array.isArray(v)?v:[]}catch{return[]}}
+function lsSave(){try{localStorage.setItem(LS,JSON.stringify(leads))}catch{}}
+async function save(lead){
+  lead.updatedAt=Date.now();
+  if(col){try{await col.doc(lead.id).set(lead)}catch(e){showBanner(e&&e.code==="quota_exceeded"?"Duomenų bazė pilna. Ištrink senus kontaktus.":"Nepavyko išsaugoti. Patikrink ryšį.")}}
+  else lsSave();
+}
+async function removeLead(id){
+  leads=leads.filter(l=>l.id!==id);render();
+  if(col){try{await col.doc(id).delete()}catch{showBanner("Nepavyko ištrinti.")}}else lsSave();
+}
+function showBanner(t){$("banner").innerHTML=t?`<div class="banner">${esc(t)}</div>`:""}
+
+async function init(){
+  leads=lsLoad();render();
+  db=window.claude&&window.claude.use?await window.claude.use("db").catch(()=>null):null;
+  if(!db){$("foot").textContent="Duomenys saugomi tik šiame įrenginyje (debesis nepasiekiamas).";return}
+  col=db.collection("leads");
+  let loaded=false;
+  const timer=setTimeout(()=>{if(!loaded)showBanner("Duomenys dar nepasiekiami. Rodoma paskutinė žinoma būsena.")},10000);
+  col.onSnapshot(snap=>{
+    if(!snap.metadata.fromCache){loaded=true;clearTimeout(timer);showBanner("")}
+    leads=snap.docs.map(d=>({...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    $("foot").textContent="Duomenys sinchronizuojami tarp įrenginių.";
+    render();
+  },e=>{clearTimeout(timer);showBanner(e.code==="revoked"?"Prieiga nutraukta.":"Nepavyko pasiekti duomenų.")});
+}
+
+/* ---------- search panel ---------- */
+function chips(el,items,key){
+  el.innerHTML=items.map(v=>`<button class="chip" aria-pressed="${form[key].includes(v)}">${esc(v)}</button>`).join("");
+  [...el.children].forEach((b,i)=>b.onclick=()=>{const v=items[i];form[key]=form[key].includes(v)?form[key].filter(x=>x!==v):[...form[key],v];chips(el,items,key);
+    if(key==="revenue")$("rev-note").textContent=form.revenue.length?"Įmonės be viešų pajamų duomenų bus praleistos.":"Nepasirinkus – bet kokios.";});
+}
+function seg(){
+  $("f-count").innerHTML=COUNTS.map(c=>`<button class="tnum" aria-pressed="${form.count===c}">${c}</button>`).join("");
+  [...$("f-count").children].forEach((b,i)=>b.onclick=()=>{form.count=COUNTS[i];seg()});
+}
+chips($("f-revenue"),REVENUE,"revenue");chips($("f-needs"),NEEDS,"needs");seg();
+$("toggle").onclick=()=>{const o=$("panel").classList.toggle("open");$("toggle").setAttribute("aria-expanded",o)};
+$("go").onclick=async()=>{
+  const ind=$("f-industry").value.trim(),city=$("f-city").value.trim();
+  const text=`Žvalgas: surask ${form.count} Lietuvos įmonių ir įrašyk jas į Žvalgo sąrašą.
+Sritis: ${ind||"bet kuri, kur svetainė padidintų pardavimus"}
+Miestas: ${city||"visa Lietuva"}
+Metinės pajamos: ${form.revenue.join(", ")||"nesvarbu"}
+Ko trūksta: ${form.needs.join(", ")||"svetainės ar sistemos"}
+Kontaktus imk tik iš šaltinių (rekvizitai.lt ir pan.), nieko neišgalvok.
+Jau sąraše: ${leads.map(l=>l.name).join("; ")||"nėra"}`;
+  const ta=$("req");ta.value=text;
+  try{await navigator.clipboard.writeText(text);$("copied").hidden=false;ta.style.display="none";setTimeout(()=>$("copied").hidden=true,4000)}
+  catch{ta.style.display="block";ta.select();$("copied").hidden=true}
+};
+
+/* ---------- list ---------- */
+function picker(lead,where){
+  const s=stat(lead.status),open=ui.menu===lead.id+where;
+  return `<div class="pick"><button class="pill" data-act="menu" data-id="${lead.id}" data-w="${where}" aria-expanded="${open}"><span class="dot" style="background:${color(s.id)}"></span><span>${s.short}</span>${chev}</button>
+  ${open?`<div class="menu" role="listbox">${STATUSES.map((x,i)=>`<button role="option" aria-selected="${x.id===lead.status}" data-act="set" data-id="${lead.id}" data-s="${x.id}"><span class="dot" style="background:${color(x.id)}"></span>${x.label}<kbd>${i+1}</kbd></button>`).join("")}</div>`:""}</div>`;
+}
+function row(l){
+  const meta=[l.category,l.city,l.revenue].filter(Boolean).join(" · ")||"—";
+  const open=ui.open.has(l.id);
+  const phone=l.phone?`<a class="ph tnum" href="tel:${esc(l.phone.replace(/\s/g,""))}">${esc(l.phone)}</a>`:`<span class="ph muted">—</span>`;
+  const site=l.website?`<a href="${esc(href(l.website))}" target="_blank" rel="noreferrer">${esc(host(l.website))} ↗</a>`:"svetainės nėra";
+  return `<li class="row"><div class="line">
+    <button class="name" data-act="open" data-id="${l.id}"><div class="t">${l.fresh?'<span class="fresh"></span>':""}<strong>${esc(l.name)}</strong></div><div class="m">${esc(meta)}</div></button>
+    <div class="st-m">${picker(l,"m")}</div>
+    <div class="contacts">${phone}${l.email?`<a class="trunc" href="mailto:${esc(l.email)}">${esc(l.email)}</a>`:""}</div>
+    <div class="need"><div class="trunc" style="color:var(--ink-2);margin:0">${esc(l.need||"—")}</div><div class="trunc">${site}</div></div>
+    <div class="st-d">${picker(l,"d")}</div>
+    <button class="chev" data-act="open" data-id="${l.id}" aria-label="Išskleisti" style="transform:rotate(${open?180:0}deg)">${chev.replace("<svg","<svg width='10' height='10'")}</button>
+  </div>
+  ${open?`<div class="detail"><div class="facts">
+    <div><span class="lbl">Kodėl</span><div class="v">${esc(l.reason||"—")}</div></div>
+    <div><span class="lbl">Reikia</span><div class="v">${esc(l.need||"—")}</div></div>
+    <div><span class="lbl">Įmonės kodas</span><div class="v mono tnum">${esc(l.companyCode||"—")}</div></div>
+    <div><span class="lbl">Svetainė</span><div class="v">${l.website?`<a class="u" href="${esc(href(l.website))}" target="_blank" rel="noreferrer">${esc(host(l.website))}</a>`:"nėra"}</div></div>
+    ${l.source?`<div><span class="lbl">Šaltinis</span><div class="v"><a class="u" href="${esc(href(l.source))}" target="_blank" rel="noreferrer">${esc(host(l.source))}</a></div></div>`:""}
+    <div><span class="lbl">Pridėta</span><div class="v tnum">${new Date(l.createdAt||Date.now()).toLocaleDateString("lt-LT")}</div></div>
+  </div><div>
+    <textarea rows="4" data-note="${l.id}" placeholder="Pastabos: su kuo kalbėjai, kada perskambinti, kiek siūlei…">${esc(l.note)}</textarea>
+    <button class="del ${ui.confirm===l.id?"warn":""}" data-act="del" data-id="${l.id}">${ui.confirm===l.id?"Tikrai ištrinti?":"Ištrinti"}</button>
+  </div></div>`:""}</li>`;
+}
+function render(){
+  const counts=Object.fromEntries(STATUSES.map(s=>[s.id,0]));leads.forEach(l=>counts[l.status]=(counts[l.status]||0)+1);
+  $("st-all").textContent=leads.length;$("st-called").textContent=leads.length-counts.new;$("st-yes").textContent=counts.interested;
+  $("filters").innerHTML=[["all","Visi",leads.length],...STATUSES.map(s=>[s.id,s.short,counts[s.id]])].map(([id,t,n])=>
+    `<button aria-pressed="${ui.filter===id}" data-f="${id}">${id!=="all"?`<span class="dot" style="background:${color(id)}"></span>`:""}${t}<span class="n">${n}</span></button>`).join("");
+  const q=ui.q.toLowerCase();
+  const vis=leads.filter(l=>(ui.filter==="all"||l.status===ui.filter)&&(!q||[l.name,l.category,l.city,l.phone,l.email,l.note].some(v=>(v||"").toLowerCase().includes(q))));
+  // keep focus/draft of an open note while re-rendering from live updates
+  const act=document.activeElement,draft=act&&act.dataset&&act.dataset.note?{id:act.dataset.note,v:act.value,s:act.selectionStart}:null;
+  $("list").innerHTML=vis.map(row).join("");
+  if(draft){const t=document.querySelector(`[data-note="${draft.id}"]`);if(t){t.value=draft.v;t.focus();t.setSelectionRange(draft.s,draft.s)}}
+  const e=$("empty");e.hidden=vis.length>0;
+  e.children[0].textContent=leads.length?"Nieko nerasta.":"Sąrašas tuščias.";
+  e.children[1].textContent=leads.length?"Pakeisk filtrą arba paieškos frazę.":"Paruošk paiešką ir įklijuok ją Claude, arba pridėk kontaktą rankiniu būdu.";
+}
+async function setStatus(id,s){const l=leads.find(x=>x.id===id);if(!l||l.status===s)return;l.status=s;l.fresh=false;ui.menu=null;render();await save(l)}
+
+document.addEventListener("click",e=>{
+  const f=e.target.closest("[data-f]");if(f){ui.filter=f.dataset.f;render();return}
+  const b=e.target.closest("[data-act]");
+  if(!b){if(ui.menu){ui.menu=null;render()}return}
+  const id=b.dataset.id,a=b.dataset.act;
+  if(a==="menu"){const k=id+b.dataset.w;ui.menu=ui.menu===k?null:k;render()}
+  else if(a==="set")setStatus(id,b.dataset.s);
+  else if(a==="open"){ui.open.has(id)?ui.open.delete(id):ui.open.add(id);ui.menu=null;render()}
+  else if(a==="del"){if(ui.confirm===id){ui.confirm=null;removeLead(id)}else{ui.confirm=id;render();setTimeout(()=>{if(ui.confirm===id){ui.confirm=null;render()}},3000)}}
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&ui.menu){ui.menu=null;render()}
+  const n=+e.key;if(ui.menu&&n>=1&&n<=5)setStatus(ui.menu.slice(0,-1),STATUSES[n-1].id);
+});
+document.addEventListener("focusout",e=>{
+  const t=e.target;if(!t.dataset||!t.dataset.note)return;
+  const l=leads.find(x=>x.id===t.dataset.note);if(l&&l.note!==t.value){l.note=t.value;l.fresh=false;save(l)}
+});
+$("q").oninput=e=>{ui.q=e.target.value;render()};
+
+/* ---------- add ---------- */
+const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\b(uab|mb|ii|ab|vsi)\b/g,"").replace(/[^a-z0-9]/g,"");
+const pkey=s=>(s||"").replace(/\D/g,"").slice(-8);
+const dup=f=>leads.some(l=>(f.companyCode&&l.companyCode===f.companyCode)||(f.phone&&pkey(l.phone)===pkey(f.phone))||(norm(f.name)&&norm(l.name)===norm(f.name)));
+$("add-btn").onclick=()=>{
+  ui.adding=!ui.adding;const slot=$("add-slot");
+  if(!ui.adding){slot.innerHTML="";return}
+  const fld=(k,p,t="text")=>`<input class="inp" name="${k}" type="${t}" placeholder="${p}">`;
+  slot.innerHTML=`<form class="add">${fld("name","Pavadinimas *")}${fld("category","Sritis")}${fld("phone","Telefonas","tel")}${fld("email","El. paštas","email")}${fld("city","Miestas")}${fld("website","Svetainė (jei yra)")}
+    <select class="inp" name="need">${NEEDS.map(n=>`<option>${n}</option>`).join("")}</select>${fld("revenue","Pajamos")}
+    <div class="acts"><span class="note" id="dupmsg" style="margin-right:auto;color:var(--accent)"></span><button type="button" class="muted" id="cancel">Atšaukti</button><button class="btn-ink">Pridėti</button></div></form>`;
+  const fm=slot.querySelector("form");fm.name.focus();
+  $("cancel").onclick=()=>{ui.adding=false;slot.innerHTML=""};
+  fm.onsubmit=async ev=>{ev.preventDefault();
+    const d=Object.fromEntries(new FormData(fm));d.name=(d.name||"").trim();if(!d.name)return;
+    if(dup(d)){$("dupmsg").textContent="Toks kontaktas jau yra.";return}
+    const now=Date.now(),id=(crypto.randomUUID?crypto.randomUUID():now.toString(36)+Math.random().toString(36).slice(2));
+    const lead={id,name:d.name,companyCode:"",category:d.category||"",city:d.city||"",phone:d.phone||"",email:d.email||"",website:d.website||"",revenue:d.revenue||"",need:d.need,reason:"",source:"",status:"new",note:"",createdAt:now,updatedAt:now,fresh:false};
+    leads.unshift(lead);ui.adding=false;slot.innerHTML="";render();await save(lead)};
+};
+
+/* ---------- csv ---------- */
+$("csv-btn").onclick=async()=>{
+  const cell=v=>/[",\n;]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
+  const head=["Pavadinimas","Statusas","Telefonas","El. paštas","Sritis","Miestas","Pajamos","Reikia","Svetainė","Įmonės kodas","Pastabos","Šaltinis"];
+  const rows=leads.map(l=>[l.name,stat(l.status).label,l.phone,l.email,l.category,l.city,l.revenue,l.need,l.website,l.companyCode,l.note,l.source].map(v=>cell(String(v||""))));
+  try{await navigator.clipboard.writeText([head,...rows].map(r=>r.join(";")).join("\n"));showBanner("CSV nukopijuotas. Įklijuok į Excel ar Google Sheets.");setTimeout(()=>showBanner(""),3000)}
+  catch{showBanner("Naršyklė neleido kopijuoti.")}
+};
+
+init();
+</script>
+</body>
+</html>
