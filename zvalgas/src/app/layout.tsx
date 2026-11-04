@@ -15,12 +15,13 @@ export const metadata: Metadata = {
   title: "Žvalgas — klientų paieška",
   description: "Randa verslus, kuriems reikia svetainės ar sistemos, ir seka skambučius.",
   robots: { index: false, follow: false },
+  appleWebApp: { capable: true, title: "Žvalgas", statusBarStyle: "default" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="lt" className={`${geist.variable} ${geistMono.variable} ${instrument.variable}`}>
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-dvh overscroll-none">{children}</body>
     </html>
   );
 }

@@ -1,30 +1,34 @@
 # Žvalgas
 
-Vidinis įrankis: AI randa Lietuvos verslus, kuriems reikia svetainės ar sistemos, o tu žymi skambučių eigą.
+Komandos skambučių darbo vieta: AI randa Lietuvos įmones, kurioms reikia svetainės ar sistemos, o komanda joms skambina.
 
-- **Paieška**: sritis, miestas, metinės pajamos (pagal rekvizitai.lt intervalus), ko trūksta, kiekis.
-  Serveris kviečia Claude su `web_search` + `web_fetch`, progresas rodomas gyvai.
-- **Statusai**: Neskambinta · Neatsiliepė · Nenori · Pagalvos · Nori. Atidarius statusą veikia klavišai 1–5.
-- **Pastabos**, filtrai, rankinis pridėjimas, dublikatų atmetimas (pagal įmonės kodą, telefoną, pavadinimą).
-- **CSV eksportas** (Excel) ir JSON atsarginė kopija / įkėlimas.
+- **Skambinti** – eilė (nauji, perskambinti, neatsiliepę po 3 val.), didelis „Skambinti“ mygtukas, rezultatas vienu paspaudimu (klavišai 1–4), „Pagalvos“ su perskambinimo data, istorija ir komandos pastabos prie kiekvieno kontakto.
+- **Kontaktai** – visas sąrašas, filtrai, statuso keitimas, rankinis pridėjimas, JSON importas, CSV eksportas.
+- **Paieška** – Claude su `web_search` + `web_fetch` ieško įmonių pagal sritį, miestą, pajamas ir poreikį; rezultatai iš karto patenka į bendrą sąrašą (be dublikatų).
+- **Statistika** – skambučiai šiandien / per 7 d. pagal žmogų, pasiekiamumas, 14 dienų grafikas.
 
-## Paleidimas
+Prisijungimas: vardas + bendras komandos slaptažodis (`APP_PASSWORD`). Duomenys – Postgres (Neon).
+
+## Paleidimas Vercel (≈5 min.)
+
+1. **Vercel → Add New → Project →** šita repozitorija. **Root Directory: `zvalgas`**. Deploy.
+2. Projekte **Storage → Create Database → Neon → Connect**. `DATABASE_URL` atsiras pats.
+3. **Settings → Environment Variables:** `APP_PASSWORD` (sugalvok) ir `ANTHROPIC_API_KEY` (console.anthropic.com, reikia papildyti kreditų). Tada **Deployments → Redeploy**.
+4. Atidaryk svetainę, prisijunk, **Kontaktai → Importuoti** – įkelk `zvalgas-kontaktai.json`.
+
+Lentelės susikuria pačios pirmo užklausimo metu.
+
+## Lokaliai
 
 ```bash
 cd zvalgas
-cp .env.example .env.local   # įrašyk ANTHROPIC_API_KEY ir APP_PASSWORD
+cp .env.example .env.local   # DATABASE_URL=postgres://… APP_PASSWORD=… ANTHROPIC_API_KEY=…
 npm install
 npm run dev
 ```
 
-## Diegimas į Vercel
+## Ribos
 
-Naujas Vercel projektas iš šios repozitorijos, **Root Directory = `zvalgas`**.
-Environment Variables: `ANTHROPIC_API_KEY`, `APP_PASSWORD`.
-Paieška trunka 1–4 min., todėl `/api/search` turi `maxDuration = 300`. Patikrink, ar tavo Vercel planas leidžia tokią trukmę.
-
-## Žinomi apribojimai
-
-- Kontaktai saugomi **tik naršyklės localStorage**. Kitame įrenginyje sąrašas bus tuščias. Naudok atsarginę kopiją.
-- AI gali suklysti (pasenęs telefonas, netiksliai įvertinta svetainė). Prieš skambindamas pažiūrėk šaltinį.
-- Kiekviena paieška naudoja Anthropic API kreditus (web paieškos + modelio tokenai).
+- AI paieška trunka 1–4 min. (`maxDuration = 300`) ir naudoja API kreditus. AI gali suklysti – žiūrėk šaltinį.
+- Pajamų duomenų AI dažnai negauna (rekvizitai.lt riboja automatinį skaitymą).
+- Vienas bendras slaptažodis: vardą įrašo pats žmogus, todėl tai ne apsauga nuo savų, tik nuo pašalinių.

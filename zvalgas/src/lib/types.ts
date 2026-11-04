@@ -7,8 +7,8 @@ export const STATUSES = [
 ] as const;
 
 export type StatusId = (typeof STATUSES)[number]["id"];
-
-export const statusById = (id: StatusId) => STATUSES.find((s) => s.id === id) ?? STATUSES[0];
+export const STATUS_IDS = STATUSES.map((s) => s.id) as StatusId[];
+export const statusById = (id: string) => STATUSES.find((s) => s.id === id) ?? STATUSES[0];
 
 export const NEEDS = [
   "Svetainė",
@@ -31,8 +31,8 @@ export const REVENUE_BRACKETS = [
 
 export type RevenueId = (typeof REVENUE_BRACKETS)[number]["id"];
 
-/** Fields the AI search returns for each business. */
-export interface FoundLead {
+/** Business fields, as found by search, import or manual entry. */
+export interface LeadInput {
   name: string;
   companyCode: string;
   category: string;
@@ -46,14 +46,26 @@ export interface FoundLead {
   source: string;
 }
 
-export interface Lead extends FoundLead {
+export interface Lead extends LeadInput {
   id: string;
   status: StatusId;
+  callbackAt: string | null;
+  attempts: number;
+  lastCalledAt: string | null;
+  lastCalledBy: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Activity {
+  id: number;
+  leadId: string;
+  author: string;
+  kind: "created" | "call" | "note" | "status";
+  status: StatusId | null;
   note: string;
-  createdAt: number;
-  updatedAt: number;
-  /** True until the user touches the lead (status change / note). */
-  fresh: boolean;
+  createdAt: string;
 }
 
 export interface SearchRequest {
@@ -62,12 +74,17 @@ export interface SearchRequest {
   revenue: RevenueId[];
   needs: Need[];
   count: number;
-  exclude: string[];
 }
 
 export type SearchEvent =
   | { type: "search"; query: string }
   | { type: "fetch"; url: string }
-  | { type: "leads"; leads: FoundLead[] }
+  | { type: "result"; found: number; added: Lead[] }
   | { type: "error"; message: string }
   | { type: "done" };
+
+export interface Stats {
+  today: { author: string; calls: number; reached: number; interested: number }[];
+  week: { author: string; calls: number; reached: number; interested: number }[];
+  daily: { day: string; calls: number }[];
+}

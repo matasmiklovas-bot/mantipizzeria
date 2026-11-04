@@ -9,6 +9,10 @@
   --line: #e0dcd3;
   --line-2: #cfcabf;
   --accent: #d9461b;
+  --accent-ink: #b8380f;
+  --rail: #161513;
+  --rail-2: #2a2824;
+  --rail-text: #a8a398;
 
   --s-new: #9a958b;
   --s-no-answer: #c08a1e;
@@ -26,6 +30,10 @@
   --color-line: var(--line);
   --color-line-2: var(--line-2);
   --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-rail: var(--rail);
+  --color-rail-2: var(--rail-2);
+  --color-rail-text: var(--rail-text);
   --font-sans: var(--font-geist);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-instrument);
@@ -56,6 +64,16 @@ body {
 input,
 textarea {
   font: inherit;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
 }
 
 .tnum {

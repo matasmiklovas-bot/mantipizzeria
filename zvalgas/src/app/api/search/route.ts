@@ -1,11 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
-import {
-  NEEDS,
-  REVENUE_BRACKETS,
-  type FoundLead,
-  type SearchEvent,
-  type SearchRequest,
-} from "@/lib/types";
+import { cleanLead } from "@/lib/api";
+import { unauthorized, userFrom } from "@/lib/auth";
+import { dbUrl, existingKeys, insertLeads } from "@/lib/db";
+import { withoutDuplicates } from "@/lib/dedupe";
+import { NEEDS, REVENUE_BRACKETS, type LeadInput, type SearchEvent, type SearchRequest } from "@/lib/types";
 
 export const maxDuration = 300;
 
@@ -74,14 +72,14 @@ const submitTool: Anthropic.Beta.BetaTool = {
   },
 };
 
-function buildPrompt(req: SearchRequest): string {
+function buildPrompt(req: SearchRequest, exclude: string[]): string {
   const revenue = req.revenue.length
     ? REVENUE_BRACKETS.filter((r) => req.revenue.includes(r.id))
         .map((r) => r.label)
         .join(", ")
     : "nesvarbu";
   const needs = req.needs.length ? req.needs.join(", ") : "bet kuri iš: " + NEEDS.join(", ");
-  const exclude = req.exclude.length ? req.exclude.join("; ") : "nėra";
+  const excluded = exclude.length ? exclude.join("; ") : "nėra";
 
   return `Rask ${req.count} įmonių.
 
@@ -90,34 +88,16 @@ Vieta: ${req.city.trim() || "visa Lietuva"}
 Metinės pajamos: ${revenue}
 Ko jiems turėtų trūkti: ${needs}
 
-Jau turimos įmonės (neįtraukti): ${exclude}`;
+Jau turimos įmonės (neįtraukti): ${excluded}`;
 }
 
-function clean(s: unknown): string {
-  return typeof s === "string" ? s.trim() : "";
-}
-
-function sanitize(raw: unknown): FoundLead[] {
+function sanitize(raw: unknown): LeadInput[] {
   const list = (raw as { leads?: unknown })?.leads;
   if (!Array.isArray(list)) return [];
-  return list
-    .map((l: Record<string, unknown>) => ({
-      name: clean(l.name),
-      companyCode: clean(l.companyCode),
-      category: clean(l.category),
-      city: clean(l.city),
-      phone: clean(l.phone),
-      email: clean(l.email),
-      website: clean(l.website),
-      revenue: clean(l.revenue),
-      need: (NEEDS as readonly string[]).includes(clean(l.need))
-        ? (clean(l.need) as FoundLead["need"])
-        : "Svetainė",
-      reason: clean(l.reason),
-      source: clean(l.source),
-    }))
-    .filter((l) => l.name && (l.phone || l.email));
+  return list.map(cleanLead).filter((l): l is LeadInput => !!l && !!(l.phone || l.email));
 }
+
+const clean = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
 function parseBody(body: unknown): SearchRequest | null {
   if (!body || typeof body !== "object") return null;
@@ -133,17 +113,14 @@ function parseBody(body: unknown): SearchRequest | null {
       (NEEDS as readonly string[]).includes(n as string),
     ),
     count: Math.min(20, Math.max(1, Number(b.count) || 10)),
-    exclude: (Array.isArray(b.exclude) ? b.exclude : [])
-      .filter((x): x is string => typeof x === "string")
-      .slice(0, 300)
-      .map((x) => x.slice(0, 120)),
   };
 }
 
 export async function POST(request: Request) {
-  const password = process.env.APP_PASSWORD;
-  if (password && request.headers.get("x-app-password") !== password) {
-    return Response.json({ error: "Neteisingas slaptažodis" }, { status: 401 });
+  const user = userFrom(request);
+  if (!user) return unauthorized();
+  if (!dbUrl()) {
+    return Response.json({ error: "Nėra prijungtos duomenų bazės (DATABASE_URL)" }, { status: 503 });
   }
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
@@ -162,11 +139,14 @@ export async function POST(request: Request) {
     async start(controller) {
       const send = (e: SearchEvent) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
 
-      const messages: Anthropic.Beta.BetaMessageParam[] = [
-        { role: "user", content: buildPrompt(req) },
-      ];
-
       try {
+        // Names already in the list, so the model doesn't return them again.
+        const known = await existingKeys();
+        const exclude = known.slice(-300).map((k) => k.name.slice(0, 120));
+        const messages: Anthropic.Beta.BetaMessageParam[] = [
+          { role: "user", content: buildPrompt(req, exclude) },
+        ];
+
         for (let round = 0; round < MAX_ROUNDS; round++) {
           const s = client.beta.messages.stream(
             {
@@ -210,7 +190,10 @@ export async function POST(request: Request) {
             (b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use" && b.name === "submit_leads",
           );
           if (submit) {
-            send({ type: "leads", leads: sanitize(submit.input) });
+            const found = sanitize(submit.input);
+            const { fresh } = withoutDuplicates(found, await existingKeys());
+            const added = await insertLeads(fresh, user);
+            send({ type: "result", found: found.length, added });
             break;
           }
 
