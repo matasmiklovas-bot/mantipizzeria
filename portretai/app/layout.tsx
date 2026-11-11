@@ -31,6 +31,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" href="/sriftai/Jost_400Regular.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
+        {process.env.ALLOW_TEST_HOOKS === '1' ? (
+          <p className="demo-banner" role="note">
+            Bandomoji versija: mokėjimai ir laiškai netikri, duomenys gali dingti.
+          </p>
+        ) : null}
         <header className="site-header">
           <Link href="/" className="wordmark">
             {SETTINGS.brand}

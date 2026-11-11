@@ -56,7 +56,8 @@ export async function runSelfCheck() {
       const key = `uploads/selfcheck-${crypto.randomUUID()}`;
       const upload = await s.createUpload(key);
       const body = Buffer.from('ikelimo patikra');
-      const res = await fetch(upload.url, { method: upload.method, headers: { 'content-type': 'application/octet-stream', ...upload.headers }, body });
+      const target = upload.url.startsWith('/') ? `${siteUrl()}${upload.url}` : upload.url;
+      const res = await fetch(target, { method: upload.method, headers: { 'content-type': 'application/octet-stream', ...upload.headers }, body });
       if (!res.ok) throw new Error(`Pasirašyta įkėlimo nuoroda atmetė failą (HTTP ${res.status}).`);
       const back = await s.get(key);
       await s.remove([key]);

@@ -38,7 +38,7 @@ const emails = (kind, orderId) => readOutbox().filter((m) => m.kind === kind && 
 
 async function uploadPhoto(file = 'sunelis.heic') {
   const { photoId, upload } = await orders.createPhotoUpload();
-  assert.match(upload.url, /^https:\/\/example\.test\/api\/ikelimas\/failas\?key=uploads/);
+  assert.match(upload.url, /^\/api\/ikelimas\/failas\?key=uploads/);
   await (await storage()).put(`uploads/${photoId}`, fs.readFileSync(fx(file)));
   return photoId;
 }

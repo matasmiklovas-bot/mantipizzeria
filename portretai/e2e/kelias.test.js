@@ -125,7 +125,10 @@ test('home page: example, price, lead time and order button are on the first scr
   const page = watch(await customer.newPage());
   await page.goto(site.base + '/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('h1').innerText(), 'Jūsų šuns ar katės portretas su vardu');
-  const fold = 667;
+  // The demo banner exists only on stand-ins; production has no banner, so
+  // measure the fold as production visitors see it.
+  const banner = await page.locator('.demo-banner').boundingBox();
+  const fold = 667 + (banner ? banner.height : 0);
   for (const [what, locator] of [
     ['example', page.locator('.hero .pair')],
     ['price', page.locator('.hero .facts')],
@@ -452,7 +455,8 @@ test('after the Christmas deadline the site switches by itself and offers a prin
 
     // Place an order through the same HTTP endpoints the browser uses.
     const slot = await (await fetch(late.base + '/api/ikelimas', { method: 'POST' })).json();
-    assert.equal((await fetch(slot.upload.url, { method: 'PUT', body: fs.readFileSync(fx('sunelis.jpg')) })).status, 200);
+    const uploadUrl = new URL(slot.upload.url, late.base).href;
+    assert.equal((await fetch(uploadUrl, { method: 'PUT', body: fs.readFileSync(fx('sunelis.jpg')) })).status, 200);
     const confirmed = await (await fetch(late.base + '/api/ikelimas/patvirtinti', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ photoId: slot.photoId }) })).json();
     assert.equal(confirmed.ok, true);
     const created = await fetch(late.base + '/api/uzsakymas', {
@@ -465,7 +469,7 @@ test('after the Christmas deadline the site switches by itself and offers a prin
     });
     assert.equal(created.status, 200);
     const { checkoutUrl, token } = await created.json();
-    await page.goto(checkoutUrl);
+    await page.goto(new URL(checkoutUrl, late.base).href);
     await page.getByRole('button', { name: 'Apmokėti (bandomasis)' }).click();
     await page.waitForURL(/\/uzsakymas\/aciu/);
     await page.getByRole('heading', { name: 'Dovanų kuponas' }).waitFor();
@@ -481,7 +485,7 @@ test('after the Christmas deadline the site switches by itself and offers a prin
     assert.ok(mail.html.includes(`/kuponas/${token}`));
 
     // Wrong upload signature is refused.
-    assert.equal((await fetch(slot.upload.url.replace(/sig=[^&]+/, 'sig=abc'), { method: 'PUT', body: 'x' })).status, 403);
+    assert.equal((await fetch(uploadUrl.replace(/sig=[^&]+/, 'sig=abc'), { method: 'PUT', body: 'x' })).status, 403);
     await ctx.close();
   } finally {
     await late.stop();

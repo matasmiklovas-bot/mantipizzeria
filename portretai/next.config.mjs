@@ -24,7 +24,9 @@ const nextConfig = {
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-Frame-Options', value: 'DENY' },
+          // ALLOW_FRAMING=1 at build time lets an app preview pane embed the
+          // site (demo only). Production keeps DENY.
+          ...(process.env.ALLOW_FRAMING === '1' ? [] : [{ key: 'X-Frame-Options', value: 'DENY' }]),
         ],
       },
       {

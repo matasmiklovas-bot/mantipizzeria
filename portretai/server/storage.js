@@ -8,7 +8,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { dataDir, driverFor } from './env.js';
-import { siteUrl } from './settings.js';
 import { sign } from './crypto.js';
 
 export const BUCKET = 'portretai';
@@ -43,7 +42,8 @@ function localDriver() {
       const expires = Date.now() + 2 * 60 * 60 * 1000;
       const sig = sign(`upload:${key}:${expires}`);
       return {
-        url: `${siteUrl()}/api/ikelimas/failas?key=${encodeURIComponent(key)}&expires=${expires}&sig=${sig}`,
+        // Relative: the browser resolves it against whatever address it is on.
+        url: `/api/ikelimas/failas?key=${encodeURIComponent(key)}&expires=${expires}&sig=${sig}`,
         method: 'PUT',
         headers: {},
       };

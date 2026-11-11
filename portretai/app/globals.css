@@ -139,6 +139,16 @@ p {
   font-size: 15px;
 }
 
+.demo-banner {
+  margin: 0;
+  padding: 4px var(--pad);
+  background: #fbf3df;
+  border-bottom: 1px solid #a8791c;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
 /* ---- Header and footer ------------------------------------------------- */
 
 .site-header {

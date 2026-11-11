@@ -31,7 +31,7 @@ export async function createCheckout(order) {
   const cancel = `${siteUrl()}/uzsakymas?atsaukta=1`;
 
   if (driverFor('payment') === 'fake') {
-    return { url: `${siteUrl()}/bandymas/mokejimas/${order.token}`, ref: `fake_${order.id}` };
+    return { url: `/bandymas/mokejimas/${order.token}`, ref: `fake_${order.id}` };
   }
 
   const session = await stripe().checkout.sessions.create({
