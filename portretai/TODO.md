@@ -1,36 +1,78 @@
 # TODO(savininkas): viskas, ko negaliu nuspręsti ar patikrinti už tave
 
-Atnaujinta 2026-11-11, 0 etapo pabaigoje.
+Atnaujinta 2026-11-11, baigus 1 etapo kodą. Tą patį sąrašą trumpiau rodo komanda `npm run paleidimo-patikra` ir valdymo puslapis.
 
-## Stabdo 0 etapo pabaigą
+## A. Be šito svetainė nepriims nė vieno tikro užsakymo
 
-| # | Ką padaryti | Kodėl |
+| # | Ką padaryti | Kur |
 |---|---|---|
-| 1 | Įkelti 3 savo augintinių nuotraukas į `portretai/pavyzdziai/` | Be jų nėra ko rodyti žmonėms. Visi dabartiniai bandymai daryti su kodu pieštais paveikslėliais |
-| 2 | Susikurti fal.ai paskyrą ir įsigyti kreditų (arba pasidaryti 3 portretus kitu įrankiu) | Be rakto generavimas neveikia; veikia tik `--paruostas-portretas` |
-| 3 | Pirmą kartą paleisti generavimą su tikru raktu | `src/generate.js` parašytas pagal dokumentaciją, bet su tikru API nepaleistas |
-| 4 | Pereiti `KOKYBE.md` su kiekvienu iš 3 portretų | Panašumą ir grožį gali įvertinti tik žmogus |
-| 5 | Parodyti `apklausa.html` bent 10 žmonių, kurie nėra tavo draugai | Draugai sako „taip“ iš mandagumo |
+| 1 | Užregistruoti individualią veiklą arba MB | Be jos „Stripe“ neaktyvuos paskyros |
+| 2 | Nuspręsti dėl talpinimo: „Vercel Hobby“ komerciniam naudojimui neleidžiamas | README, skyrius „Paleidimas“, 0 punktas |
+| 3 | Pasirinkti pavadinimą ir nusipirkti domeną | `server/settings.js` → `brand`; `src/config.js` → `BRAND`. Domeno patikrinti negalėjau |
+| 4 | Sukurti „Supabase“ projektą ir paleisti `db/schema.sql` | README, 1 punktas |
+| 5 | „Stripe“: raktai ir „webhook“ adresas | README, 2 punktas |
+| 6 | „Resend“: domenas ir raktas | README, 3 punktas |
+| 7 | „Vercel“: naujas projektas su Root Directory `portretai`, aplinkos kintamieji | README, 4 punktas; `.env.example` |
+| 8 | Įrašyti pardavėjo rekvizitus | `server/settings.js` → `seller` |
+| 9 | Gauti iš spaustuvės spaudos trukmę ir patvirtinti terminus | `server/settings.js` → `production` (dabar spėta: spauda 3 d., pristatymas 2 d.), tada `confirmed: true` |
+| 10 | Patvirtinti kainas | `server/settings.js` → `prices`, `pricesConfirmed` |
+| 11 | Patvirtinti paštomatų tinklus, su kuriais tikrai siunti | `server/settings.js` → `lockerNetworks`, `lockerNetworksConfirmed` |
+| 12 | Perskaityti ir pataisyti teisinius puslapius, geriausia su teisininku | `app/taisykles`, `app/grazinimas`, `app/privatumas`; tada `legalReviewed: true` |
+| 13 | Įkelti 3 tikrus pavyzdžius | `public/pavyzdziai/` |
 
-## Stabdo 1 etapą (svetainę)
+## B. Bandomasis užsakymas prieš skelbiant nuorodą
 
-| # | Ką padaryti | Kodėl |
+Padaryk pats, su tikru telefonu ir „Stripe“ bandomuoju režimu (`sk_test_…` raktas, kortelė 4242 4242 4242 4242).
+
+- [ ] `/valdymas` → „Paslaugų patikra“: visur „Veikia“ (išskyrus mokėjimus, kol raktas bandomasis).
+- [ ] Bandomasis laiškas atėjo ir ne į šlamštą. Lietuviškos raidės laiške teisingos.
+- [ ] Atidaryk svetainę per „TikTok“ ir „Instagram“ nuorodą telefone (vidinė naršyklė), ne tik „Safari“.
+- [ ] Įkelk tikrą „iPhone“ nuotrauką (HEIC). Įkelk ir tyčia blogą: tamsią, mažą.
+- [ ] Vardas „Žąsiukė Ąžuolė“: teisingas peržiūroje, užsakymo santraukoje ir laiške.
+- [ ] Apmokėk bandomąja kortele. Atėjo laiškas tau ir „klientui“.
+- [ ] „Stripe“ → „Webhooks“: paspausk „Resend“ ant to paties įvykio. Antro užsakymo ir antro laiško neatsirado.
+- [ ] Valdymo puslapyje įkelk portretą, išsiųsk peržiūrą, atidaryk nuorodą iš laiško, paprašyk pataisymo, įkelk iš naujo, patvirtink.
+- [ ] Parsisiųsk spaudos PDF ir atidaryk: vardas teisingas, kraštai nenukirsti.
+- [ ] Pažymėk „spaudoje“, įrašyk siuntos numerį. Atėjo abu laiškai.
+- [ ] Pakeisk „Stripe“ raktus į tikrus (`sk_live_…`) ir tikrą „webhook“ paslaptį. „Paslaugų patikra“ rodo „tikras režimas“.
+- [ ] Vienas tikras užsakymas už tikrus pinigus sau pačiam, tada grąžink pinigus „Stripe“ paskyroje.
+
+## C. Sprendimai, kuriuos priėmiau už tave: patvirtink arba pakeisk
+
+| # | Sprendimas | Kur keisti |
 |---|---|---|
-| 6 | Užregistruoti individualią veiklą (arba MB) | Be registruotos veiklos mokėjimo paslaugos neaktyvuos paskyros |
-| 7 | Išsiųsti užklausą 3 spaustuvėms: formatai, popierius, failo reikalavimai, terminas, kaina už 1, 10, 50 vnt. | Nuo to priklauso kaina, Kalėdų terminas ir spaudos failo formatas. Užklausos tekstą parašysiu, kai pasakysi „toliau“ |
-| 8 | Pasirinkti rėmelio tiekėją, sužinoti kainą, išmatuoti, kiek rėmelio kraštas uždengia atspaudo | `src/config.js`: `SAFE_MM` dabar 10 mm, spėjant, kad kraštas uždengia 5 mm |
-| 9 | Pasirinkti pavadinimą ir patikrinti domeną domreg.lt | Darbinis pavadinimas „Snukutis“ (`src/config.js`: `BRAND`). Domeno patikrinti negalėjau: mano aplinka neprieina prie domreg.lt |
-| 10 | Nuspręsti, ar trinam picerijos kodą, ar kuriam naują saugyklą | Naujos saugyklos iš šios sesijos sukurti negaliu. Jei picerijos svetainė veikia, jos kodo trynimas ją išjungs |
+| 14 | Pristatymas įskaičiuotas į kainą | Tekstai `app/page.tsx`, `components/OrderFlow.tsx` |
+| 15 | Iki patvirtinimo grąžinama visa suma, jei portretas netinka ir po pataisymo | `app/grazinimas/page.tsx` |
+| 16 | Vienas gyvūnas viename portrete | DUK, `app/page.tsx` |
+| 17 | Formuluotė apie DI rodoma viešai | `server/settings.js` → `aiDisclosure`, `aiDisclosureConfirmed` |
+| 18 | Mokėjimai per „Stripe“ | Žr. 19 |
+| 19 | Banko nuorodų („Swedbank“, SEB) per „Stripe“ gali nebūti. Jei jų reikia, lietuviška alternatyva yra „Paysera“ (apie 0,9 %, min. 0,15 €, pagal ainora.lt 2026-10; nepatikrinta jų puslapyje ir nepatikrinta, ar tinka individualiai veiklai). Jos integracijos neparašiau | `server/payments.js` |
+| 20 | Paštomatas įrašomas tekstu (tinklas, miestas, adresas), be sąrašo. Viešo sąrašo be sutarties patikimai neradau | `components/OrderFlow.tsx` |
+| 21 | Nuotraukos ir portretų failai trinami po 30 dienų nuo išsiuntimo, neapmokėti įkėlimai po 48 val. | `server/settings.js` → `retentionDays`, `unpaidRetentionHours` |
+| 22 | Kalėdoms pristatyti iki gruodžio 23 d.; paskutinė užsakymo diena su dabartiniais spėjimais yra gruodžio 11 d. | `server/settings.js` → `christmas`, `production` |
+| 23 | Lankomumas skaičiuojamas pačios svetainės, be slapukų ir be trečiųjų šalių | `server/analytics.js` |
 
-## Patikrinti prieš pirmą tikrą užsakymą
+## D. Žinomi trūkumai
 
-| # | Ką padaryti | Kur kode |
+| # | Kas | Pasekmė |
 |---|---|---|
-| 11 | Spaustuvės failo reikalavimai: RGB ar CMYK, ICC profilis, PDF ar TIFF, užlaidos | `src/pdf.js`, `src/config.js`: `BLEED_PX` |
-| 12 | Perskaityti fal.ai ir modelio kūrėjo sąlygas dėl komercinio naudojimo | Paieška rodo žymą „Commercial use“, bet pačių sąlygų teksto neskaičiau |
-| 13 | Patikrinti dabartinę kainą fal.ai puslapyje | Paieškos duomenimis apie 0,15 $ už 2K vaizdą ir 0,30 $ už 4K; šaltiniai tarpusavyje nesutampa |
-| 14 | Įkelti tikrą „iPhone“ HEIC nuotrauką ir paleisti `tikrinti-nuotrauka` | Testas naudoja kompiuteriu sukurtą HEIC |
-| 15 | Perkalibruoti nuotraukos patikros slenksčius su 20+ tikrų nuotraukų | `src/config.js`: `PHOTO` |
-| 16 | Atspausdinti vieną bandomąjį plakatą ir pereiti `KOKYBE.md` 6 skyrių | Ekranas nerodo, kaip atrodys popieriuje |
-| 17 | Nuspręsti galutinę kainą | Darbinė: A4 su rėmeliu 35 €, 30×40 su rėmeliu 45 €. Tikslinsiu skaičiuokle, kai bus spaustuvės ir rėmelio kainos |
-| 18 | Patvirtinti formuluotę apie DI | Darbinė: „kuriama skaitmeniškai, su dirbtinio intelekto įrankiais, prieš spaudą kiekvieną peržiūriu pats“ |
+| 24 | Nėra apsaugos nuo masinio įkėlimo ar užsakymų kūrimo (užklausų ribojimo) | Piktavalis gali užpildyti saugyklą šiukšlėmis; jos ištrinamos po 48 val. |
+| 25 | Valdymo puslapio slaptažodis vienas, be antro veiksnio | Naudok ilgą atsitiktinį slaptažodį |
+| 26 | Pinigų grąžinimas daromas ranka „Stripe“ paskyroje, ne iš valdymo puslapio | Atšaukus užsakymą reikia nepamiršti grąžinti pinigų |
+| 27 | Portreto generavimo valdymo puslapyje nėra: portretą darai atskirai ir įkeli | „iPad“ teks naudoti kitą įrankį arba prašyti manęs paleisti generavimą |
+| 28 | „Geros ir blogos nuotraukos“ pavyzdžiai yra schemos, ne nuotraukos | Geriau pakeisti dviem savo tikromis nuotraukomis |
+| 29 | „Meta“ ir „TikTok“ pikselių kodas nepatikrintas su tikrais ID | Prieš mokamą reklamą patikrink jų įrankiuose, ar įvykiai ateina |
+
+## E. Portreto kokybė (0 etapas, vis dar nebaigtas)
+
+| # | Ką padaryti |
+|---|---|
+| 30 | Įkelti 3 savo augintinių nuotraukas į `pavyzdziai/` |
+| 31 | Susikurti fal.ai paskyrą arba pasidaryti 3 portretus kitu įrankiu |
+| 32 | Pirmą kartą paleisti generavimą su tikru raktu (`src/generate.js` su tikru API nepaleistas) |
+| 33 | Perskaityti fal.ai ir modelio kūrėjo sąlygas dėl komercinio naudojimo |
+| 34 | Pereiti `KOKYBE.md` su kiekvienu portretu |
+| 35 | Parodyti `apklausa.html` bent 10 žmonių, kurie nėra tavo draugai |
+| 36 | Perkalibruoti nuotraukos patikros slenksčius su 20+ tikrų nuotraukų (`src/config.js` → `PHOTO`) |
+| 37 | Atspausdinti vieną bandomąjį plakatą; sužinoti spaustuvės failo reikalavimus (`src/pdf.js`, `src/config.js` → `BLEED_PX`) |
+| 38 | Išmatuoti, kiek rėmelio kraštas uždengia atspaudo (`src/config.js` → `SAFE_MM`) |

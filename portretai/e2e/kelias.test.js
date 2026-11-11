@@ -421,6 +421,21 @@ test('admin sends the fixed portrait; customer approves; only then the print fil
   await after.close();
 });
 
+test('admin self-check page exercises the services and can send a test email', async () => {
+  const page = watch(await admin.newPage());
+  await page.goto(`${site.base}/valdymas/patikra`);
+  const text = await page.locator('main').innerText();
+  // On the local stand-ins the page must say so plainly, not report success.
+  assert.match(text, /Ne viskas veikia\. Tikrų užsakymų dar nepriimkite\./);
+  assert.match(text, /Naudojama laikina vietinė bazė, ne Supabase\./);
+  assert.match(text, /Įkėlimas per pasirašytą nuorodą veikia\./);
+  assert.match(text, /Naudojamas bandomasis mokėjimas/);
+  await page.getByRole('button', { name: 'Išsiųsti bandomąjį laišką man' }).click();
+  await page.getByText('Bandomasis laiškas išsiųstas adresu savininkas@example.test').waitFor();
+  assert.equal(site.outbox().filter((m) => m.kind === 'selfcheck').length, 1);
+  await page.close();
+});
+
 test('no JavaScript errors anywhere on the path', () => {
   assert.deepEqual(consoleErrors, []);
 });

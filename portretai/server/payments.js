@@ -105,3 +105,15 @@ export function buildFakeWebhook(order, { eventId, type = 'checkout.session.comp
   const header = stripe().webhooks.generateTestHeaderString({ payload, secret: webhookSecret() });
   return { payload, header };
 }
+
+/** Used by the admin self-check page: is the payment provider reachable with this key? */
+export async function checkPaymentProvider() {
+  if (driverFor('payment') === 'fake') return { ok: false, detail: 'Naudojamas bandomasis mokėjimas (STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET nenustatyti).' };
+  try {
+    await stripe().balance.retrieve();
+    const live = (process.env.STRIPE_SECRET_KEY || '').startsWith('sk_live_');
+    return { ok: live, detail: live ? 'Stripe raktas galioja, tikras režimas.' : 'Stripe raktas galioja, bet tai BANDOMASIS režimas: tikri pinigai nepriimami.' };
+  } catch (err) {
+    return { ok: false, detail: `Stripe atmetė raktą: ${String(err.message).slice(0, 200)}` };
+  }
+}

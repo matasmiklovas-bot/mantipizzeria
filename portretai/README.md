@@ -1,52 +1,163 @@
-# Portretai: 0 etapas (kokybės patikrinimas)
+# Portretai: svetainė ir plakato įrankis
 
-Komandinės eilutės įrankis, kuris iš augintinio nuotraukos padaro spaudai paruoštą plakatą su vardu. Svetainės čia dar nėra: ji kuriama tik tada, kai žmonės, pamatę tris tikrus pavyzdžius, pasako, kad už tai mokėtų.
+Šiame aplanke yra du dalykai, kurie naudoja tą patį maketavimo kodą:
 
-Šis aplankas yra atskiras nuo picerijos svetainės kodo ir jo neliečia.
+1. **Svetainė** (aplankai `app/`, `components/`, `server/`): užsakymo kelias, apmokėjimas, peržiūros patvirtinimas, valdymo puslapis.
+2. **Komandinės eilutės įrankis** (`bin/`, `src/`): iš nuotraukos ar paruošto portreto padaro spaudos failą.
 
-## Ką įrankis daro
+Picerijos svetainės kodo šis aplankas neliečia.
 
-1. Patikrina nuotrauką: formatą (JPG, PNG, HEIC), raišką, ar ne per tamsi, ar ne išplaukusi.
-2. Sukuria stilizuotą portretą per vaizdo modelį arba paima tavo paties paruoštą portretą.
-3. Padidina iki spaudos raiškos (300 DPI).
-4. Sumaketuoja plakatą: portretas, vardas, pasirinktinai antra eilutė. Vardą rašo kodas tikru šriftu, ne vaizdo modelis.
-5. Išveda spaudos PDF, peržiūrą klientui su vandens ženklu ir maketą ant sienos.
-6. Išmatuoja spaudos failą ir neleidžia jo išsaugoti, jei matmenys, DPI ar užlaidos netinka.
+> **Būsena.** Svetainė surinkta ir ištestuota vietoje su pakaitalais: duomenų baze faile, bandomuoju mokėjimo puslapiu ir laiškų dėžute faile. Su tikromis „Supabase“, „Stripe“ ir „Resend“ paskyromis ji dar nepaleista nė karto. Ką tiksliai reikia padaryti, surašyta skyriuje „Paleidimas“.
 
-Ko įrankis nedaro: nevertina, ar portretas panašus ir gražus. Tam yra `KOKYBE.md`.
+---
 
-## Paleidimas „Windows“ kompiuteryje
+## Kaip veikia užsakymas
 
-„iPad“ komandinės eilutės programų paleisti negali. Reikia „Windows“ kompiuterio.
+1. Klientas įkelia nuotrauką. Svetainė iš karto pasako, jei ji per maža, per tamsi ar išplaukusi.
+2. Įrašo vardą ir mato jį plakato šriftu.
+3. Pasirenka stilių, dydį, rėmelio spalvą.
+4. Įrašo paštomatą ir kontaktus, apmoka.
+5. Tu gauni laišką, klientas gauna patvirtinimą.
+6. Tu sukuri portretą, įkeli jį valdymo puslapyje, svetainė sumaketuoja plakatą.
+7. Klientas gauna laišką su peržiūra ir paspaudžia „Tinka“ arba „Noriu pataisymo“ (vienas nemokamas).
+8. Tik po „Tinka“ svetainė išduoda spaudos failą.
+9. Atiduodi spaustuvei, įrėmini, išsiunti, įrašai siuntos numerį. Klientas apie kiekvieną žingsnį gauna laišką.
 
-1. Įdiek „Node.js“ 22 ar naujesnę versiją iš nodejs.org (mygtukas „LTS“). Diegimo metu visur spausk „Next“.
-2. Parsisiųsk saugyklą: „GitHub“ puslapyje „Code“ → „Download ZIP“, išpakuok.
-3. Atidaryk „PowerShell“ aplanke `portretai` (aplanke laikyk „Shift“, spausk dešinį pelės klavišą → „Open PowerShell window here“).
-4. Vieną kartą įdiek priklausomybes:
+Būsenos: apmokėta → kuriama → laukia patvirtinimo → taisoma → patvirtinta → spaudoje → išsiųsta.
 
-   ```
-   npm install
-   ```
+---
 
-5. Patikrink, ar veikia:
+## Paleidimas
 
-   ```
-   npm test
-   ```
+Viską galima padaryti naršyklėje, taip pat ir „iPad“. Nieko neregistravau ir neužsakiau už tave.
 
-   Pabaigoje turi būti `# fail 0`.
+### 0. Talpinimo problema, kurią turi išspręsti pirmiausia
 
-## Komandos
+„Vercel“ nemokamas planas („Hobby“) pagal jų sąlygas skirtas tik nekomerciniam naudojimui. Parduotuvė yra komercinė. Variantai:
 
-Visos komandos leidžiamos aplanke `portretai`.
+| Variantas | Kaina | Pastaba |
+|---|---|---|
+| „Vercel Pro“ tik sezonui (2 mėn.) | apie 40 $ | Paprasčiausia: viskas veikia taip pat kaip picerijoje. Po Kalėdų atšauki. Viršija 40 € biudžetą maždaug 10 € kartu su domenu |
+| „Netlify“ nemokamas planas | 0 € | Komercinį naudojimą leidžia, bet šios svetainės ten nebandžiau; plakato maketavimas gali netilpti į jų laiko ribą |
+| Likti „Vercel Hobby“ | 0 € | Pažeidžia „Vercel“ sąlygas. Nerekomenduoju |
 
-### Sukurti plakatą
+Kodas nuo „Vercel“ nepriklauso: tai įprasta „Next.js“ svetainė.
+
+### 1. „Supabase“ (duomenys ir nuotraukos)
+
+1. supabase.com → „New project“. Regioną rinkis Europoje (pvz., Frankfurt).
+2. „SQL Editor“ → įklijuok viską iš failo `db/schema.sql` → „Run“.
+3. „Project Settings“ → „API“: nusikopijuok „Project URL“ ir **service_role** raktą.
+
+Nemokamas planas: 500 MB duomenų, 1 GB failų, projektas sustabdomas po savaitės be veiklos. 1 GB užtenka maždaug 40 vienu metu aktyvių užsakymų; svetainė pati trina failus praėjus 30 dienų po išsiuntimo.
+
+### 2. „Stripe“ (mokėjimai)
+
+1. Paskyrą aktyvuok savo veiklai (reikės individualios veiklos pažymos arba įmonės duomenų).
+2. „Developers“ → „API keys“: nusikopijuok „Secret key“.
+3. „Developers“ → „Webhooks“ → „Add endpoint“:
+   - adresas: `https://TAVO-DOMENAS/api/mokejimas/webhook`
+   - įvykiai: `checkout.session.completed` ir `checkout.session.async_payment_succeeded`
+   - nusikopijuok „Signing secret“ (`whsec_…`).
+
+Mokestis: 1,5 % + 0,25 € už Europos kortelę (pagal stripe.com/en-lt/pricing, tikrinta 2026-11-11). Ar „Stripe“ Lietuvoje rodo „Swedbank“ ir SEB banko nuorodas, patikrinti nepavyko: pažiūrėk savo „Stripe“ paskyroje „Settings“ → „Payment methods“. Jei ne, žr. `TODO.md` apie „Paysera“.
+
+### 3. „Resend“ (laiškai)
+
+1. resend.com → pridėk savo domeną ir įrašyk jų nurodytus DNS įrašus pas domeno registratorių.
+2. Sukurk API raktą.
+
+Nemokamas planas: 3000 laiškų per mėnesį, 100 per dieną. Vienam užsakymui išsiunčiama apie 7 laiškus, taigi riba yra maždaug 14 užsakymų per dieną.
+
+### 4. Talpinimas („Vercel“)
+
+1. „Add New“ → „Project“ → ta pati „GitHub“ saugykla.
+2. **Root Directory: `portretai`**. Tai svarbiausias nustatymas: be jo bus surinkta picerija.
+3. „Environment Variables“: įrašyk viską iš `.env.example` (išskyrus `FAL_KEY`).
+4. „Deploy“.
+5. „Settings“ → „Domains“: pridėk savo domeną.
+
+### 5. Užpildyk `server/settings.js`
+
+Tai vienintelis failas, kurį reikia redaguoti: kainos, spaudos ir pristatymo trukmė, pardavėjo rekvizitai, paštomatų tinklai, popierius. „GitHub“ puslapyje atidaryk failą, spausk pieštuko ikoną, pataisyk, „Commit changes“. Svetainė atsinaujins pati per porą minučių.
+
+### 6. Patikrink
+
+1. Atidaryk `https://TAVO-DOMENAS/valdymas`, prisijunk.
+2. Apačioje spausk „Paslaugų patikra“. Puslapis pats pabando įrašyti į bazę, išsaugoti failą ir susisiekti su „Stripe“. Visur turi būti „Veikia“.
+3. Spausk „Išsiųsti bandomąjį laišką man“ ir patikrink paštą.
+4. Padaryk bandomąjį užsakymą nuo pradžios iki galo (žr. `TODO.md`).
+
+---
+
+## Kaip atnaujinti
+
+Bet koks pakeitimas, įkeltas į saugyklos pagrindinę šaką, per porą minučių atsiranda svetainėje. Iš kompiuterio tai viena komanda:
 
 ```
+git push
+```
+
+Iš „iPad“: redaguok failą „GitHub“ puslapyje ir spausk „Commit changes“.
+
+Dažniausi pakeitimai:
+
+| Ką keisti | Kur |
+|---|---|
+| Kainos, terminai, rekvizitai, paštomatų tinklai | `server/settings.js` |
+| Tikri pavyzdžiai pagrindiniame puslapyje | `public/pavyzdziai/` (žr. `SKAITYK.txt` ten) |
+| Stiliaus promptas | `stiliai/<stilius>.txt` |
+| Šriftas ir vardo dydis plakate | `stiliai/<stilius>.json` |
+| Laiškų tekstai | `server/email-templates.js` |
+| Teisiniai puslapiai | `app/taisykles/`, `app/grazinimas/`, `app/privatumas/` |
+
+---
+
+## Ką darau kasdien, gavęs užsakymą
+
+Viskas vyksta puslapyje `/valdymas`, veikia telefone.
+
+1. **Gavai laišką „Naujas užsakymas“.** Atidaryk užsakymą.
+2. **Parsisiųsk kliento nuotrauką.** Ji jau paversta į JPG, net jei klientas kėlė HEIC.
+3. **Sukurk portretą** savo įrankiu arba komanda `portretas kurti` (žr. žemiau). Portretas turi būti be vardo: vardą uždeda svetainė.
+4. **Įkelk portretą** mygtuku „Įkelti portretą“. Po maždaug 15 sekundžių pamatysi sumaketuotą plakatą.
+5. **Pereik `KOKYBE.md` sąrašą.** Jei kas nors netinka, perdaryk ir įkelk iš naujo.
+6. **Spausk „Siųsti peržiūrą klientui“.**
+7. **Lauk.** Jei klientas tyli parą, sąraše prie užsakymo atsiras „klientas tyli 1 d.“: spausk „Išsiųsti priminimą“.
+8. **Klientas paprašė pataisymo:** gausi laišką su jo pastaba. Pataisyk, įkelk, siųsk peržiūrą iš naujo.
+9. **Klientas patvirtino:** gausi laišką. Parsisiųsk spaudos failą (PDF) ir nusiųsk spaustuvei. Spausk „Atidaviau spaustuvei“.
+10. **Atsiėmei atspaudą:** pereik `KOKYBE.md` 6 skyrių, įrėmink, supakuok, išsiųsk.
+11. **Įrašyk siuntos numerį** ir spausk „Išsiųsta: pranešti klientui“.
+
+Kartą per dieną atidaryk užsakymų sąrašą: taip pat ištrinami pasenę failai (neapmokėti įkėlimai po 48 val., išsiųstų užsakymų failai po 30 dienų).
+
+---
+
+## Jei kas nors sugenda
+
+| Kas matosi | Ką daryti |
+|---|---|
+| Svetainė rodo klaidą vietoje puslapio | „Vercel“ → „Deployments“: jei paskutinis raudonas, spausk ant ankstesnio žalio → „Promote to Production“. Tada parašyk man |
+| Klientas sumokėjo, bet užsakymo sąraše nėra arba jis „Laukia apmokėjimo“ | „Stripe“ → „Developers“ → „Webhooks“: pažiūrėk, ar pristatymas nepavyko, ir spausk „Resend“. Pakartotinis pranešimas dvigubo užsakymo nesukuria |
+| Klientas negavo laiško | Užsakymo puslapio „Istorijoje“ ieškok „LAIŠKAS NEIŠSIŲSTAS“. Patikrink „Resend“ paskyrą (riba 100 per dieną). Kliento nuoroda į peržiūrą yra užsakymo puslapyje: nusiųsk ją pats |
+| „Paslaugų patikra“ rodo „NEVEIKIA“ | Šalia parašyta priežastis. Dažniausiai neteisingas arba pasibaigęs raktas „Vercel“ nustatymuose |
+| Neprisijungia prie `/valdymas` | Patikrink `ADMIN_PASSWORD` ir `SESSION_SECRET` „Vercel“ nustatymuose; pakeitus reikia „Redeploy“ |
+| Įkėlus portretą rašo „Portretas per mažas“ | Trumpoji kraštinė turi būti bent 1000 px; geriausia 2000 px ir daugiau |
+| Maketo įspėjimas „padidintas daugiau nei 2,5 karto“ | Atspaudas bus minkštas. Sugeneruok didesne raiška (`--raiska 4K`) |
+| Klientas nori keisti jau patvirtintą portretą | Svetainė to neleidžia tyčia. Jei dar neatidavei spaustuvei, atšauk užsakymą ir sukurk naują arba susitark laišku |
+| Mokėjimas už atšauktą užsakymą | Gausi laišką „Mokėjimo problema“. Grąžink pinigus „Stripe“ paskyroje |
+| „Supabase“ projektas sustabdytas | Nutinka po savaitės be veiklos. „Supabase“ → „Restore project“. Duomenys nedingsta |
+
+---
+
+## Komandinės eilutės įrankis
+
+Reikia „Windows“ kompiuterio su „Node.js“ 22 ar naujesne versija (nodejs.org, mygtukas „LTS“). „iPad“ šių komandų paleisti negali.
+
+```
+npm install
 node bin/portretas.js kurti --nuotrauka pavyzdziai/reksas.jpg --vardas "Reksas" --stilius akvarele --dydis 30x40
 ```
-
-Papildomi nustatymai:
 
 | Nustatymas | Ką daro |
 |---|---|
@@ -56,99 +167,49 @@ Papildomi nustatymai:
 | `--dydis a4` | Dydžiai: `30x40`, `a4` |
 | `--raiska 4K` | Modelio raiška: `1K`, `2K`, `4K` |
 | `--is-naujo` | Generuoja iš naujo, nors portretas jau sugeneruotas |
-| `--ignoruoti-patikra` | Tęsia, nors nuotrauka nepraėjo patikros |
 
-Rezultatas atsiranda aplanke `isvestis/<vardas>-<stilius>-<dydis>/`:
+Rezultatas atsiranda aplanke `isvestis/<vardas>-<stilius>-<dydis>/`: `spauda.pdf`, `perziura.jpg`, `plakatas.jpg`, `siena.jpg`, `portretas-modelio.png`. Į svetainę kelk `portretas-modelio.png`, ne plakatą.
 
-| Failas | Kam |
-|---|---|
-| `spauda.pdf` | Spaustuvei: 300 DPI, 3 mm užlaidos, sRGB |
-| `perziura.jpg` | Klientui: su vandens ženklu |
-| `plakatas.jpg` | Tau: mažas plakatas be vandens ženklo |
-| `siena.jpg` | Maketas ant sienos rėmelyje |
-| `originalas.jpg` | Sumažinta kliento nuotrauka palyginimui |
-| `portretas-modelio.png` | Tai, ką grąžino vaizdo modelis (kad nereikėtų mokėti antrą kartą) |
-| `ataskaita.json` | Visų patikrų rezultatai |
-
-Aplankas `isvestis/` į „git“ nepatenka, nes jame bus klientų nuotraukos.
-
-### Be API rakto
-
-Portretą pasidaryk bet kuriuo įrankiu, išsaugok kaip PNG ar JPG (geriausia 4:5 proporcijos, bent 2000 px pločio) ir paduok programai:
-
-```
-node bin/portretas.js kurti --nuotrauka pavyzdziai/reksas.jpg --paruostas-portretas mano-portretas.png --vardas "Reksas" --stilius akvarele --dydis 30x40
-```
-
-### Patikrinti nuotrauką
+Kitos komandos:
 
 ```
 node bin/portretas.js tikrinti-nuotrauka pavyzdziai/reksas.jpg
-```
-
-### Išmatuoti spaudos failą
-
-```
 node bin/portretas.js tikrinti-spauda isvestis/reksas-akvarele-30x40/spauda.pdf --dydis 30x40
-```
-
-### Sukurti apklausos puslapį
-
-```
-node bin/portretas.js apklausa isvestis/reksas-akvarele-30x40 isvestis/murka-aliejus-30x40 isvestis/bo-grafika-30x40 --kaina 35
-```
-
-Sukuria vieną failą `apklausa.html`. Jame nėra jokių išorinių nuorodų: paveikslėliai įdėti į patį failą. Nusiųsk jį žmonėms arba atidaryk savo telefone ir parodyk. Atsakęs žmogus gauna tekstą, kurį atsiunčia tau žinute.
-
-### Stiliai
-
-```
+node bin/portretas.js apklausa isvestis/a isvestis/b isvestis/c --kaina 35
 node bin/portretas.js stiliai
 ```
 
-| Stilius | Kaip atrodo |
-|---|---|
-| `akvarele` | Laisva akvarelė ant balto popieriaus, vardas kursyvu |
-| `aliejus` | Klasikinis aliejinis portretas tamsiame fone su šviesia parašte |
-| `grafika` | Plokščių spalvų plakatas, vardas didžiosiomis |
+---
 
-Kiekvieno stiliaus promptas yra atskirame tekstiniame faile `stiliai/<stilius>.txt`. Jį gali taisyti „Notepad“ programa, kodo liesti nereikia. Maketo nustatymai (šriftas, dydis) yra `stiliai/<stilius>.json`.
+## Testai
 
-## API raktas
+```
+npm test            # 41 testas: nuotraukos, maketas, spaudos failas, užsakymų logika
+npm run test:e2e    # 12 testų: visas užsakymo kelias naršyklėje telefono dydžiu
+npm run paleidimo-patikra   # kas dar nesutvarkyta prieš paleidimą
+```
 
-1. Nukopijuok `.env.example` į `.env`.
-2. Įrašyk `FAL_KEY=` reikšmę.
-3. `.env` failas į „git“ nepatenka. Niekam jo nesiųsk.
+`test:e2e` reikia „Playwright“ su „Chromium“ naršykle.
 
-## Kas patikrinta ir kas ne
+Kas patikrinta automatiškai:
 
-Patikrinta automatiniais testais (`npm test`):
+- Nuotraukos įkėlimas: HEIC, JPG, PNG; per maža, per tamsi, išplaukusi nuotrauka atmetama iš karto.
+- Vardas „Žąsiukė Ąžuolė“ teisingai rodomas svetainėje, laiške ir spaudos faile (spaudos faile tikrinami patys pikseliai).
+- Mokėjimo pranešimas, gautas du ar daugiau kartų, sukuria vieną apmokėtą užsakymą ir vieną laišką. Suklastotas pranešimas atmetamas.
+- Peržiūros patvirtinimas: be patvirtinimo spaudos failas neišduodamas; pakeitus portretą senas patvirtinimas nebegalioja; antras nemokamas pataisymas nesiūlomas.
+- Visos būsenos ir kiekvienos laiškas.
+- Spaudos PDF: formatas, 300 DPI, užlaidos ≥ 3 mm, sRGB.
+- Kalėdų terminas: po paskutinės dienos svetainė persijungia ir duoda dovanų kuponą.
+- Nuotraukos neprieinamos be prisijungimo.
+- Pirmas ekranas 375×667 telefone: pavyzdys, kaina, terminas ir mygtukas telpa neslenkant.
 
-- HEIC, JPG ir PNG nuskaitymas, pasuktos nuotraukos, per mažos, per tamsios, išplaukusios nuotraukos atmetimas.
-- Visi šriftai turi visas lietuviškas raides; „Žąsiukė Ąžuolė“ su visais ženklais atsiranda spaudos vaizde.
-- Vardas ir antra eilutė telpa saugioje zonoje visuose stiliuose ir dydžiuose, net 30 ženklų vardas.
-- Spaudos PDF: nupjautas formatas, 300 DPI, užlaidos ≥ 3 mm, sRGB profilis.
-- Peržiūroje yra vandens ženklas.
-- Užklausa vaizdo modeliui sudaroma teisingai, rezultatas išsaugomas ir antrą kartą nemokamas.
+Kas **nepatikrinta**:
 
-Nepatikrinta:
-
-- **Tikras kreipimasis į fal.ai.** Kodas parašytas pagal dokumentaciją, bet nė karto nepaleistas su tikru raktu.
-- **Tikra „iPhone“ nuotrauka.** HEIC testas naudoja kompiuteriu sukurtą HEIC failą.
-- **Nuotraukos patikros slenksčiai.** Jie nustatyti pagal dirbtinius paveikslėlius, ne pagal tikras augintinių nuotraukas.
-- **Portretų kokybė.** Visi bandomieji paveikslėliai yra piešti kodu. Jie nieko nesako apie tai, kaip atrodys tikras portretas.
-- **Atspaudas.** Spalvos ir ryškumas ant popieriaus paaiškės tik atspausdinus.
-
-## Jei kas nors neveikia
-
-| Kas matosi | Ką daryti |
-|---|---|
-| `Nėra FAL_KEY` | Sukurk `.env` failą arba naudok `--paruostas-portretas` |
-| `fal.ai klaida … HTTP 401` arba `403` | Raktas neteisingas arba paskyroje baigėsi kreditai |
-| `fal.ai klaida … HTTP 422` | Modelio parametrai pasikeitė; parašyk man |
-| `Nuotrauka netinka` | Perskaityk priežastį; jei nesutinki, pridėk `--ignoruoti-patikra` |
-| `Šių ženklų šriftas neturi` | Varde yra jaustukas ar ne lotyniška raidė; pašalink |
-| `Spaudos failas nepraėjo patikros` | Failas neišsaugotas; tai programos klaida, parašyk man |
-| `npm` arba `node` nerastas | Neįdiegtas „Node.js“ arba neperkrautas „PowerShell“ langas |
+- Tikros „Supabase“, „Stripe“ ir „Resend“ paskyros. Kodas joms parašytas, bet nepaleistas.
+- Tikras kreipimasis į fal.ai.
+- Tikra „iPhone“ nuotrauka (HEIC testas naudoja kompiuteriu sukurtą failą).
+- „TikTok“ ir „Instagram“ vidinės naršyklės.
+- „Meta“ ir „TikTok“ pikseliai (išjungti).
+- Portretų kokybė ir atspaudas.
 
 Visi neišspręsti klausimai surašyti `TODO.md`.

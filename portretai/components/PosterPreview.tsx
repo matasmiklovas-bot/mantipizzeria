@@ -117,7 +117,11 @@ export default function PosterPreview({ style, size, name, secondLine }: { style
         <br />
         portretas
       </div>
-      <div className="text" style={{ top: pct(textTop), height: pct(textBottom - textTop), color: art.ink }} aria-hidden="true">
+      <div
+        className="text"
+        style={{ top: pct(textTop), height: pct(textBottom - textTop), paddingTop: spec.layout === 'margins' ? pct(spec.name.size * 0.45) : 0, color: art.ink }}
+        aria-hidden="true"
+      >
         <span
           ref={nameRef}
           className="name"

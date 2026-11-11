@@ -2,7 +2,9 @@
 
 Programa patikrina tik tai, ką galima išmatuoti: failo formatą, DPI, užlaidas, ar vardas telpa. Ar portretas panašus ir ar jis gražus, sprendi tu. Jei bent vienas punktas nepažymėtas, į spaudą nesiunčiama.
 
-Atsidaryk greta `originalas.jpg` ir `plakatas.jpg`. Spaudos failą `spauda.pdf` peržiūrėk padidinęs iki 100 %.
+Svetainėje: užsakymo puslapyje atsidaryk „Kliento nuotrauka“ ir maketą. Komandinėje eilutėje: atsidaryk greta `originalas.jpg` ir `plakatas.jpg`.
+
+1–4 skyrius pereik prieš siųsdamas peržiūrą klientui. 5 skyrių pereik, kai klientas patvirtino ir svetainė išdavė spaudos failą.
 
 ## 1. Ar tai tas pats gyvūnas
 
@@ -38,8 +40,8 @@ Atsidaryk greta `originalas.jpg` ir `plakatas.jpg`. Spaudos failą `spauda.pdf` 
 
 ## 5. Spaudos failas
 
-- [ ] `portretas kurti` pabaigoje visos spaudos failo patikros pažymėtos „GERAI“.
-- [ ] Įspėjimų sąraše nėra „padidintas daugiau nei 2,5 karto“. Jei yra, generuok iš naujo su `--raiska 4K`.
+- [ ] Užsakymo puslapyje prie maketo nėra geltono įspėjimo „padidintas daugiau nei 2,5 karto“. Jei yra, generuok iš naujo didesne raiška (`--raiska 4K`). Šį punktą patikrink dar prieš siųsdamas peržiūrą.
+- [ ] Spaudos failas parsisiųstas iš užsakymo puslapio po kliento patvirtinimo (svetainė neišduoda failo, kuris nepraėjo matmenų patikros).
 - [ ] Padidinus `spauda.pdf` iki 100 %, akys ir kailis ties akimis nėra išplaukę ar „laiptuoti“.
 
 ## 6. Atspaudas (tikrinama gavus iš spaustuvės)

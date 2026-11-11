@@ -141,7 +141,11 @@ export default async function AdminList({ searchParams }: { searchParams: Promis
         </>
       )}
 
-      <form action={logoutAction} style={{ marginTop: 32 }}>
+      <p style={{ marginTop: 28 }}>
+        <Link href="/valdymas/patikra">Paslaugų patikra: ar veikia bazė, failai, mokėjimai ir laiškai</Link>
+      </p>
+
+      <form action={logoutAction} style={{ marginTop: 16 }}>
         <button type="submit" className="btn ghost small inline">
           Atsijungti
         </button>
