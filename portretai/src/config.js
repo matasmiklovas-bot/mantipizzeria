@@ -1,10 +1,27 @@
 // Central configuration. Everything a non-programmer may need to change lives
 // here or in stiliai/*.json and stiliai/*.txt.
 
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// Project root: where stiliai/ and sriftai/ live. When this file is bundled
+// into the website, import.meta.url no longer points at the source tree, so
+// the working directory (the project root on the server) is tried first.
+function resolveRoot() {
+  const candidates = [process.env.PORTRETAS_ROOT, process.cwd()];
+  try {
+    candidates.push(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
+  } catch {
+    // import.meta.url is not a file URL in some bundles
+  }
+  for (const dir of candidates) {
+    if (dir && fs.existsSync(path.join(dir, 'stiliai', 'akvarele.json'))) return dir;
+  }
+  throw new Error('Nerastas aplankas stiliai/. Paleiskite komandą iš aplanko portretai.');
+}
+
+export const ROOT = resolveRoot();
 export const STYLES_DIR = path.join(ROOT, 'stiliai');
 export const FONTS_DIR = path.join(ROOT, 'sriftai');
 
