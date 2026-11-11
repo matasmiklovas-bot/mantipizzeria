@@ -63,7 +63,9 @@ export async function confirmPhotoUpload(photoId) {
   const photo = await d.getPhoto(String(photoId));
   if (!photo || photo.orderId) throw new UserError('Nuotrauka nerasta. Įkelkite ją iš naujo.');
   if (photo.status === 'ready') {
-    return { ok: true, photoId: photo.id, width: photo.width, height: photo.height, warnings: photo.warnings || [], errors: [] };
+    const existing = await s.get(photo.key);
+    if (!existing) throw new UserError('Nuotrauka nerasta. Įkelkite ją iš naujo.');
+    return { ok: true, photoId: photo.id, width: photo.width, height: photo.height, warnings: photo.warnings || [], errors: [], thumb: await thumbnail(existing) };
   }
 
   const raw = await s.get(photo.rawKey);
@@ -86,7 +88,16 @@ export async function confirmPhotoUpload(photoId) {
   await d.casPhoto(photo.id, { status: 'pending' }, {
     key, rawKey: null, status: 'ready', width: stored.info.width, height: stored.info.height, warnings: check.warnings,
   });
-  return { ok: true, photoId: photo.id, width: stored.info.width, height: stored.info.height, warnings: check.warnings, errors: [] };
+  return {
+    ok: true, photoId: photo.id, width: stored.info.width, height: stored.info.height, warnings: check.warnings, errors: [],
+    thumb: await thumbnail(stored.data),
+  };
+}
+
+/** Small inline image so the customer sees which photo was accepted (HEIC cannot be shown by most browsers). */
+async function thumbnail(buffer) {
+  const small = await sharp(buffer).resize({ width: 192, height: 192, fit: 'cover' }).jpeg({ quality: 70 }).toBuffer();
+  return `data:image/jpeg;base64,${small.toString('base64')}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -137,11 +148,36 @@ export function validateOrderInput(input) {
 
 /**
  * Creates an unpaid order and a payment session for it.
- * @returns {Promise<{ order: object, checkoutUrl: string }>}
+ * @returns {Promise<{ order: any, checkoutUrl: string }>}
  */
 export async function createOrder(input) {
   const fields = validateOrderInput(input);
   const d = await db();
+
+  // Coming back from a cancelled payment: keep the same order, so there is
+  // never a second order for the same photo and a late payment of the first
+  // payment page still lands on the right order.
+  if (input.resumeToken) {
+    const existing = await getOrderByToken(input.resumeToken);
+    if (existing && existing.status === 'laukia_apmokejimo') {
+      const delivery = deliveryStatus();
+      const updated = await d.casOrder(existing.id, { status: 'laukia_apmokejimo' }, {
+        ...fields,
+        priceCents: SETTINGS.prices[fields.size],
+        afterChristmas: !delivery.beforeChristmas,
+        estimatedDelivery: delivery.estimatedDelivery,
+        termsAcceptedAt: nowIso(),
+      });
+      if (updated) {
+        const checkout = await createCheckout(updated);
+        const saved = await d.casOrder(updated.id, { status: 'laukia_apmokejimo' }, { paymentRef: checkout.ref });
+        await d.addOrderEvent(updated.id, 'checkout_restarted', { priceCents: updated.priceCents });
+        return { order: saved ?? updated, checkoutUrl: checkout.url };
+      }
+    }
+    if (existing && existing.paidAt) throw new UserError('Šis užsakymas jau apmokėtas. Patikrinkite el. paštą.', 'form');
+  }
+
   const photo = await d.getPhoto(String(input.photoId || ''));
   if (!photo || photo.status !== 'ready' || photo.orderId) {
     throw new UserError('Nuotrauka nerasta arba jau panaudota. Įkelkite ją iš naujo.', 'photo');
@@ -204,7 +240,7 @@ export async function createOrder(input) {
  * with the same notification: the order is marked paid once and the
  * confirmation emails are sent once.
  * @param {{ eventId: string, type: string, orderId: string|null, paid: boolean, ref: string|null, amountCents: number|null }} event
- * @returns {Promise<{ result: 'ignored'|'unknown_order'|'amount_mismatch'|'paid'|'already_paid' }>}
+ * @returns {Promise<{ result: 'ignored'|'unknown_order'|'amount_mismatch'|'paid_after_cancel'|'paid'|'already_paid' }>}
  */
 export async function handlePaymentEvent(event) {
   if (!event.paid || !event.orderId) return { result: 'ignored' };
@@ -214,8 +250,20 @@ export async function handlePaymentEvent(event) {
 
   if (event.amountCents != null && event.amountCents !== order.priceCents) {
     const first = await d.insertPaymentEvent(event.eventId, order.id, 'amount_mismatch');
-    if (first) await d.addOrderEvent(order.id, 'payment_amount_mismatch', { expected: order.priceCents, received: event.amountCents });
+    if (first) {
+      await d.addOrderEvent(order.id, 'payment_amount_mismatch', { expected: order.priceCents, received: event.amountCents });
+      await notifyOwner(order, 'ownerPaymentProblem', `Gauta ${event.amountCents / 100} €, o užsakymo kaina ${order.priceCents / 100} €. Užsakymas nepažymėtas apmokėtu.`);
+    }
     return { result: 'amount_mismatch' };
+  }
+
+  if (order.status === 'atsaukta') {
+    const first = await d.insertPaymentEvent(event.eventId, order.id, 'paid_after_cancel');
+    if (first) {
+      await d.addOrderEvent(order.id, 'payment_after_cancel', { eventId: event.eventId });
+      await notifyOwner(order, 'ownerPaymentProblem', 'Gautas mokėjimas už atšauktą užsakymą. Grąžinkite pinigus arba susisiekite su klientu.');
+    }
+    return { result: 'paid_after_cancel' };
   }
 
   const transitioned = await d.casOrder(order.id, { status: 'laukia_apmokejimo' }, {
@@ -229,7 +277,8 @@ export async function handlePaymentEvent(event) {
     return { result: 'ignored' };
   }
   await sendConfirmationOnce(current);
-  return { result: transitioned ? 'paid' : firstDelivery ? 'already_paid' : 'already_paid' };
+  void firstDelivery;
+  return { result: transitioned ? 'paid' : 'already_paid' };
 }
 
 /**
@@ -252,11 +301,11 @@ async function sendConfirmationOnce(order) {
 }
 
 /** Owner notifications never block the customer-facing step. */
-async function notifyOwner(order, kind) {
+async function notifyOwner(order, kind, detail) {
   const to = ownerEmail();
   if (!to) return;
   try {
-    await sendEmail({ to, kind, orderId: order.id, ...templates[kind](order) });
+    await sendEmail({ to, kind, orderId: order.id, ...templates[kind](order, detail) });
   } catch (err) {
     const d = await db();
     await d.addOrderEvent(order.id, 'email_failed', { kind, error: String(err.message).slice(0, 300) });
@@ -456,7 +505,7 @@ export async function getOrderByToken(token) {
 
 /**
  * The customer accepts exactly the version they were shown.
- * @returns {Promise<{ order: object, already: boolean }>}
+ * @returns {Promise<{ order: any, already: boolean }>}
  */
 export async function approvePreview(token, version) {
   const d = await db();

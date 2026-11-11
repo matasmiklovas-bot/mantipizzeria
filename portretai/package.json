@@ -11,7 +11,12 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test \"test/*.test.js\""
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "node --test \"test/*.test.js\"",
+    "test:e2e": "next build && node --test \"e2e/*.test.js\"",
+    "paleidimo-patikra": "node scripts/paleidimo-patikra.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",

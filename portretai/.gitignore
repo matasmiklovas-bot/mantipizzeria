@@ -5,3 +5,8 @@ apklausa.html
 .env
 .env.*
 !.env.example
+# Website build output and local stand-in data (orders, uploaded photos).
+.next/
+next-env.d.ts
+.data/
+*.tsbuildinfo

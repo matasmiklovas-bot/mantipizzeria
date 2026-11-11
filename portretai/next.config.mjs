@@ -1,6 +1,16 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// This project lives in a subfolder of a repository that holds another
+// site. Pin the root here so the other site's lockfile and PostCSS config
+// are not picked up.
+const here = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  turbopack: { root: here },
+  outputFileTracingRoot: here,
   // Image and PDF libraries run as plain Node modules, not bundled.
   serverExternalPackages: ['heic-convert', 'heic-decode', 'libheif-js', 'opentype.js', 'pdf-lib'],
   // The poster renderer reads fonts and style files from disk at run time.

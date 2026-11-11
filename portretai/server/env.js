@@ -40,5 +40,5 @@ export function driverFor(part) {
 }
 
 export function dataDir() {
-  return path.resolve(process.env.DATA_DIR || '.data');
+  return path.resolve(/* turbopackIgnore: true */ process.env.DATA_DIR || '.data');
 }

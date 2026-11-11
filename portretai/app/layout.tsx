@@ -1,0 +1,69 @@
+import type { Metadata, Viewport } from 'next';
+import Link from 'next/link';
+import './globals.css';
+import { SETTINGS, siteUrl, contactEmail } from '@/server/settings.js';
+import Beacon from '@/components/Beacon';
+import Pixels from '@/components/Pixels';
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
+  title: {
+    default: `${SETTINGS.brand}: augintinio portretas su vardu pagal nuotrauką`,
+    template: `%s · ${SETTINGS.brand}`,
+  },
+  description:
+    'Įkeliate šuns ar katės nuotrauką ir įrašote vardą. Sukuriame portretą, atspausdiname, įrėminame ir išsiunčiame į paštomatą. Prieš spaudą atsiunčiame peržiūrą.',
+  openGraph: { type: 'website', locale: 'lt_LT', siteName: SETTINGS.brand },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#f6f2ea',
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const contact = contactEmail();
+  return (
+    <html lang="lt">
+      <head>
+        <link rel="preload" href="/sriftai/CormorantGaramond_500Medium.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/sriftai/Jost_400Regular.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+      </head>
+      <body>
+        <header className="site-header">
+          <Link href="/" className="wordmark">
+            {SETTINGS.brand}
+          </Link>
+          <nav aria-label="Pagrindinis">
+            <Link href="/uzsakymas">Užsakyti</Link>
+          </nav>
+        </header>
+        <main>{children}</main>
+        <footer className="site-footer">
+          <div className="wrap">
+            <ul>
+              <li>
+                <Link href="/taisykles">Pirkimo taisyklės</Link>
+              </li>
+              <li>
+                <Link href="/grazinimas">Grąžinimas</Link>
+              </li>
+              <li>
+                <Link href="/privatumas">Privatumas</Link>
+              </li>
+              {contact ? (
+                <li>
+                  <a href={`mailto:${contact}`}>{contact}</a>
+                </li>
+              ) : null}
+            </ul>
+            <p className="small">{SETTINGS.aiDisclosure}</p>
+          </div>
+        </footer>
+        <Beacon />
+        <Pixels />
+      </body>
+    </html>
+  );
+}

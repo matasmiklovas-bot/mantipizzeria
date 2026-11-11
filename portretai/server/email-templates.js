@@ -209,6 +209,18 @@ export const templates = {
     };
   },
 
+  ownerPaymentProblem(order, detail) {
+    return {
+      subject: `Mokėjimo problema: ${order.code} (${order.name})`,
+      html: layout({
+        heading: 'Mokėjimo problema',
+        blocks: [`Užsakymas ${esc(order.code)}, „${esc(order.name)}“, ${esc(order.email)}.`, esc(detail)],
+        button: { url: adminUrl(order), label: 'Atidaryti užsakymą' },
+      }),
+      text: `Mokėjimo problema. Užsakymas ${order.code}, „${order.name}“, ${order.email}.\n${detail}\n${adminUrl(order)}\n`,
+    };
+  },
+
   ownerRevision(order) {
     const note = order.revisionNotes?.at(-1)?.text || '';
     return {

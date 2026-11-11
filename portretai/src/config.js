@@ -9,14 +9,14 @@ import { fileURLToPath } from 'node:url';
 // into the website, import.meta.url no longer points at the source tree, so
 // the working directory (the project root on the server) is tried first.
 function resolveRoot() {
-  const candidates = [process.env.PORTRETAS_ROOT, process.cwd()];
+  const candidates = [process.env.PORTRETAS_ROOT, /* turbopackIgnore: true */ process.cwd()];
   try {
     candidates.push(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
   } catch {
     // import.meta.url is not a file URL in some bundles
   }
   for (const dir of candidates) {
-    if (dir && fs.existsSync(path.join(dir, 'stiliai', 'akvarele.json'))) return dir;
+    if (dir && fs.existsSync(path.join(/* turbopackIgnore: true */ dir, 'stiliai', 'akvarele.json'))) return dir;
   }
   throw new Error('Nerastas aplankas stiliai/. Paleiskite komandą iš aplanko portretai.');
 }
