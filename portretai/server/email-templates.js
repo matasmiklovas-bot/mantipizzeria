@@ -15,7 +15,7 @@ function layout({ heading, blocks, button }) {
     .join('\n');
   const cta = button
     ? `<p style="margin:26px 0;"><a href="${esc(button.url)}" style="display:inline-block;background:#26221d;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:6px;font-weight:600;">${esc(button.label)}</a></p>` +
-      `<p style="margin:0 0 16px;font-size:13px;color:#6e665b;">Jei mygtukas neveikia, nukopijuokite šią nuorodą į naršyklę:<br>${esc(button.url)}</p>`
+      `<p style="margin:0 0 16px;font-size:13px;color:#6e665b;word-break:break-all;overflow-wrap:anywhere;">Jei mygtukas neveikia, nukopijuokite šią nuorodą į naršyklę:<br>${esc(button.url)}</p>`
     : '';
   return `<!doctype html>
 <html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
