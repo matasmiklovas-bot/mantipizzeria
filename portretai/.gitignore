@@ -1,0 +1,7 @@
+node_modules/
+# Generated posters and customer photos never go into git.
+isvestis/
+apklausa.html
+.env
+.env.*
+!.env.example

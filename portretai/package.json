@@ -1,0 +1,22 @@
+{
+  "name": "portretai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pet portrait poster pipeline: photo check, stylization, upscaling, layout, print PDF, preview, wall mockup.",
+  "bin": {
+    "portretas": "./bin/portretas.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "heic-convert": "^2.1.0",
+    "opentype.js": "^2.0.0",
+    "pdf-lib": "^1.17.1",
+    "sharp": "^0.35.5"
+  }
+}

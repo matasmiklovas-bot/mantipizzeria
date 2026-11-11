@@ -1,0 +1,19 @@
+{
+  "title": "Grafika",
+  "description": "Plokščių spalvų plakatas: kelios spalvos, aiškios formos, be smulkių detalių.",
+  "layout": "full",
+  "name": {
+    "font": "Jost_600SemiBold.ttf",
+    "size": 0.092,
+    "uppercase": true,
+    "spacing": 0.1
+  },
+  "secondLine": {
+    "font": "Jost_400Regular.ttf",
+    "size": 0.0235,
+    "uppercase": true,
+    "spacing": 0.2
+  },
+  "textColor": "auto",
+  "fade": 0.035
+}
