@@ -24,7 +24,7 @@ import { getSize } from '../src/config.js';
 import { prepareTexts, renderPoster } from '../src/layout.js';
 import { buildPrintPdf, inspectPrintPdf } from '../src/pdf.js';
 import { buildPreview, trimPoster } from '../src/preview.js';
-import { buildWallMockup } from '../src/mockup.js';
+import { buildProductMockup } from '../src/mockup-products.js';
 
 /** An error whose message is safe and useful to show to the person. */
 export class UserError extends Error {
@@ -390,15 +390,15 @@ export async function setPortrait(id, portraitBuffer) {
   const size = getSize(order.size);
   const style = loadStyle(order.style);
   const poster = await renderPoster({ portraitBuffer, size, style, name: order.name, secondLine: order.secondLine });
-  const pdf = await buildPrintPdf(poster.png, { title: `${order.code} ${order.name}` });
+  const pdf = await buildPrintPdf(poster.png, { title: `${order.code} ${order.name}`, size });
   const inspection = await inspectPrintPdf(pdf, size);
   if (!inspection.ok) {
     const failed = inspection.checks.filter((c) => !c.ok).map((c) => `${c.name}: ${c.detail}`).join('; ');
     throw new Error(`Print file failed its check and was not saved: ${failed}`);
   }
-  const preview = await buildPreview(poster.png);
-  const cleanJpg = await sharp(await trimPoster(poster.png)).resize({ width: 1200 }).jpeg({ quality: 86, mozjpeg: true }).toBuffer();
-  const wall = await buildWallMockup(poster.png, size, order.frame);
+  const preview = await buildPreview(poster.png, { bleed: size.bleedPx });
+  const cleanJpg = await sharp(await trimPoster(poster.png, size.bleedPx)).resize({ width: 1200 }).jpeg({ quality: 86, mozjpeg: true }).toBuffer();
+  const wall = await buildProductMockup(poster.png, size, order.frame);
 
   const version = order.portraitVersion + 1;
   const base = `orders/${order.id}/v${version}`;

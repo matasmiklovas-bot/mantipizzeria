@@ -52,7 +52,7 @@ export default function PrivacyPage() {
         <li>svetainės talpinimo ir duomenų saugojimo paslaugų teikėjams;</li>
         <li>mokėjimų paslaugos teikėjui;</li>
         <li>el. laiškų siuntimo paslaugos teikėjui;</li>
-        <li>vaizdo apdorojimo (dirbtinio intelekto) paslaugos teikėjui: jam perduodama tik augintinio nuotrauka, be jūsų vardo ir kontaktų;</li>
+        <li>vaizdo apdorojimo paslaugos teikėjui, jei portretui piešti naudojama jo programa: jam perduodama tik augintinio nuotrauka, be jūsų vardo ir kontaktų;</li>
         <li>spaustuvei: tik paruoštas portreto failas;</li>
         <li>paštomatų tinklui: jūsų vardas, telefonas ir pasirinktas paštomatas.</li>
       </ul>

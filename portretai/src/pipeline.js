@@ -10,7 +10,7 @@ import { checkPhoto } from './validate.js';
 import { prepareTexts, renderPoster } from './layout.js';
 import { buildPrintPdf, inspectPrintPdf } from './pdf.js';
 import { buildPreview, trimPoster } from './preview.js';
-import { buildWallMockup } from './mockup.js';
+import { buildProductMockup } from './mockup-products.js';
 import { generatePortrait } from './generate.js';
 
 export const FILES = {
@@ -116,7 +116,7 @@ export async function createPortrait(o) {
   warnings.push(...poster.report.warnings);
   report.poster = poster.report;
 
-  const pdf = await buildPrintPdf(poster.png, { title: `${o.name} – ${style.title} – ${size.label}` });
+  const pdf = await buildPrintPdf(poster.png, { title: `${o.name} – ${style.title} – ${size.label}`, size });
   const inspection = await inspectPrintPdf(pdf, size);
   report.printCheck = inspection.checks;
   if (!inspection.ok) {
@@ -125,12 +125,12 @@ export async function createPortrait(o) {
   }
   await fs.writeFile(path.join(outDir, FILES.print), pdf);
 
-  await fs.writeFile(path.join(outDir, FILES.preview), await buildPreview(poster.png));
+  await fs.writeFile(path.join(outDir, FILES.preview), await buildPreview(poster.png, { bleed: size.bleedPx }));
   await fs.writeFile(
     path.join(outDir, FILES.clean),
-    await sharp(await trimPoster(poster.png)).resize({ width: 1200 }).jpeg({ quality: 86, mozjpeg: true }).toBuffer(),
+    await sharp(await trimPoster(poster.png, size.bleedPx)).resize({ width: 1200 }).jpeg({ quality: 86, mozjpeg: true }).toBuffer(),
   );
-  await fs.writeFile(path.join(outDir, FILES.wall), await buildWallMockup(poster.png, size, frameKey));
+  await fs.writeFile(path.join(outDir, FILES.wall), await buildProductMockup(poster.png, size, frameKey));
 
   report.warnings = warnings;
   await fs.writeFile(path.join(outDir, FILES.report), JSON.stringify(report, null, 2) + '\n');

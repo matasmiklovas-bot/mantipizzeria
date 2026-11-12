@@ -112,7 +112,7 @@ export async function buildSurveyHtml(dirs, opts = {}) {
 <body>
 <main>
   <h1>Ar pirktum tokį portretą?</h1>
-  <p>Ketinu daryti augintinių portretus pagal nuotrauką: atspausdintus, įrėmintus, su vardu. Portretai kuriami skaitmeniškai, su dirbtinio intelekto įrankiais, o prieš spaudą kiekvieną peržiūriu pats.</p>
+  <p>Ketinu daryti augintinių portretus pagal nuotrauką: atspausdintus, įrėmintus, su vardu. Portretai piešiami kompiuterinėmis programomis, o prieš spaudą kiekvieną peržiūriu pats.</p>
   <p class="lead">Prieš pradėdamas noriu žinoti, ar už tai verta mokėti. Sąžiningas „ne“ man naudingesnis už mandagų „taip“.</p>
 ${cards}
 

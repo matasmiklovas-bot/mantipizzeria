@@ -182,7 +182,7 @@ export default async function Home() {
         </details>
         <details>
           <summary>Kaip kuriamas portretas?</summary>
-          <p>{SETTINGS.aiDisclosure} Vardą plakate parašome ne dirbtiniu intelektu, o tikru šriftu, todėl lietuviškos raidės visada teisingos.</p>
+          <p>{SETTINGS.aiDisclosure} Vardą parašome tikru šriftu, todėl lietuviškos raidės visada teisingos.</p>
         </details>
       </section>
 

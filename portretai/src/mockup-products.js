@@ -203,3 +203,11 @@ export async function buildCaseMockup(posterPng, size) {
     .jpeg({ quality: 86, mozjpeg: true })
     .toBuffer();
 }
+
+/** The right "how it looks" picture for any format. */
+export async function buildProductMockup(posterPng, size, frameKey) {
+  if (size.kind === 'pledas') return buildBlanketMockup(posterPng, size);
+  if (size.kind === 'deklas') return buildCaseMockup(posterPng, size);
+  const { buildWallMockup } = await import('./mockup.js');
+  return buildWallMockup(posterPng, size, frameKey);
+}

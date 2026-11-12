@@ -51,10 +51,9 @@ export const SETTINGS = {
   // Set to true only after you have read and corrected the legal pages.
   legalReviewed: false,
 
-  // TODO(savininkas): the wording about AI is your decision.
-  aiDisclosure:
-    'Portretą kuriame skaitmeniškai, su dirbtinio intelekto įrankiais, pagal jūsų nuotrauką. Kiekvieną portretą prieš spaudą peržiūri žmogus.',
-  aiDisclosureConfirmed: false,
+  // Wording chosen by the owner (2026-11-12).
+  aiDisclosure: 'Portretą piešiame kompiuterinėmis programomis pagal jūsų nuotrauką. Kiekvieną portretą prieš spaudą peržiūri žmogus.',
+  aiDisclosureConfirmed: true,
 
   // Customer photos and portrait files are deleted this many days after shipping.
   retentionDays: 30,
