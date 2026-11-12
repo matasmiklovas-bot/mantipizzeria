@@ -30,9 +30,9 @@ export async function buildBlanketMockup(posterPng, size) {
   // Fleece prints are softer than paper: slight blur and lower contrast.
   const soft = await sharp(print)
     .resize({ width: bw, height: bh, fit: 'fill' })
-    .blur(1.1)
-    .modulate({ saturation: 0.92 })
-    .linear(0.9, 14)
+    .blur(1.6)
+    .modulate({ saturation: 0.9 })
+    .linear(0.88, 16)
     .raw()
     .toBuffer({ resolveWithObject: true });
 
@@ -40,9 +40,10 @@ export async function buildBlanketMockup(posterPng, size) {
   // shifted slightly and shaded by the slope of the wave.
   const { data, info } = soft;
   const out = Buffer.alloc(bw * bh * 4);
+  // Fleece hangs in a few broad, soft folds.
   const waves = [
-    { k: (2 * Math.PI) / 330, a: 7, p: 0.3 },
-    { k: (2 * Math.PI) / 190, a: 3, p: 1.7 },
+    { k: (2 * Math.PI) / 520, a: 9, p: 0.3 },
+    { k: (2 * Math.PI) / 260, a: 3, p: 1.7 },
   ];
   const r = Math.round(bw * 0.035); // rounded hem corners
   for (let y = 0; y < bh; y++) {
@@ -56,7 +57,8 @@ export async function buildBlanketMockup(posterPng, size) {
       }
       const sx = Math.min(bw - 1, Math.max(0, Math.round(x + dx)));
       const si = (y * bw + sx) * info.channels;
-      const shade = 1 + slope * 3.2 - 0.06 * (1 - depth);
+      // Gentle shading only: fabric is matte, not metal.
+      const shade = 1 + Math.max(-0.09, Math.min(0.06, slope * 0.85)) - 0.03 * (1 - depth);
       const o = (y * bw + x) * 4;
       out[o] = Math.max(0, Math.min(255, data[si] * shade));
       out[o + 1] = Math.max(0, Math.min(255, data[si + 1] * shade));
@@ -73,7 +75,7 @@ export async function buildBlanketMockup(posterPng, size) {
   }
   let blanket = await sharp(out, { raw: { width: bw, height: bh, channels: 4 } }).png().toBuffer();
   // Fleece texture: fine fibres, multiplied in.
-  const fibres = await sharp(await noiseBuffer(bw, bh, 22)).blur(0.8).png().toBuffer();
+  const fibres = await sharp(await noiseBuffer(bw, bh, 30)).blur(1.2).png().toBuffer();
   const fibresOk = fibres && fibres.length > 0;
   if (fibresOk) blanket = await sharp(blanket).composite([{ input: fibres, blend: 'soft-light' }]).png().toBuffer();
   // Keep the rounded corners after the texture pass.
@@ -116,10 +118,13 @@ export async function buildBlanketMockup(posterPng, size) {
     // The fabric wraps over the rail.
     `<rect x="${bx}" y="${railY - 22}" width="${bw}" height="34" rx="14" fill="#000" fill-opacity="0"/>` +
     `</svg>`;
+  // The fabric folds over the rail: the same colour as the blanket's top edge, in shadow.
+  const pm = await sharp(print).metadata();
   const wrap = await sharp(print)
-    .extract({ left: 0, top: 0, width: (await sharp(print).metadata()).width, height: 40 })
-    .resize({ width: bw, height: 36, fit: 'fill' })
-    .modulate({ brightness: 0.8 })
+    .extract({ left: 0, top: 0, width: pm.width, height: Math.max(4, Math.round(pm.height * 0.01)) })
+    .resize({ width: bw, height: 44, fit: 'fill' })
+    .blur(3)
+    .modulate({ brightness: 0.9 })
     .png()
     .toBuffer();
   const grain = await noiseBuffer(SCENE_W, SCENE_H, 8);
@@ -128,7 +133,7 @@ export async function buildBlanketMockup(posterPng, size) {
     .composite([
       { input: blanket, left: bx, top: by },
       { input: Buffer.from(rail), left: 0, top: 0 },
-      { input: wrap, left: bx, top: railY - 16 },
+      { input: wrap, left: bx, top: railY - 28 },
     ])
     .jpeg({ quality: 86, mozjpeg: true })
     .toBuffer();
