@@ -2,9 +2,11 @@
 rebuilt from brush strokes laid along the fur direction, large brushes first,
 small ones only where detail is still missing. No AI model is involved.
 
-Usage: python3 tapyba.py photo.jpg mask.png out.png x0 y0 width
+Usage: python3 tapyba.py photo.jpg mask.png out.png x0 y0 width [cx,cy,rx,ry ...]
 
 x0, y0, width select the bust in photo pixels; height is width * 1.25 (4:5).
+Each optional cx,cy,rx,ry is an ellipse (photo pixels) to paint over before
+painting, e.g. a collar that would read as an open mouth.
 The result is a 3000 x 3750 px oil-style portrait on a dark ground, to be
 passed to "portretas kurti --paruostas-portretas ... --stilius aliejus".
 Also writes <out>-small.jpg and <out>-akys.jpg (a full-size crop of the face).
@@ -21,6 +23,18 @@ rng = np.random.default_rng(11)
 
 img = cv2.imread(src)
 mask = cv2.imread(maskf, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
+# Optional areas to paint over (collar, tags): --pasalinti cx,cy,rx,ry (photo pixels).
+for spec in [a for a in sys.argv[7:] if a.count(',') == 3]:
+    cx, cy, rx, ry = map(int, spec.split(','))
+    hole = np.zeros(img.shape[:2], np.uint8)
+    cv2.ellipse(hole, (cx, cy), (rx, ry), 0, 0, 360, 255, -1)
+    img = cv2.inpaint(img, hole, 9, cv2.INPAINT_TELEA)
+    # Inpainting from bright and dark neighbours leaves a flat patch: darken it
+    # slightly so it reads as the shadow under the chin.
+    soft = cv2.GaussianBlur(hole.astype(np.float32) / 255.0, (0, 0), max(rx, ry) / 3)[..., None]
+    shadow = np.array([22, 38, 62], np.float32)  # warm dark brown, BGR
+    img = img.astype(np.float32) * (1 - 0.55 * soft) + shadow * (0.55 * soft)
+    img = np.clip(img, 0, 255).astype(np.uint8)
 
 def crop_pad(a, fill):
     h, w = a.shape[:2]
@@ -43,17 +57,29 @@ fur = photo * t + inner * (1 - t)
 a = np.clip((alpha - 0.18) / 0.72, 0, 1)
 a = cv2.GaussianBlur(a, (0, 0), 1.6)
 
-# Tone: a little richer and warmer, like oil colour.
+# Tone: no cold reflections in a warm coat (wet hair mirrors the sky), shadows
+# opened a little so both eyes read, colour a little richer.
+lab = cv2.cvtColor(np.clip(fur, 0, 255).astype(np.uint8), cv2.COLOR_BGR2LAB).astype(np.float32)
+lab[..., 1] = 128 + (lab[..., 1] - 128) * 1.10
+lab[..., 2] = 128 + (lab[..., 2] - 128) * 1.14
+# Shadows of a red coat are warm brown, not grey: tone them towards umber.
+shade = np.clip(1 - lab[..., 0] / 140.0, 0, 1)
+lab[..., 1] += 4 * shade
+lab[..., 2] += 13 * shade
+lab[..., 1] = np.clip(lab[..., 1], 128 + 2, 255)
+lab[..., 2] = np.maximum(lab[..., 2], 128 + 12)
+fur = cv2.cvtColor(np.clip(lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR).astype(np.float32)
 hsv = cv2.cvtColor(np.clip(fur, 0, 255).astype(np.uint8), cv2.COLOR_BGR2HSV).astype(np.float32)
-hsv[..., 1] = np.clip(hsv[..., 1] * 1.10, 0, 255)
+hsv[..., 1] = np.clip(hsv[..., 1] * 1.04, 0, 255)
 fur = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR).astype(np.float32)
 
 yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 # Ground: warm brown-black, lighter behind the head, darker at the corners.
-glow = np.exp(-(((xx - 0.46 * W) / (0.58 * W)) ** 2 + ((yy - 0.34 * H) / (0.46 * H)) ** 2))
-bg = np.array([16, 22, 30], np.float32) + glow[..., None] * np.array([30, 46, 66], np.float32)
+# A lighter warm field behind the head, so dark ears keep their silhouette.
+glow = np.exp(-(((xx - 0.47 * W) / (0.66 * W)) ** 2 + ((yy - 0.40 * H) / (0.58 * H)) ** 2))
+bg = np.array([18, 25, 34], np.float32) + glow[..., None] * np.array([46, 70, 98], np.float32)
 low = cv2.resize(rng.normal(0, 1, (H // 60, W // 60)).astype(np.float32), (W, H), interpolation=cv2.INTER_CUBIC)
-bg *= (1 + 0.07 * low)[..., None]
+bg *= (1 + 0.04 * low)[..., None]
 # Light from the upper left; the lower body sinks into shadow.
 light = 1.05 - 0.20 * np.clip((xx / W - 0.58) / 0.42, 0, 1) - 0.62 * np.clip((yy / H - 0.66) / 0.34, 0, 1) ** 1.4
 target = bg * (1 - a[..., None]) + fur * light[..., None] * a[..., None]
@@ -67,7 +93,10 @@ theta = 0.5 * np.arctan2(2 * jxy, jxx - jyy) + np.pi / 2
 coher = np.sqrt((jxx - jyy) ** 2 + 4 * jxy ** 2) / (jxx + jyy + 1e-3)
 # Where there is no clear direction (background), sweep diagonally with some drift.
 drift = cv2.resize(rng.normal(0, 1, (H // 200 + 2, W // 200 + 2)).astype(np.float32), (W, H), interpolation=cv2.INTER_CUBIC)
-theta = np.where((coher > 0.18) & (a > 0.15), theta, -0.95 + 0.28 * drift)
+# Ground: brushed around the figure, as a painter works the background up
+# to the silhouette, with some drift so it does not look like a pattern.
+around = np.arctan2(yy - 0.40 * H, xx - 0.47 * W) + np.pi / 2
+theta = np.where((coher > 0.18) & (a > 0.15), theta, around * 0.55 - 0.45 * 0.95 + 0.45 * drift)
 dirx = np.cos(theta); diry = np.sin(theta)
 
 canvas = np.zeros((H, W, 3), np.float32) + np.array([20, 28, 38], np.float32)
@@ -105,7 +134,7 @@ def paint_layer(radius, threshold, max_steps, only=None):
         if len(pts) < 2:
             pts.append((pts[0][0] + dirx[yi, xi] * radius * 0.6, pts[0][1] + diry[yi, xi] * radius * 0.6))
         p = np.array(pts, np.float32).reshape(-1, 1, 2)
-        jitter = 1 + rng.normal(0, 0.035)
+        jitter = 1 + rng.normal(0, 0.035 * (0.3 + 0.7 * float(a[yi, xi])))
         c = tuple(float(v) for v in np.clip(col * jitter, 0, 255))
         cv2.polylines(canvas, [np.round(p * 8).astype(np.int32)], False, c, thickness=max(1, int(radius * 2)), lineType=cv2.LINE_AA, shift=3)
         cv2.polylines(height, [np.round(p * 8).astype(np.int32)], False, float(rng.uniform(0.35, 1.0) * min(1.0, radius / 14.0)), thickness=max(1, int(radius * 2)), lineType=cv2.LINE_AA, shift=3)
@@ -130,10 +159,36 @@ out = canvas + np.clip(relief * 15, -9, 12)[..., None]
 sharp = cv2.GaussianBlur(target, (0, 0), 1.0)
 m = cv2.GaussianBlur(fine, (0, 0), 9)[..., None] * 0.42
 out = out * (1 - m) + sharp * m
+# Bristle marks: streaks along each stroke's direction (line-integral
+# convolution of fine noise along the stroke field).
+nz = rng.random((H, W)).astype(np.float32)
+acc = nz.copy()
+for k in range(1, 9):
+    for sgn in (1, -1):
+        mx = (xx + sgn * k * 1.6 * dirx).astype(np.float32)
+        my = (yy + sgn * k * 1.6 * diry).astype(np.float32)
+        acc += cv2.remap(nz, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+lic = acc / 17.0
+lic = (lic - cv2.GaussianBlur(lic, (0, 0), 3)) * 3.2
+bristle_w = 0.35 + 0.65 * cv2.GaussianBlur(a, (0, 0), 12)
+out *= (1 + np.clip(lic, -1, 1) * 0.055 * bristle_w)[..., None]
+# The ground: keep it calm, blended out of its own strokes.
+bgw = (1 - cv2.GaussianBlur(a, (0, 0), 25))[..., None]
+out = out * (1 - 0.55 * bgw) + cv2.GaussianBlur(out, (0, 0), 7) * (0.55 * bgw)
+# Warm varnish and a gentle S-curve.
+lab = cv2.cvtColor(np.clip(out, 0, 255).astype(np.uint8), cv2.COLOR_BGR2LAB).astype(np.float32)
+Lc = lab[..., 0] / 255.0
+Lc = Lc + 0.06 * np.sin((Lc - 0.5) * np.pi) * (1 - np.abs(Lc - 0.5) * 2) ** 0.5
+lab[..., 0] = np.clip(Lc, 0, 1) * 255
+lab[..., 2] = lab[..., 2] + 3
+out = cv2.cvtColor(np.clip(lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR).astype(np.float32)
+# Crisp figure: a light unsharp mask on the animal only.
+fig_w = cv2.GaussianBlur(a, (0, 0), 4)[..., None]
+out = out + (out - cv2.GaussianBlur(out, (0, 0), 2.2)) * 0.55 * fig_w
 # Canvas weave and a soft vignette.
 weave = np.sin(xx * (2 * np.pi / 10.0)) + np.sin(yy * (2 * np.pi / 10.0))
-out *= (1 + 0.012 * weave)[..., None]
-vig = 1 - 0.28 * np.clip((np.hypot((xx - W / 2) / (W / 2), (yy - H / 2) / (H / 2)) - 0.78) / 0.6, 0, 1)
+out *= (1 + 0.010 * weave)[..., None]
+vig = 1 - 0.32 * np.clip((np.hypot((xx - W / 2) / (W / 2), (yy - 0.45 * H) / (H / 2)) - 0.72) / 0.6, 0, 1)
 out *= vig[..., None]
 out = np.clip(out, 0, 255).astype(np.uint8)
 cv2.imwrite(outf, out, [cv2.IMWRITE_PNG_COMPRESSION, 3])

@@ -68,7 +68,7 @@ function clean(fragment) {
 }
 
 async function inlineImages(fragment, request) {
-  const srcs = [...new Set([...fragment.matchAll(/src="(\/api\/[^"]+)"/g)].map((m) => m[1].replaceAll('&amp;', '&')))];
+  const srcs = [...new Set([...fragment.matchAll(/src="(\/(?:api|pavyzdziai)\/[^"]+)"/g)].map((m) => m[1].replaceAll('&amp;', '&')))];
   for (const src of srcs) {
     const res = await request.get(base + src);
     if (!res.ok()) throw new Error(`Could not fetch ${src}: ${res.status()}`);
@@ -91,7 +91,7 @@ const homeHtml = await get('/');
 const header = clean(outer(homeHtml, /<header class="site-header">/));
 const footer = clean(outer(homeHtml, /<footer class="site-footer">/));
 const views = {
-  pradzia: clean(inner(homeHtml, 'main')),
+  pradzia: await inlineImages(clean(inner(homeHtml, 'main')), ctx.request),
   taisykles: clean(inner(await get('/taisykles'), 'main')),
   grazinimas: clean(inner(await get('/grazinimas'), 'main')),
   privatumas: clean(inner(await get('/privatumas'), 'main')),
@@ -169,9 +169,9 @@ const viewHtml = Object.entries(views)
   .map(([name, html]) => {
     const note =
       name === 'perziura'
-        ? '<p class="snapshot-note">Pavyzdys: taip klientas mato peržiūrą, atidaręs nuorodą iš laiško. Portretas čia – kodu pieštas bandomasis paveikslėlis, ne tikras darbas.</p>'
+        ? '<p class="snapshot-note">Pavyzdys: taip klientas mato peržiūrą, atidaręs nuorodą iš laiško.</p>'
         : name.startsWith('valdymas')
-          ? '<p class="snapshot-note">Pavyzdys: tavo valdymo puslapis su vienu bandomuoju užsakymu. Tikrame puslapyje jis apsaugotas slaptažodžiu.</p>'
+          ? '<p class="snapshot-note">Pavyzdys: tavo valdymo puslapis su vienu pavyzdiniu užsakymu (Lego). Tikrame puslapyje jis apsaugotas slaptažodžiu.</p>'
           : '';
     return `<section class="view" id="v-${name}">${note}${html}</section>`;
   })

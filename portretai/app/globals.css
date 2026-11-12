@@ -1425,3 +1425,34 @@ main:has(> .closing:last-child) + .site-footer {
     font-size: 46px;
   }
 }
+
+/* The customer's own photo inside the live poster preview. */
+.poster .art {
+  overflow: hidden;
+}
+.poster .art-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.poster .art-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22%;
+}
+.poster .art-tag {
+  position: absolute;
+  left: 4cqw;
+  top: 4cqw;
+  padding: 1cqw 2cqw;
+  background: rgba(251, 249, 244, 0.9);
+  color: #3a332b;
+  font: 600 2.6cqw/1.2 var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: none;
+  border-radius: 1cqw;
+}

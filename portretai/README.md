@@ -177,11 +177,11 @@ Kai nėra fal.ai rakto, „Aliejaus“ stiliaus portretą galima padaryti vietoj
 ```
 pip install opencv-contrib-python-headless numpy onnxruntime
 python3 scripts/vietinis/iskirpti.py nuotrauka.jpg isnet-general-use.onnx kauke.png
-python3 scripts/vietinis/tapyba.py nuotrauka.jpg kauke.png portretas.png 130 150 1060
+python3 scripts/vietinis/tapyba.py nuotrauka.jpg kauke.png portretas.png 130 150 1060 655,975,74,64
 node bin/portretas.js kurti --nuotrauka nuotrauka.jpg --paruostas-portretas portretas.png --vardas "Lego" --stilius aliejus --dydis 30x40
 ```
 
-Trys skaičiai `130 150 1060` yra iškarpos kairysis kraštas, viršus ir plotis nuotraukos pikseliais: galva ir krūtinė turi tilpti į 4:5 stačiakampį. Kitiems dviem stiliams (akvarelei ir grafikai) vietinis būdas gero rezultato nedavė: jiems reikia vaizdo modelio.
+Trys skaičiai `130 150 1060` yra iškarpos kairysis kraštas, viršus ir plotis nuotraukos pikseliais: galva ir krūtinė turi tilpti į 4:5 stačiakampį. Nebūtinas ketvirtas `655,975,74,64` yra elipsė (centras x,y ir pusašiai), kurią programa užtapo prieš tapydama: pavyzdžiui, antkaklis po smakru, kuris portrete atrodo kaip atvira burna. Tokių elipsių galima nurodyti kelias. Rezultatą visada peržiūrėk iš arti (failas `portretas-akys.jpg`). Kitiems dviem stiliams (akvarelei ir grafikai) vietinis būdas gero rezultato nedavė: jiems reikia vaizdo modelio.
 
 Kitos komandos:
 

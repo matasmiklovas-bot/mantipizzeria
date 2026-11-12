@@ -77,7 +77,15 @@
     thumb.width = 192; thumb.height = 192;
     var t = thumb.getContext('2d'), side = Math.min(img.naturalWidth, img.naturalHeight);
     t.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 192, 192);
-    return { luma: sum / (w * h), sharp: sharp, thumb: thumb.toDataURL('image/jpeg', 0.75) };
+    // 4:5 crop for the poster preview: centred, slightly above the middle,
+    // where a pet's face usually is.
+    var pv = document.createElement('canvas');
+    pv.width = 560; pv.height = 700;
+    var iw = img.naturalWidth, ih = img.naturalHeight, cw = iw, chh = iw * 1.25;
+    if (chh > ih) { chh = ih; cw = ih / 1.25; }
+    var sx = (iw - cw) / 2, sy = Math.max(0, Math.min(ih - chh, ih * 0.42 - chh / 2));
+    pv.getContext('2d').drawImage(img, sx, sy, cw, chh, 0, 0, 560, 700);
+    return { luma: sum / (w * h), sharp: sharp, thumb: thumb.toDataURL('image/jpeg', 0.75), preview: pv.toDataURL('image/jpeg', 0.72) };
   }
 
   function checkFile(file) {
@@ -112,7 +120,7 @@
         URL.revokeObjectURL(url);
         state.busy = false;
         if (errs.length) state.errors = errs;
-        else state.photo = { thumb: m.thumb, warnings: warns };
+        else state.photo = { thumb: m.thumb, preview: m.preview, warnings: warns };
         render();
       };
       img.onerror = function () {
@@ -157,7 +165,13 @@
     var pct = function (v) { return (v * 100) + 'cqw'; };
     var font = function (t) { return "font-family:'" + t.family + "',serif;font-weight:" + t.weight + ';font-style:' + t.style + ';letter-spacing:' + t.spacing + 'em;margin-right:-' + t.spacing + 'em;'; };
     return '<div class="poster" data-max="' + maxText + '" style="aspect-ratio:' + dims.w + ' / ' + dims.h + ';background:' + art.paper + '">' +
-      '<div class="art" aria-hidden="true" style="left:' + pct(box.l) + ';top:' + pct(box.t) + ';width:' + pct(box.w) + ';height:' + pct(box.h) + ';background:' + art.bg + ';color:' + art.fg + '">Čia bus<br>portretas</div>' +
+      '<div class="art" aria-hidden="true" style="left:' + pct(box.l) + ';top:' + pct(box.t) + ';width:' + pct(box.w) + ';height:' + pct(box.h) + ';background:' + art.bg + ';color:' + art.fg + '">' +
+      (state.photo && state.photo.preview
+        ? '<img class="art-photo" src="' + state.photo.preview + '" alt="">' +
+          (spec.layout === 'full' ? '<span class="art-fade" style="background:linear-gradient(transparent,' + art.paper + ')"></span>' : '') +
+          '<span class="art-tag">Jūsų nuotrauka · bus nutapyta</span>'
+        : 'Čia bus<br>portretas') +
+      '</div>' +
       '<div class="text" aria-hidden="true" style="top:' + pct(textTop) + ';height:' + pct(ratio - safe - textTop) + ';padding-top:' + (spec.layout === 'margins' ? pct(spec.name.size * 0.45) : '0') + ';color:' + art.ink + '">' +
       '<span class="name" data-size="' + spec.name.size + '" style="' + font(spec.name) + 'font-size:' + pct(spec.name.size) + '">' + esc(name) + '</span>' +
       (second ? '<span class="second" data-size="' + spec.secondLine.size + '" style="' + font(spec.secondLine) + 'font-size:' + pct(spec.secondLine.size) + ';margin-top:' + pct(spec.secondLine.size * 1.1) + ';opacity:.82">' + esc(second) + '</span>' : '') +
@@ -231,7 +245,7 @@
 
     if (s.step === 1) {
       var np = nameProblem();
-      h += framedPoster() + '<p class="poster-note">Vardas plakate bus parašytas šiuo šriftu.</p>';
+      h += framedPoster() + '<p class="poster-note">Vardas plakate bus parašytas šiuo šriftu. Nuotrauka čia tik vietai parodyti: portretą nutapysime ir atsiųsime peržiūrai.</p>';
       h += field('name', 'Augintinio vardas', 'name', { max: 30, hint: 'Iki 30 ženklų. Lietuviškos raidės (ą, č, ę, ė, į, š, ų, ū, ž) bus atspausdintos tiksliai taip, kaip įrašysite.' });
       h += field('second', 'Antra eilutė (nebūtina)', 'second', { max: 40, hint: 'Pavyzdžiui, metai „2014 – 2026“ arba trumpas tekstas. Iki 40 ženklų.' });
       h += '<p class="error" data-name-problem role="alert"' + (f.name.trim() && np ? '' : ' hidden') + '>' + esc(np || '') + '</p>';

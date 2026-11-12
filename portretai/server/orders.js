@@ -65,7 +65,10 @@ export async function confirmPhotoUpload(photoId) {
   if (photo.status === 'ready') {
     const existing = await s.get(photo.key);
     if (!existing) throw new UserError('Nuotrauka nerasta. Įkelkite ją iš naujo.');
-    return { ok: true, photoId: photo.id, width: photo.width, height: photo.height, warnings: photo.warnings || [], errors: [], thumb: await thumbnail(existing) };
+    return {
+      ok: true, photoId: photo.id, width: photo.width, height: photo.height, warnings: photo.warnings || [], errors: [],
+      thumb: await thumbnail(existing), preview: await posterPreview(existing),
+    };
   }
 
   const raw = await s.get(photo.rawKey);
@@ -91,7 +94,20 @@ export async function confirmPhotoUpload(photoId) {
   return {
     ok: true, photoId: photo.id, width: stored.info.width, height: stored.info.height, warnings: check.warnings, errors: [],
     thumb: await thumbnail(stored.data),
+    preview: await posterPreview(stored.data),
   };
+}
+
+/**
+ * The customer's own photo, cropped to the poster's 4:5 portrait area on its
+ * most salient part (usually the face), for the live poster preview.
+ */
+async function posterPreview(buffer) {
+  const img = await sharp(buffer)
+    .resize({ width: 560, height: 700, fit: 'cover', position: sharp.strategy.attention })
+    .jpeg({ quality: 72, mozjpeg: true })
+    .toBuffer();
+  return `data:image/jpeg;base64,${img.toString('base64')}`;
 }
 
 /** Small inline image so the customer sees which photo was accepted (HEIC cannot be shown by most browsers). */

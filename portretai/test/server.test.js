@@ -387,6 +387,7 @@ test('cancelled payment: paying again reuses the same order; a payment for a can
   const photoId = await uploadPhoto('sunelis.jpg');
   const confirmed = await orders.confirmPhotoUpload(photoId);
   assert.match(confirmed.thumb, /^data:image\/jpeg;base64,/);
+  assert.match(confirmed.preview, /^data:image\/jpeg;base64,/);
   const first = await orders.createOrder(input(photoId));
   const count = (await d.listOrders()).length;
 

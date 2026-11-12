@@ -210,6 +210,8 @@ test('order: a bad photo is refused at once, a HEIC photo is accepted, the name 
   const poster = page.locator('.poster');
   assert.match(await poster.getAttribute('aria-label'), new RegExp(NAME));
   assert.equal(await poster.locator('.name').innerText(), NAME);
+  assert.match(await poster.locator('.art-photo').getAttribute('src'), /^data:image\/jpeg;base64,/, 'the customer sees their own photo in the poster');
+  assert.match(await poster.locator('.art-tag').innerText(), /bus nutapyta/);
   await page.evaluate(() => document.fonts.ready);
   assert.match(await poster.locator('.name').evaluate((el) => getComputedStyle(el).fontFamily), /Cormorant/);
   assert.equal(await page.evaluate(() => document.fonts.check('italic 500 40px Cormorant', 'Žąsiukė Ąžuolė')), true, 'poster typeface is loaded with Lithuanian letters');

@@ -21,7 +21,7 @@ export type FlowConfig = {
   previewDays: number;
 };
 
-type Photo = { photoId: string; thumb: string; warnings: string[] };
+type Photo = { photoId: string; thumb: string; preview?: string; warnings: string[] };
 type Fields = {
   name: string;
   secondLine: string;
@@ -166,7 +166,7 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
         setPhotoErrors(data.errors);
         track('photo_rejected');
       } else {
-        setPhoto({ photoId: data.photoId, thumb: data.thumb, warnings: data.warnings || [] });
+        setPhoto({ photoId: data.photoId, thumb: data.thumb, preview: data.preview, warnings: data.warnings || [] });
         track('photo_ok');
       }
     } catch {
@@ -363,11 +363,13 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
           <div className="poster-wrap">
             <div className={`frame frame--${fields.frame}`}>
               <div className="glass">
-                <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} />
+                <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} />
               </div>
             </div>
           </div>
-          <p className="poster-note">Vardas plakate bus parašytas šiuo šriftu.</p>
+          <p className="poster-note">
+            Vardas plakate bus parašytas šiuo šriftu. Nuotrauka čia tik vietai parodyti: portretą nutapysime ir atsiųsime peržiūrai.
+          </p>
 
           <div className="field">
             <label htmlFor="name">Augintinio vardas</label>
@@ -429,7 +431,7 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
           <div className="poster-wrap">
             <div className={`frame frame--${fields.frame}`}>
               <div className="glass">
-                <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} />
+                <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} />
               </div>
             </div>
           </div>

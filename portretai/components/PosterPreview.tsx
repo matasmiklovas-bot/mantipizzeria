@@ -33,7 +33,19 @@ const ART: Record<string, { bg: string; fg: string; paper: string; ink: string }
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-export default function PosterPreview({ style, size, name, secondLine }: { style: string; size: string; name: string; secondLine: string }) {
+export default function PosterPreview({
+  style,
+  size,
+  name,
+  secondLine,
+  photo,
+}: {
+  style: string;
+  size: string;
+  name: string;
+  secondLine: string;
+  photo?: string;
+}) {
   const spec = STYLES[style] ?? STYLES.akvarele;
   const art = ART[style] ?? ART.akvarele;
   const dims = SIZES[size] ?? SIZES['30x40'];
@@ -113,9 +125,20 @@ export default function PosterPreview({ style, size, name, secondLine }: { style
         style={{ left: pct(artBox.left), top: pct(artBox.top), width: pct(artBox.width), height: pct(artBox.height), background: art.bg, color: art.fg }}
         aria-hidden="true"
       >
-        Čia bus
-        <br />
-        portretas
+        {photo ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="art-photo" src={photo} alt="" />
+            {spec.layout === 'full' ? <span className="art-fade" style={{ background: `linear-gradient(transparent, ${art.paper})` }} /> : null}
+            <span className="art-tag">Jūsų nuotrauka · bus nutapyta</span>
+          </>
+        ) : (
+          <>
+            Čia bus
+            <br />
+            portretas
+          </>
+        )}
       </div>
       <div
         className="text"
