@@ -153,6 +153,21 @@ test('home page: example, price, lead time and order button are on the first scr
   await page.close();
 });
 
+test('tablet (iPad, both orientations): no sideways scrolling, order button on the first screen', async () => {
+  for (const [w, h] of [[810, 1080], [1080, 810], [768, 1024]]) {
+    const ctx = await browser.newContext({ viewport: { width: w, height: h }, hasTouch: true });
+    const page = watch(await ctx.newPage());
+    for (const url of ['/', '/uzsakymas', '/taisykles']) {
+      await page.goto(site.base + url, { waitUntil: 'networkidle' });
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false, `${w}×${h} ${url}: sideways scrolling`);
+    }
+    await page.goto(site.base + '/', { waitUntil: 'networkidle' });
+    const box = await page.locator('.hero a.btn').boundingBox();
+    assert.ok(box.y + box.height <= h, `${w}×${h}: order button below the fold`);
+    await ctx.close();
+  }
+});
+
 test('legal pages are drafts, marked as needing the owner’s review', async () => {
   const page = watch(await customer.newPage());
   for (const [url, heading] of [['/taisykles', 'Pirkimo taisyklės'], ['/grazinimas', 'Grąžinimas ir brokas'], ['/privatumas', 'Privatumo politika']]) {

@@ -1052,11 +1052,21 @@ table.plain td:first-child {
   :root {
     --max: 720px;
   }
-  h1 {
+  h1,
+  .hero h1 {
     font-size: 50px;
   }
   .examples {
     gap: 44px;
+  }
+  /* Tablets: the example is the main thing, give it room and centre it. */
+  .hero .pair,
+  .example.empty .pair {
+    max-width: 480px;
+    margin-inline: auto;
+  }
+  .poster-wrap {
+    max-width: 300px;
   }
 }
 
