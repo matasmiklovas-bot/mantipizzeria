@@ -109,7 +109,7 @@ deep = (cv2.distanceTransform(closed, cv2.DIST_L2, 5) > 40).astype(np.float32)
 a = np.maximum(a, cv2.GaussianBlur(deep, (0, 0), 6))
 # The painting ends below the chest: pigment thins out over a band, and the
 # last stroke breaks up like a dry brush dragged over rough paper.
-lim = 0.72 * H - 0.035 * H * ((xx - W / 2) / (W / 2)) ** 2
+lim = 0.84 * H - 0.035 * H * ((xx - W / 2) / (W / 2)) ** 2
 big_n = (noise(420, 3, 21) - 0.5) * 0.09 * H
 rough = (noise(18, 2, 23) - 0.5) * 0.012 * H
 edge_line = lim + big_n + rough
