@@ -81,7 +81,8 @@ bg = np.array([18, 25, 34], np.float32) + glow[..., None] * np.array([46, 70, 98
 low = cv2.resize(rng.normal(0, 1, (H // 60, W // 60)).astype(np.float32), (W, H), interpolation=cv2.INTER_CUBIC)
 bg *= (1 + 0.04 * low)[..., None]
 # Light from the upper left; the lower body sinks into shadow.
-light = 1.05 - 0.20 * np.clip((xx / W - 0.58) / 0.42, 0, 1) - 0.62 * np.clip((yy / H - 0.66) / 0.34, 0, 1) ** 1.4
+# Chiaroscuro: the head is lit, the chest sinks into the dark ground.
+light = 1.05 - 0.20 * np.clip((xx / W - 0.58) / 0.42, 0, 1) - 0.80 * np.clip((yy / H - 0.56) / 0.40, 0, 1) ** 1.25
 target = bg * (1 - a[..., None]) + fur * light[..., None] * a[..., None]
 target = np.clip(target, 0, 255)
 
@@ -189,6 +190,7 @@ out = out + (out - cv2.GaussianBlur(out, (0, 0), 2.2)) * 0.55 * fig_w
 weave = np.sin(xx * (2 * np.pi / 10.0)) + np.sin(yy * (2 * np.pi / 10.0))
 out *= (1 + 0.010 * weave)[..., None]
 vig = 1 - 0.32 * np.clip((np.hypot((xx - W / 2) / (W / 2), (yy - 0.45 * H) / (H / 2)) - 0.72) / 0.6, 0, 1)
+vig *= 1 - 0.30 * np.clip((yy / H - 0.78) / 0.22, 0, 1)
 out *= vig[..., None]
 out = np.clip(out, 0, 255).astype(np.uint8)
 cv2.imwrite(outf, out, [cv2.IMWRITE_PNG_COMPRESSION, 3])
