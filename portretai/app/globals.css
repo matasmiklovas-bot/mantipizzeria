@@ -1078,3 +1078,350 @@ table.plain td:first-child {
     transition: none;
   }
 }
+
+/* ======================================================================
+   Workshop look: paper grain, real-looking frames, a print photo.
+   ====================================================================== */
+
+body {
+  /* Fine paper grain. Inline SVG noise, about 1 KB, no request. */
+  background-color: var(--paper);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .25 0 0 0 0 .16 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.wordmark .mark {
+  color: var(--ink);
+  flex: none;
+}
+
+/* Section headings get a short clay rule, like a printer's mark. */
+.section > h2::before,
+.closing h2::before {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 2px;
+  background: var(--accent);
+  margin-bottom: 14px;
+}
+
+/* ---- Frames ------------------------------------------------------------ */
+
+.frame {
+  --fw: 9px;
+  position: relative;
+  display: block;
+  padding: var(--fw);
+  background: var(--frame-bg);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.22),
+    0 10px 18px -8px rgba(48, 32, 14, 0.38),
+    0 26px 44px -22px rgba(48, 32, 14, 0.4);
+}
+.frame > .glass {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: #fdfcf9;
+  /* The moulding casts a thin shadow on the print. */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.frame > .glass > img,
+.frame > .glass > .poster,
+.frame > .glass > .ph {
+  position: relative;
+  z-index: 0;
+}
+.frame > .glass::after {
+  /* Glass sheen. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(118deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 38%),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.frame--azuolas {
+  --frame-bg: repeating-linear-gradient(96deg, rgba(92, 60, 26, 0.09) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(4deg, rgba(255, 240, 210, 0.08) 0 2px, transparent 2px 9px),
+    linear-gradient(135deg, #d6b283 0%, #c09363 42%, #a97c4b 100%);
+}
+.frame--juodas {
+  --frame-bg: linear-gradient(135deg, #46423d 0%, #23211e 38%, #141311 100%);
+}
+.frame--baltas {
+  --frame-bg: linear-gradient(135deg, #ffffff 0%, #f4f1ea 55%, #e4dfd4 100%);
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: -1px;
+}
+.frame.thin {
+  --fw: 5px;
+}
+.frame.mini {
+  --fw: 4px;
+  width: 26px;
+  height: 26px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 3px 6px -2px rgba(48, 32, 14, 0.35);
+}
+.frame.mini > .glass {
+  width: 100%;
+  height: 100%;
+  background: #fdfcf9;
+}
+.frame > .glass > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---- Hero scene -------------------------------------------------------- */
+
+.pair.scene {
+  display: grid;
+  grid-template-columns: 40fr 16px 60fr;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 2px 6px;
+}
+.hero .pair.scene {
+  max-width: 290px;
+  margin-bottom: 6px;
+}
+.polaroid {
+  margin: 0;
+  background: #fff;
+  padding: 6px 6px 0;
+  transform: rotate(-4.5deg) translateY(10px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16), 0 10px 20px -8px rgba(48, 32, 14, 0.34);
+}
+.polaroid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--paper-deep);
+}
+.polaroid figcaption {
+  font: italic 500 16px/1 var(--serif);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+  text-align: center;
+  padding: 7px 0 9px;
+  margin: 0;
+}
+.scene .arrow {
+  font: 500 22px/1 var(--serif);
+  color: var(--accent);
+  text-align: center;
+}
+.scene .after figcaption {
+  font: 600 11px/1.3 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* Clearly labelled empty places for the owner's real examples. */
+.ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+.ph-photo {
+  aspect-ratio: 4 / 5;
+  padding: 8px;
+  background: repeating-linear-gradient(135deg, rgba(38, 34, 29, 0.05) 0 6px, transparent 6px 12px), #ece6da;
+  font: 400 12px/1.35 var(--sans);
+}
+.ph-poster {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 8% 9%;
+  background: #fdfcf9;
+}
+.ph-wash {
+  position: absolute;
+  inset: 7% 9% 26%;
+  background:
+    radial-gradient(ellipse 46% 40% at 50% 42%, rgba(185, 130, 74, 0.42), rgba(185, 130, 74, 0.12) 62%, transparent 74%),
+    radial-gradient(ellipse 60% 26% at 48% 82%, rgba(138, 75, 42, 0.18), transparent 70%),
+    radial-gradient(ellipse 80% 70% at 50% 50%, rgba(214, 196, 168, 0.35), transparent 75%);
+  filter: blur(0.3px);
+}
+.ph-note {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 38%;
+  font: 600 10px/1.3 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6f6252;
+}
+.ph-name {
+  position: relative;
+  font: italic 500 clamp(18px, 7vw, 30px) / 1 var(--serif);
+  color: #3a332b;
+}
+
+/* ---- Sizes to scale ---------------------------------------------------- */
+
+.scale {
+  display: flex;
+  align-items: flex-end;
+  gap: 34px;
+  padding: 10px 0 4px;
+  margin: 0 0 20px;
+  border-bottom: 1px solid var(--line);
+}
+.scale figure {
+  margin: 0;
+}
+.ph-size {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font: 400 12px/1.35 var(--sans);
+  color: var(--muted);
+  text-align: center;
+}
+.scale figcaption {
+  padding: 12px 0 14px;
+  white-space: nowrap;
+}
+.scale figcaption strong {
+  display: block;
+  font: 500 22px/1.15 var(--serif);
+}
+.scale figcaption span {
+  display: block;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.swatches .frame.mini {
+  display: inline-block;
+}
+
+/* ---- Closing band ------------------------------------------------------ */
+
+.closing {
+  margin-top: 56px;
+  padding: 44px 0 48px;
+  background: var(--ink);
+  color: #f3ede2;
+}
+.closing h2 {
+  color: #fff;
+  margin-bottom: 12px;
+}
+.closing p {
+  color: #d6cdbd;
+  margin-bottom: 22px;
+}
+.btn.paper {
+  background: #f6f2ea;
+  border-color: #f6f2ea;
+  color: var(--ink);
+}
+.btn.paper:hover {
+  background: #fff;
+  color: var(--ink);
+}
+.closing + .site-footer,
+main:has(> .closing:last-child) + .site-footer {
+  margin-top: 0;
+}
+
+/* ---- Order flow -------------------------------------------------------- */
+
+.poster-wrap .frame .poster {
+  box-shadow: none;
+}
+.poster-wrap {
+  max-width: 240px;
+}
+.choice .frame.mini {
+  justify-self: end;
+}
+.style-chip {
+  width: 36px;
+  height: 46px;
+  justify-self: end;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(48, 32, 14, 0.18);
+}
+.style-chip--akvarele {
+  background: radial-gradient(ellipse 46% 36% at 50% 40%, rgba(185, 130, 74, 0.55), rgba(185, 130, 74, 0.15) 60%, transparent 72%), #fdfcf9;
+}
+.style-chip--aliejus {
+  background: radial-gradient(ellipse 42% 34% at 52% 40%, #b48855, #6e4c2c 55%, #241b14 80%);
+}
+.style-chip--grafika {
+  background:
+    linear-gradient(180deg, transparent 0 22%, #d98b3a 22% 58%, transparent 58%) center / 56% 100% no-repeat,
+    linear-gradient(180deg, transparent 0 58%, #e0a56a 58% 82%, transparent 82%) center / 76% 100% no-repeat,
+    #efe7d6;
+}
+
+.preview-frame {
+  max-width: 400px;
+  margin: 0 auto 20px;
+}
+.preview-frame .preview-img {
+  margin: 0;
+  border: 0;
+  max-width: none;
+}
+
+@media (min-width: 760px) {
+  .hero .pair.scene,
+  .example.empty .pair.scene {
+    max-width: 520px;
+    margin-inline: auto;
+  }
+  .scale {
+    gap: 56px;
+  }
+}
+
+/* Wide screens (tablet landscape, desktop): text and button on the left,
+   the example on the right, so everything fits on the first screen. */
+@media (min-width: 900px) {
+  .hero.wrap {
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 56px;
+    align-content: start;
+  }
+  .hero > * {
+    grid-column: 1;
+  }
+  .hero > .pair.scene {
+    grid-column: 2;
+    grid-row: 1 / span 7;
+    align-self: center;
+    max-width: 430px;
+    margin: 0 auto;
+  }
+  .hero h1 {
+    font-size: 46px;
+  }
+}

@@ -23,8 +23,12 @@ export default async function PreviewPage({ params }: { params: Promise<{ token:
         <>
           <h1>„{order.name}“ portreto peržiūra</h1>
           <p>Patikrinkite, ar tai jūsų augintinis ir ar vardas parašytas be klaidų. Vandens ženklo atspaude nebus.</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="preview-img" src={img} alt={`„${order.name}“ portreto peržiūra su vandens ženklu`} width={1200} height={order.size === 'a4' ? 1697 : 1600} />
+          <div className={`frame frame--${order.frame} preview-frame`}>
+            <div className="glass">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="preview-img" src={img} alt={`„${order.name}“ portreto peržiūra su vandens ženklu`} width={1200} height={order.size === 'a4' ? 1697 : 1600} />
+            </div>
+          </div>
           <p className="small muted" style={{ textAlign: 'center' }}>
             {STYLE_LABELS[order.style as keyof typeof STYLE_LABELS]}, {SIZE_LABELS[order.size as keyof typeof SIZE_LABELS]}
           </p>

@@ -33,11 +33,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {process.env.ALLOW_TEST_HOOKS === '1' ? (
           <p className="demo-banner" role="note">
-            Bandomoji versija: mokėjimai ir laiškai netikri, duomenys gali dingti.
+            Bandomoji versija: mokėjimai ir laiškai netikri.
           </p>
         ) : null}
         <header className="site-header">
           <Link href="/" className="wordmark">
+            <svg className="mark" viewBox="0 0 24 30" width="20" height="25" aria-hidden="true">
+              <rect x="1.5" y="1.5" width="21" height="27" fill="none" stroke="currentColor" strokeWidth="2.4" />
+              <rect x="5.5" y="5.5" width="13" height="15" fill="#8a4b2a" />
+              <rect x="7" y="23" width="10" height="1.8" fill="currentColor" />
+            </svg>
             {SETTINGS.brand}
           </Link>
           <nav aria-label="Pagrindinis">

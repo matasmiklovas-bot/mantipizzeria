@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import ExamplePair from '@/components/ExamplePair';
+import SizeScale from '@/components/SizeScale';
 import { loadExamples } from '@/server/examples.js';
 import { SETTINGS, SIZE_LABELS, FRAME_LABELS, formatPrice } from '@/server/settings.js';
 import { deliveryStatus, formatDate, formatDateLong } from '@/server/deadline.js';
-import { FRAMES } from '@/src/config.js';
+import { SIZES } from '@/src/config.js';
 
 // Rendered on every request: the delivery date and the Christmas cut-off must
 // never be served from a stale copy.
@@ -21,9 +22,9 @@ export default async function Home() {
       <section className="wrap hero">
         <p className="label">Augintinių portretai pagal nuotrauką</p>
         <h1>Jūsų šuns ar katės portretas su vardu</h1>
-        <p className="lead">Atspausdintas, įrėmintas ir pristatytas į paštomatą.</p>
+        <p className="lead">Atspausdintas, įrėmintas, į paštomatą.</p>
 
-        <ExamplePair photo={hero.photo} portrait={hero.portrait} name={hero.name} priority />
+        <ExamplePair photo={hero.photo} portrait={hero.portrait} name={hero.name} frame="azuolas" priority />
 
         <dl className="facts">
           <div>
@@ -73,9 +74,9 @@ export default async function Home() {
       <section className="wrap section" aria-labelledby="pavyzdziai">
         <h2 id="pavyzdziai">Pavyzdžiai</h2>
         <div className="examples">
-          {examples.map((e) => (
+          {examples.map((e, i) => (
             <div className={e.photo || e.portrait ? 'example' : 'example empty'} key={e.index}>
-              <ExamplePair photo={e.photo} portrait={e.portrait} name={e.name} />
+              <ExamplePair photo={e.photo} portrait={e.portrait} name={e.name} frame={['azuolas', 'juodas', 'baltas'][i % 3]} />
               {e.name ? (
                 <p className="caption">
                   {e.name}
@@ -89,19 +90,18 @@ export default async function Home() {
 
       <section className="wrap section" aria-labelledby="dydziai">
         <h2 id="dydziai">Dydžiai ir medžiagos</h2>
-        <table className="sizes">
-          <tbody>
-            {SETTINGS.sizes.map((s: string) => (
-              <tr key={s}>
-                <th scope="row">
-                  {SIZE_LABELS[s as keyof typeof SIZE_LABELS]}
-                  <small>su rėmeliu</small>
-                </th>
-                <td>{formatPrice(SETTINGS.prices[s as keyof typeof SETTINGS.prices])}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <SizeScale
+          sizes={SETTINGS.sizes.map((s: string) => {
+            const size = SIZES[s as keyof typeof SIZES];
+            return {
+              key: s,
+              label: SIZE_LABELS[s as keyof typeof SIZE_LABELS],
+              price: `${formatPrice(SETTINGS.prices[s as keyof typeof SETTINGS.prices])} su rėmeliu`,
+              w: size.widthMm / 10,
+              h: size.heightMm / 10,
+            };
+          })}
+        />
         <p>Į kainą įeina portretas, spauda, rėmelis ir pristatymas į paštomatą Lietuvoje.</p>
         <p className="muted small" style={{ marginBottom: 8 }}>
           Rėmelio spalvos:
@@ -109,7 +109,9 @@ export default async function Home() {
         <ul className="swatches">
           {SETTINGS.frames.map((f: string) => (
             <li key={f}>
-              <span className="swatch" style={{ background: FRAMES[f as keyof typeof FRAMES].face }} aria-hidden="true" />
+              <span className={`frame frame--${f} mini`} aria-hidden="true">
+                <span className="glass" />
+              </span>
               {FRAME_LABELS[f as keyof typeof FRAME_LABELS]}
             </li>
           ))}
@@ -184,10 +186,14 @@ export default async function Home() {
         </details>
       </section>
 
-      <section className="wrap section">
-        <Link href="/uzsakymas" className="btn accent">
-          Užsakyti portretą
-        </Link>
+      <section className="closing" aria-labelledby="pabaiga">
+        <div className="wrap">
+          <h2 id="pabaiga">Užsakymas užtrunka apie 2 minutes</h2>
+          <p>Nuotrauka, vardas, stilius ir paštomatas. Peržiūrą atsiųsime per {p.creationDays} darbo d., spausdinsime tik jums patvirtinus.</p>
+          <Link href="/uzsakymas" className="btn paper">
+            Užsakyti portretą
+          </Link>
+        </div>
       </section>
     </>
   );

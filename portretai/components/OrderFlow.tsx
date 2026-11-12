@@ -361,7 +361,11 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
       {step === 1 ? (
         <section aria-label="Vardas plakate">
           <div className="poster-wrap">
-            <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} />
+            <div className={`frame frame--${fields.frame}`}>
+              <div className="glass">
+                <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} />
+              </div>
+            </div>
           </div>
           <p className="poster-note">Vardas plakate bus parašytas šiuo šriftu.</p>
 
@@ -423,7 +427,11 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
       {step === 2 ? (
         <section aria-label="Stilius, dydis ir rėmelis">
           <div className="poster-wrap">
-            <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} />
+            <div className={`frame frame--${fields.frame}`}>
+              <div className="glass">
+                <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} />
+              </div>
+            </div>
           </div>
 
           <fieldset>
@@ -436,6 +444,7 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
                     <strong>{s.title}</strong>
                     <small>{s.description}</small>
                   </span>
+                  <span className={`style-chip style-chip--${s.key}`} aria-hidden="true" />
                 </label>
               ))}
             </div>
@@ -466,7 +475,9 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
                   <span>
                     <strong>{f.label}</strong>
                   </span>
-                  <span className="swatch" style={{ background: f.color }} aria-hidden="true" />
+                  <span className={`frame frame--${f.key} mini`} aria-hidden="true">
+                    <span className="glass" />
+                  </span>
                 </label>
               ))}
             </div>
