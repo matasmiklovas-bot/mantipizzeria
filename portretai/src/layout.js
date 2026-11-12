@@ -49,12 +49,14 @@ export function prepareTexts(style, nameRaw, secondRaw) {
  */
 export function computeLayout(size, style, nameRaw, secondRaw = '') {
   const { name, second, nameFont, secondFont } = prepareTexts(style, nameRaw, secondRaw);
-  const B = BLEED_PX;
+  const B = size.bleedPx ?? BLEED_PX;
   const W = size.widthPx;
   const H = size.heightPx;
   const canvasW = W + 2 * B;
   const canvasH = H + 2 * B;
-  const safe = mmToPx(SAFE_MM);
+  const safe = mmToPx(size.safeMm ?? SAFE_MM, size.dpi ?? 300);
+  // Phone cases: the top of the back is behind the camera module.
+  const reserve = Math.round((size.topReserve ?? 0) * canvasH);
 
   let image;
   let textTop;
@@ -64,8 +66,8 @@ export function computeLayout(size, style, nameRaw, secondRaw = '') {
 
   if (style.layout === 'full') {
     const imgH = Math.round(canvasW / PORTRAIT_ASPECT);
-    image = { left: 0, top: 0, width: canvasW, height: imgH };
-    const bandH = Math.round(Math.max(0.19 * canvasH, canvasH - imgH + 0.1 * imgH));
+    image = { left: 0, top: reserve, width: canvasW, height: imgH };
+    const bandH = Math.round(Math.max(0.19 * canvasH, canvasH - reserve - imgH + 0.1 * imgH));
     band = { top: canvasH - bandH, height: bandH };
     const fadeH = Math.round((style.fade ?? 0.1) * imgH);
     fade = { top: band.top - fadeH, height: fadeH };
@@ -75,7 +77,7 @@ export function computeLayout(size, style, nameRaw, secondRaw = '') {
     const margin = Math.round(0.085 * W);
     const imgW = W - 2 * margin;
     const imgH = Math.round(imgW / PORTRAIT_ASPECT);
-    image = { left: B + margin, top: B + margin, width: imgW, height: imgH };
+    image = { left: B + margin, top: B + Math.max(margin, reserve), width: imgW, height: imgH };
     textTop = image.top + imgH;
     maxTextWidth = imgW;
   }
@@ -189,6 +191,14 @@ export async function renderPoster({ portraitBuffer, size, style, name, secondLi
       `</linearGradient></defs>` +
       `<rect x="0" y="${fade.top}" width="${canvas.width}" height="${fade.height + 1}" fill="url(#f)"/>` +
       `<rect x="0" y="${band.top}" width="${canvas.width}" height="${band.height}" fill="${background}"/>`;
+  }
+  if (style.layout === 'full' && image.top > 0) {
+    // The portrait starts below the camera area: blend its top edge into the ground.
+    const fh = Math.round(image.height * 0.12);
+    overlay +=
+      `<defs><linearGradient id="t" x1="0" y1="0" x2="0" y2="1">` +
+      `<stop offset="0" stop-color="${background}" stop-opacity="1"/><stop offset="1" stop-color="${background}" stop-opacity="0"/>` +
+      `</linearGradient></defs><rect x="0" y="${image.top - 1}" width="${canvas.width}" height="${fh}" fill="url(#t)"/>`;
   }
   overlay += `<path fill="${textColor}" d="${layout.name.line.pathData(layout.name.left, layout.name.baseline)}"/>`;
   if (layout.second) {

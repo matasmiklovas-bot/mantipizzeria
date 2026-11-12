@@ -75,7 +75,9 @@ D *= (0.86 + 0.28 * noise(220, 4, 3))[..., None]
 gl = cv2.cvtColor(np.clip(wash, 0, 255).astype(np.uint8), cv2.COLOR_BGR2GRAY).astype(np.float32)
 edge = cv2.magnitude(cv2.Sobel(gl, cv2.CV_32F, 1, 0, ksize=3), cv2.Sobel(gl, cv2.CV_32F, 0, 1, ksize=3))
 edge = np.clip(cv2.GaussianBlur(edge, (0, 0), 1.6) / 40.0, 0, 1)
-D *= (1 + 0.38 * edge)[..., None]
+coat_L = float(np.median(lab[..., 0][alpha > 0.9])) if (alpha > 0.9).any() else 128.0
+light_coat = float(np.clip((coat_L - 165) / 40, 0, 1))   # 0 dark coat .. 1 white coat
+D *= (1 + 0.38 * (1 - 0.7 * light_coat) * edge)[..., None]
 # 4. Granulation: pigment settles in the paper's valleys, most in the darks.
 gran = cv2.GaussianBlur(rng.normal(0, 1, (H, W)).astype(np.float32), (0, 0), 2.4)
 gran = gran / (gran.std() + 1e-6)
@@ -121,6 +123,16 @@ thin = np.clip((edge_line - yy) / (0.20 * H), 0, 1) ** 0.9
 D_end = D * (0.22 + 0.78 * thin[..., None])
 color = paper_c * np.exp(-D_end)
 canvas = np.ones((H, W, 3), np.float32) * paper_c
+if light_coat > 0:
+    # A white animal on white paper disappears: lay a soft cool wash behind it,
+    # loose at its outer edge, the way watercolourists paint white fur.
+    yy2, xx2 = np.mgrid[0:H, 0:W].astype(np.float32)
+    blob = np.exp(-(((xx2 - 0.5 * W) / (0.46 * W)) ** 2 + ((yy2 - 0.42 * H) / (0.42 * H)) ** 2) ** 1.4)
+    edge_n = noise(300, 3, 51)
+    wash_a = np.clip((blob - 0.32 + (edge_n - 0.5) * 0.35) / 0.12, 0, 1) * (0.55 + 0.45 * noise(140, 3, 53))
+    wash_a = cv2.GaussianBlur(wash_a, (0, 0), 3) * 0.55 * light_coat
+    wash_c = np.array([214, 200, 186], np.float32)          # BGR: soft blue-grey
+    canvas = canvas * (1 - wash_a[..., None]) + wash_c * wash_a[..., None]
 canvas = canvas * (1 - A[..., None]) + color * A[..., None]
 # Where a wash dried, its edge holds a little more pigment.
 rim = np.clip(A - cv2.erode(A, np.ones((7, 7), np.uint8)), 0, 1) * (yy > 0.5 * H)

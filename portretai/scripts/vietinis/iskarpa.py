@@ -18,7 +18,11 @@ bh = y_bot - y_top
 upper = m[y_top:y_top + int(bh * 0.45)]
 cols = np.nonzero(upper.any(axis=0))[0]
 head_w = cols.max() - cols.min()
-cx = (cols.min() + cols.max()) / 2
+# Centre on the head itself: the topmost part of the animal (a dog sitting
+# sideways has its back and tail in the upper half too).
+top = m[y_top:y_top + max(1, int(bh * 0.18))]
+tcols = np.nonzero(top.any(axis=0))[0]
+cx = (tcols.min() + tcols.max()) / 2
 cw = int(head_w * 1.35)
 cw = max(cw, int(bh * 0.55))          # a close-up still gets some chest
 cw = min(cw, w, int(h / 1.25))

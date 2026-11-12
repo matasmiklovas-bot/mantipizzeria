@@ -8,15 +8,15 @@ import { loadFont, layoutLine } from './text.js';
 const PREVIEW_WIDTH = 1200;
 
 /** Cuts the bleed off, returning the poster exactly as it will be trimmed. */
-export async function trimPoster(posterPng) {
+export async function trimPoster(posterPng, bleed = BLEED_PX) {
   const meta = await sharp(posterPng).metadata();
   return sharp(posterPng)
-    .extract({ left: BLEED_PX, top: BLEED_PX, width: meta.width - 2 * BLEED_PX, height: meta.height - 2 * BLEED_PX })
+    .extract({ left: bleed, top: bleed, width: meta.width - 2 * bleed, height: meta.height - 2 * bleed })
     .toBuffer();
 }
 
-export async function buildPreview(posterPng, { watermark = `PERŽIŪRA · ${BRAND}` } = {}) {
-  const trimmed = await trimPoster(posterPng);
+export async function buildPreview(posterPng, { watermark = `PERŽIŪRA · ${BRAND}`, bleed = BLEED_PX } = {}) {
+  const trimmed = await trimPoster(posterPng, bleed);
   const small = await sharp(trimmed).resize({ width: PREVIEW_WIDTH }).toBuffer({ resolveWithObject: true });
   const { width, height } = small.info;
 

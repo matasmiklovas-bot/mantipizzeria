@@ -70,12 +70,27 @@ for b in range(5):
     inks_lab.append(lab_full[sel].mean(0) if sel.any() else np.array([30 + 50 * b, 128, 128], np.float32))
 inks_lab = np.array(inks_lab)
 inks_lab[:, 1:] = 128 + (inks_lab[:, 1:] - 128) * 1.18
+# Lightness: keep the animal's own range (a white dog stays white), but make
+# sure neighbouring inks differ enough to read as separate colours.
 L = np.sort(inks_lab[:, 0])
-L[0] = min(L[0], 52)                      # the darkest ink is really dark
+mid = L.mean()
+span = max(L[-1] - L[0], 4 * 24)
+L = np.clip(mid + (L - mid) * (span / max(L[-1] - L[0], 1e-3)), 18, 250)
 for i in range(1, 5):
-    L[i] = max(L[i], L[i - 1] + 26)       # each ink clearly lighter than the last
-inks_lab[:, 0] = np.clip(L * (250.0 / max(250.0, L[-1])), 0, 250)
-INKS = cv2.cvtColor(np.clip(inks_lab, 0, 255).astype(np.uint8).reshape(1, 5, 3), cv2.COLOR_LAB2BGR)[0].astype(np.float32)
+    L[i] = max(L[i], L[i - 1] + 20)
+if L[-1] > 250:
+    L -= L[-1] - 250
+inks_lab[:, 0] = L
+# A sixth ink, near black, only for what is truly dark in the photo: eyes,
+# nose, mouth (and the whole coat of a black dog).
+accent_lab = np.array([22, 128 + (inks_lab[0, 1] - 128) * 0.4, 128 + (inks_lab[0, 2] - 128) * 0.4], np.float32)
+inks_lab = np.vstack([inks_lab, accent_lab])
+INKS = cv2.cvtColor(np.clip(inks_lab, 0, 255).astype(np.uint8).reshape(1, 6, 3), cv2.COLOR_LAB2BGR)[0].astype(np.float32)
+dark_px = (lab_full[..., 0] < 58) & (alpha > 0.5)
+dark_px = cv2.morphologyEx(dark_px.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+dark_big = cv2.GaussianBlur(cv2.resize(dark_px.astype(np.float32), (W, H), interpolation=cv2.INTER_CUBIC), (0, 0), 4) > 0.5
+big = np.where(dark_big, 5, big)
+flat = INKS[big]
 flat = INKS[big]
 
 A = cv2.resize(alpha, (W, H), interpolation=cv2.INTER_CUBIC)

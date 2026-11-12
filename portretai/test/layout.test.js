@@ -50,9 +50,11 @@ test('text stays inside the safe zone for every style, size and name length', ()
       for (const name of names) {
         for (const second of ['', '2014 – 2026', 'Š'.repeat(40)]) {
           const l = computeLayout(size, style, name, second);
-          const safeL = BLEED_PX + mmToPx(SAFE_MM);
-          const safeR = BLEED_PX + size.widthPx - mmToPx(SAFE_MM);
-          const safeB = BLEED_PX + size.heightPx - mmToPx(SAFE_MM);
+          const B = size.bleedPx ?? BLEED_PX;
+          const safe = mmToPx(size.safeMm ?? SAFE_MM, size.dpi);
+          const safeL = B + safe;
+          const safeR = B + size.widthPx - safe;
+          const safeB = B + size.heightPx - safe;
           const where = `${styleKey}/${sizeKey}/${name}/${second}`;
           for (const item of [l.name, l.second].filter(Boolean)) {
             assert.ok(item.left >= safeL - 0.5, `${where}: left edge`);

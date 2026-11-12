@@ -41,9 +41,17 @@ export const BLEED_PX = 36;
 export const SAFE_MM = 10;
 
 // Trim sizes in pixels at 300 DPI.
+// Print formats. Each has its own resolution, bleed and safe margin: a blanket
+// does not need 300 DPI (it would be a 200-megapixel file), and a phone case
+// keeps its top clear for the camera.
 export const SIZES = {
-  '30x40': { label: '30×40 cm', widthMm: 300, heightMm: 400, widthPx: 3543, heightPx: 4724 },
-  a4: { label: 'A4 (21×29,7 cm)', widthMm: 210, heightMm: 297, widthPx: 2480, heightPx: 3508 },
+  '30x40': { kind: 'plakatas', label: '30×40 cm', widthMm: 300, heightMm: 400, dpi: 300, widthPx: 3543, heightPx: 4724, bleedPx: 36, safeMm: 10 },
+  a4: { kind: 'plakatas', label: 'A4 (21×29,7 cm)', widthMm: 210, heightMm: 297, dpi: 300, widthPx: 2480, heightPx: 3508, bleedPx: 36, safeMm: 10 },
+  // TODO(savininkas): confirm the blanket's printed size, resolution and hem allowance with the supplier.
+  pledas: { kind: 'pledas', label: 'Pledas 100×150 cm', widthMm: 1000, heightMm: 1500, dpi: 150, widthPx: 5906, heightPx: 8858, bleedPx: 18, safeMm: 45 },
+  // TODO(savininkas): every phone model has its own template; this is a generic
+  // 75×155 mm back print. Get the supplier's templates before selling cases.
+  deklas: { kind: 'deklas', label: 'Telefono dėklas', widthMm: 75, heightMm: 155, dpi: 300, widthPx: 886, heightPx: 1831, bleedPx: 24, safeMm: 6, topReserve: 0.25 },
 };
 
 // The portrait image itself is always composed at this aspect ratio
@@ -77,8 +85,8 @@ export const FRAMES = {
   azuolas: { label: 'ąžuolo', face: '#c39a67', edge: '#9a7446', highlight: '#dab585' },
 };
 
-export function mmToPx(mm) {
-  return Math.round((mm / 25.4) * DPI);
+export function mmToPx(mm, dpi = DPI) {
+  return Math.round((mm / 25.4) * dpi);
 }
 
 export function pxToMm(px) {

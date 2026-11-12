@@ -7,13 +7,13 @@ import sharp from 'sharp';
 import { PDFDocument, PDFName, PDFString, PDFRawStream, PDFArray, PDFNumber, PDFDict, PDFRef } from 'pdf-lib';
 import { DPI, BLEED_PX, SAFE_MM, pxToMm } from './config.js';
 
-const PT_PER_PX = 72 / DPI;
-
 /**
  * @param {Buffer} posterPng poster including bleed
  * @returns {Promise<Buffer>} PDF bytes
  */
-export async function buildPrintPdf(posterPng, { title = 'Portretas' } = {}) {
+export async function buildPrintPdf(posterPng, { title = 'Portretas', size = null } = {}) {
+  const PT_PER_PX = 72 / (size?.dpi ?? DPI);
+  const BLEED = size?.bleedPx ?? BLEED_PX;
   const jpeg = await sharp(posterPng)
     .withIccProfile('srgb')
     .jpeg({ quality: 96, chromaSubsampling: '4:4:4', mozjpeg: false })
@@ -28,7 +28,7 @@ export async function buildPrintPdf(posterPng, { title = 'Portretas' } = {}) {
 
   const pageW = width * PT_PER_PX;
   const pageH = height * PT_PER_PX;
-  const bleedPt = BLEED_PX * PT_PER_PX;
+  const bleedPt = BLEED * PT_PER_PX;
   const page = pdf.addPage([pageW, pageH]);
   const image = await pdf.embedJpg(jpeg.data);
   page.drawImage(image, { x: 0, y: 0, width: pageW, height: pageH });
@@ -57,6 +57,8 @@ export async function buildPrintPdf(posterPng, { title = 'Portretas' } = {}) {
  * @returns {Promise<{ ok: boolean, checks: {name:string, ok:boolean, detail:string}[], facts: object }>}
  */
 export async function inspectPrintPdf(pdfBytes, size) {
+  const DPI_REQ = size.dpi ?? DPI;
+  const BLEED = size.bleedPx ?? BLEED_PX;
   const pdf = await PDFDocument.load(pdfBytes);
   const checks = [];
   const add = (name, ok, detail) => checks.push({ name, ok, detail });
@@ -85,7 +87,8 @@ export async function inspectPrintPdf(pdfBytes, size) {
     top: ptToMm(bleed.y + bleed.height - (trim.y + trim.height)),
   };
   const minBleed = Math.min(...Object.values(bleeds));
-  add('Užlaidos ≥ 3 mm iš visų pusių', minBleed >= 3 - 1e-6, Object.entries(bleeds).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(', ') + ' mm');
+  const minBleedMm = BLEED === 24 ? 2 : 3; // phone-case templates use 2 mm
+  add(`Užlaidos ≥ ${minBleedMm} mm iš visų pusių`, minBleed >= minBleedMm - 1e-6, Object.entries(bleeds).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(', ') + ' mm');
 
   const img = findPageImage(pdf, page);
   if (!img) {
@@ -93,9 +96,9 @@ export async function inspectPrintPdf(pdfBytes, size) {
   } else {
     const dpiX = img.width / (media.width / 72);
     const dpiY = img.height / (media.height / 72);
-    add('Raiška ≥ 300 DPI', dpiX >= DPI - 0.01 && dpiY >= DPI - 0.01, `${dpiX.toFixed(2)}×${dpiY.toFixed(2)} DPI, vaizdas ${img.width}×${img.height} px`);
-    const expectW = size.widthPx + 2 * BLEED_PX;
-    const expectH = size.heightPx + 2 * BLEED_PX;
+    add(`Raiška ≥ ${DPI_REQ} DPI`, dpiX >= DPI_REQ - 0.01 && dpiY >= DPI_REQ - 0.01, `${dpiX.toFixed(2)}×${dpiY.toFixed(2)} DPI, vaizdas ${img.width}×${img.height} px`);
+    const expectW = size.widthPx + 2 * BLEED;
+    const expectH = size.heightPx + 2 * BLEED;
     add('Vaizdo matmenys pikseliais', img.width === expectW && img.height === expectH, `${img.width}×${img.height} px (turi būti ${expectW}×${expectH})`);
     add('Spalvų erdvė', img.colorSpace === 'DeviceRGB', `${img.colorSpace} (kol spaustuvė nepasakė kitaip – RGB)`);
   }
@@ -117,8 +120,8 @@ export async function inspectPrintPdf(pdfBytes, size) {
       trimMm: [trimWmm, trimHmm],
       bleedMm: bleeds,
       imagePx: img ? [img.width, img.height] : null,
-      safeMm: SAFE_MM,
-      bleedPxMm: pxToMm(BLEED_PX),
+      safeMm: size.safeMm ?? SAFE_MM,
+      bleedPxMm: pxToMm(BLEED) * (300 / DPI_REQ),
     },
   };
 }
