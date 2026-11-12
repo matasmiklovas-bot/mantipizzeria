@@ -170,6 +170,19 @@ node bin/portretas.js kurti --nuotrauka pavyzdziai/reksas.jpg --vardas "Reksas" 
 
 Rezultatas atsiranda aplanke `isvestis/<vardas>-<stilius>-<dydis>/`: `spauda.pdf`, `perziura.jpg`, `plakatas.jpg`, `siena.jpg`, `portretas-modelio.png`. Į svetainę kelk `portretas-modelio.png`, ne plakatą.
 
+### Aliejinis portretas be vaizdo modelio
+
+Kai nėra fal.ai rakto, „Aliejaus“ stiliaus portretą galima padaryti vietoje, be DI vaizdo modelio: programa iškerpa gyvūną iš fono ir perpiešia nuotrauką teptuko potėpiais pagal kailio kryptį. Reikia „Python“ 3 ir vieno 170 MB modelio failo fonui iškirpti (nuoroda faile `scripts/vietinis/iskirpti.py`).
+
+```
+pip install opencv-contrib-python-headless numpy onnxruntime
+python3 scripts/vietinis/iskirpti.py nuotrauka.jpg isnet-general-use.onnx kauke.png
+python3 scripts/vietinis/tapyba.py nuotrauka.jpg kauke.png portretas.png 130 150 1060
+node bin/portretas.js kurti --nuotrauka nuotrauka.jpg --paruostas-portretas portretas.png --vardas "Lego" --stilius aliejus --dydis 30x40
+```
+
+Trys skaičiai `130 150 1060` yra iškarpos kairysis kraštas, viršus ir plotis nuotraukos pikseliais: galva ir krūtinė turi tilpti į 4:5 stačiakampį. Kitiems dviem stiliams (akvarelei ir grafikai) vietinis būdas gero rezultato nedavė: jiems reikia vaizdo modelio.
+
 Kitos komandos:
 
 ```
