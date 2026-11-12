@@ -10,3 +10,4 @@ apklausa.html
 next-env.d.ts
 .data/
 *.tsbuildinfo
+.artefaktas/
