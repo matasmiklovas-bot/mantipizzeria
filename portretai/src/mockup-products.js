@@ -8,10 +8,12 @@ const SCENE_W = 2000;
 const SCENE_H = 2500;
 
 function noiseBuffer(width, height, sigma, mean = 128) {
-  return sharp({ create: { width, height, channels: 3, background: '#808080', noise: { type: 'gaussian', mean, sigma } } })
-    .greyscale()
-    .png()
-    .toBuffer();
+  const raw = Buffer.alloc(width * height * 3);
+  for (let i = 0; i < raw.length; i++) {
+    const v = Math.round(mean + sigma * (Math.random() + Math.random() + Math.random() - 1.5) * 1.4);
+    raw[i] = Math.max(0, Math.min(255, v));
+  }
+  return sharp(raw, { raw: { width, height, channels: 3 } }).png().toBuffer();
 }
 
 /**
@@ -72,10 +74,19 @@ export async function buildBlanketMockup(posterPng, size) {
   let blanket = await sharp(out, { raw: { width: bw, height: bh, channels: 4 } }).png().toBuffer();
   // Fleece texture: fine fibres, multiplied in.
   const fibres = await sharp(await noiseBuffer(bw, bh, 22)).blur(0.8).png().toBuffer();
-  blanket = await sharp(blanket).composite([{ input: fibres, blend: 'soft-light' }]).png().toBuffer();
+  const fibresOk = fibres && fibres.length > 0;
+  if (fibresOk) blanket = await sharp(blanket).composite([{ input: fibres, blend: 'soft-light' }]).png().toBuffer();
   // Keep the rounded corners after the texture pass.
-  const shape = await sharp(out, { raw: { width: bw, height: bh, channels: 4 } }).extractChannel(3).toBuffer();
-  blanket = await sharp(blanket).removeAlpha().joinChannel(shape).png().toBuffer();
+  // The rounded silhouette is the alpha channel of the raw buffer: take it as
+  // a greyscale PNG, then use it as the alpha of the textured blanket.
+  const shapeRaw = Buffer.alloc(bw * bh);
+  for (let i = 0; i < bw * bh; i++) shapeRaw[i] = out[i * 4 + 3];
+  const shapePng = await sharp(shapeRaw, { raw: { width: bw, height: bh, channels: 1 } }).png().toBuffer();
+  const rgb = await sharp(blanket).removeAlpha().raw().toBuffer();
+  blanket = await sharp(rgb, { raw: { width: bw, height: bh, channels: 3 } })
+    .joinChannel(shapePng)
+    .png()
+    .toBuffer();
 
   const railY = by - 10;
   const scene =
