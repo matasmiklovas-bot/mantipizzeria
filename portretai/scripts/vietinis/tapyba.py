@@ -60,14 +60,17 @@ a = cv2.GaussianBlur(a, (0, 0), 1.6)
 # Tone: no cold reflections in a warm coat (wet hair mirrors the sky), shadows
 # opened a little so both eyes read, colour a little richer.
 lab = cv2.cvtColor(np.clip(fur, 0, 255).astype(np.uint8), cv2.COLOR_BGR2LAB).astype(np.float32)
-lab[..., 1] = 128 + (lab[..., 1] - 128) * 1.10
-lab[..., 2] = 128 + (lab[..., 2] - 128) * 1.14
-# Shadows of a red coat are warm brown, not grey: tone them towards umber.
+# How warm is this coat? Red, brown and golden coats get warm shadows; white,
+# grey and black coats keep neutral ones (only strong blue casts are removed).
+coat_b = float(np.median(lab[..., 2][alpha > 0.9])) if (alpha > 0.9).any() else 128.0
+warm = float(np.clip((coat_b - 134) / 12, 0, 1))
+lab[..., 1] = 128 + (lab[..., 1] - 128) * (1.0 + 0.10 * warm)
+lab[..., 2] = 128 + (lab[..., 2] - 128) * (1.0 + 0.14 * warm)
 shade = np.clip(1 - lab[..., 0] / 140.0, 0, 1)
-lab[..., 1] += 4 * shade
-lab[..., 2] += 13 * shade
-lab[..., 1] = np.clip(lab[..., 1], 128 + 2, 255)
-lab[..., 2] = np.maximum(lab[..., 2], 128 + 12)
+lab[..., 1] += 4 * shade * warm
+lab[..., 2] += 13 * shade * warm
+lab[..., 1] = np.clip(lab[..., 1], 126 + 4 * warm, 255)
+lab[..., 2] = np.maximum(lab[..., 2], 124 + 16 * warm)
 fur = cv2.cvtColor(np.clip(lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR).astype(np.float32)
 hsv = cv2.cvtColor(np.clip(fur, 0, 255).astype(np.uint8), cv2.COLOR_BGR2HSV).astype(np.float32)
 hsv[..., 1] = np.clip(hsv[..., 1] * 1.04, 0, 255)

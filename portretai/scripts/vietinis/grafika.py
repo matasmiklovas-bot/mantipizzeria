@@ -60,8 +60,22 @@ for b in range(5):
 # Clean curves at print size: upscale each band as a smooth field.
 fields = np.stack([cv2.GaussianBlur(cv2.resize((band == b).astype(np.float32), (W, H), interpolation=cv2.INTER_CUBIC), (0, 0), 5) for b in range(5)], -1)
 big = fields.argmax(-1)
-INKS = np.array([  # BGR: deep umber, dark rust, rust, burnt orange, light amber
-    [22, 24, 38], [28, 46, 100], [34, 78, 160], [62, 128, 214], [130, 190, 240]], np.float32)
+# Inks come from the animal's own colours: the mean colour of each tone band,
+# a little more saturated, with clearly separated lightness. (A fixed palette
+# would turn a white dog orange.)
+lab_full = cv2.cvtColor(photo, cv2.COLOR_BGR2LAB).astype(np.float32)
+inks_lab = []
+for b in range(5):
+    sel = (band == b) & (alpha > 0.6)
+    inks_lab.append(lab_full[sel].mean(0) if sel.any() else np.array([30 + 50 * b, 128, 128], np.float32))
+inks_lab = np.array(inks_lab)
+inks_lab[:, 1:] = 128 + (inks_lab[:, 1:] - 128) * 1.18
+L = np.sort(inks_lab[:, 0])
+L[0] = min(L[0], 52)                      # the darkest ink is really dark
+for i in range(1, 5):
+    L[i] = max(L[i], L[i - 1] + 26)       # each ink clearly lighter than the last
+inks_lab[:, 0] = np.clip(L * (250.0 / max(250.0, L[-1])), 0, 250)
+INKS = cv2.cvtColor(np.clip(inks_lab, 0, 255).astype(np.uint8).reshape(1, 5, 3), cv2.COLOR_LAB2BGR)[0].astype(np.float32)
 flat = INKS[big]
 
 A = cv2.resize(alpha, (W, H), interpolation=cv2.INTER_CUBIC)

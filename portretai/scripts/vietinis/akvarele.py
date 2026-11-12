@@ -49,9 +49,12 @@ inner = cv2.GaussianBlur(photo * solid[..., None], (0, 0), 14) / np.maximum(cv2.
 t = np.clip((alpha - 0.55) / 0.4, 0, 1)[..., None]
 fur = photo * t + inner * (1 - t)
 lab = cv2.cvtColor(np.clip(fur, 0, 255).astype(np.uint8), cv2.COLOR_BGR2LAB).astype(np.float32)
+# Warm coats get warm shadows; white, grey and black coats stay neutral.
+coat_b = float(np.median(lab[..., 2][alpha > 0.9])) if (alpha > 0.9).any() else 128.0
+warm = float(np.clip((coat_b - 134) / 12, 0, 1))
 shade = np.clip(1 - lab[..., 0] / 140.0, 0, 1)
-lab[..., 1] = np.clip(128 + (lab[..., 1] - 128) * 1.08 + 3 * shade, 130, 255)
-lab[..., 2] = np.maximum(128 + (lab[..., 2] - 128) * 1.10 + 10 * shade, 140)
+lab[..., 1] = np.clip(128 + (lab[..., 1] - 128) * (1 + 0.08 * warm) + 3 * shade * warm, 126 + 4 * warm, 255)
+lab[..., 2] = np.maximum(128 + (lab[..., 2] - 128) * (1 + 0.10 * warm) + 10 * shade * warm, 124 + 16 * warm)
 fur = cv2.cvtColor(np.clip(lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR).astype(np.float32)
 
 # 1. Washes: mean-shift merges the coat into a few flat transparent areas.
