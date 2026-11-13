@@ -49,6 +49,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <footer className="site-footer">
           <div className="wrap">
+            <p className="footer-brand">
+              <LogoMark size={40} id="snk-f" />
+              <span>
+                <strong>{SETTINGS.brand}</strong>
+                Augintinių portretai pagal nuotrauką. Pristatome į paštomatus Lietuvoje.
+              </span>
+            </p>
             <ul>
               <li>
                 <Link href="/taisykles">Pirkimo taisyklės</Link>

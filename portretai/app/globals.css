@@ -2311,3 +2311,25 @@ input[type='checkbox'] {
   font-weight: 700;
   letter-spacing: -0.02em;
 }
+.good figcaption {
+  margin-top: 14px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.4;
+}
+.footer-brand strong {
+  display: block;
+  font: 760 22px/1.1 var(--display);
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.footer-brand .mark {
+  flex: none;
+}
