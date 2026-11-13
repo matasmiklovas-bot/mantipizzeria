@@ -1528,40 +1528,22 @@ main:has(> .closing:last-child) + .site-footer {
 .poster--deklas .camera,
 .preview-product--deklas .camera {
   position: absolute;
-  left: 6cqw;
-  top: 5cqw;
-  width: 40cqw;
-  height: 40cqw;
-  border-radius: 11cqw;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.camera-module {
+  position: absolute;
   background: rgba(30, 28, 26, 0.16);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 1px 2px rgba(0, 0, 0, 0.18);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
-  z-index: 2;
 }
-.poster--deklas .camera i,
-.preview-product--deklas .camera i {
+.camera-lens {
   position: absolute;
-  width: 15cqw;
-  height: 15cqw;
   border-radius: 50%;
   background: radial-gradient(circle at 40% 38%, #4b4f57 0 18%, #15161a 30% 62%, #2c2d31 64% 100%);
   box-shadow: 0 0 0 1.4cqw #3a3a3e;
-}
-.poster--deklas .camera i:nth-child(1),
-.preview-product--deklas .camera i:nth-child(1) {
-  left: 4.5cqw;
-  top: 4.5cqw;
-}
-.poster--deklas .camera i:nth-child(2),
-.preview-product--deklas .camera i:nth-child(2) {
-  left: 4.5cqw;
-  bottom: 4.5cqw;
-}
-.poster--deklas .camera i:nth-child(3),
-.preview-product--deklas .camera i:nth-child(3) {
-  right: 4.5cqw;
-  top: 12.5cqw;
 }
 .poster--deklas .art-tag {
   top: auto;

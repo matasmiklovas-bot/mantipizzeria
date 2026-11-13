@@ -411,7 +411,7 @@ export async function setPortrait(id, portraitBuffer) {
   }
   const preview = await buildPreview(poster.png, { bleed: size.bleedPx });
   const cleanJpg = await sharp(await trimPoster(poster.png, size.bleedPx)).resize({ width: 1200 }).jpeg({ quality: 86, mozjpeg: true }).toBuffer();
-  const wall = await buildProductMockup(poster.png, size, order.frame);
+  const wall = await buildProductMockup(poster.png, size, order.frame, { phoneModel: order.phoneModel });
 
   const version = order.portraitVersion + 1;
   const base = `orders/${order.id}/v${version}`;

@@ -151,6 +151,15 @@
   // Print format the preview mirrors (keys of src/config SIZES).
   function format() { return isPoster() ? state.f.size : state.f.product; }
 
+  function cameraHtml() {
+    var cam = CONFIG.cameraLayouts[CONFIG.cameraByModel[state.f.phone] || 'pro'], m = cam.module;
+    var u = function (v) { return (v * 100) + 'cqw'; };
+    return '<span class="camera" aria-hidden="true">' +
+      (m ? '<span class="camera-module" style="left:' + u(m.x) + ';top:' + u(m.y) + ';width:' + u(m.w) + ';height:' + u(m.h) + ';border-radius:' + u(m.r) + '"></span>' : '') +
+      cam.lenses.map(function (p) { return '<span class="camera-lens" style="left:' + u(p[0] - cam.lens) + ';top:' + u(p[1] - cam.lens) + ';width:' + u(2 * cam.lens) + ';height:' + u(2 * cam.lens) + '"></span>'; }).join('') +
+      '</span>';
+  }
+
   function posterHtml() {
     var spec = CONFIG.layouts[state.f.style], art = ART[state.f.style], kind = isPoster() ? 'plakatas' : state.f.product, dims = CONFIG.dims[format()];
     var ratio = dims.h / dims.w, safe = dims.safe / dims.w, reserve = dims.reserve * ratio, box, textTop, maxText;
@@ -177,7 +186,7 @@
           '<span class="art-tag">Jūsų nuotrauka · portretą nupiešime</span>'
         : 'Čia bus<br>portretas') +
       '</div>' +
-      (kind === 'deklas' ? '<span class="camera" aria-hidden="true"><i></i><i></i><i></i></span>' : '') +
+      (kind === 'deklas' ? cameraHtml() : '') +
       '<div class="text" aria-hidden="true" style="top:' + pct(textTop) + ';height:' + pct(ratio - safe - textTop) + ';padding-top:' + (spec.layout === 'margins' ? pct(spec.name.size * 0.45) : '0') + ';color:' + art.ink + '">' +
       '<span class="name" data-size="' + spec.name.size + '" style="' + font(spec.name) + 'font-size:' + pct(spec.name.size) + '">' + esc(name) + '</span>' +
       (second ? '<span class="second" data-size="' + spec.secondLine.size + '" style="' + font(spec.secondLine) + 'font-size:' + pct(spec.secondLine.size) + ';margin-top:' + pct(spec.secondLine.size * 1.1) + ';opacity:.82">' + esc(second) + '</span>' : '') +

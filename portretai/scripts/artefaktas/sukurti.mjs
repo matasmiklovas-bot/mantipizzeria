@@ -24,6 +24,7 @@ const base = (process.argv[2] || 'http://127.0.0.1:3000').replace(/\/+$/, '');
 const password = process.env.ADMIN_PASSWORD;
 if (!password) throw new Error('Set ADMIN_PASSWORD to the running site’s admin password.');
 
+const { CAMERA_BY_MODEL, CAMERA_LAYOUTS } = await import('../../src/cameras.js');
 const { SETTINGS, STYLE_LABELS, SIZE_LABELS, FRAME_LABELS, PRODUCT_LABELS, PRODUCT_NOTES, formatPrice } = await import('../../server/settings.js');
 const { deliveryStatus, formatDate } = await import('../../server/deadline.js');
 const { loadStyle } = await import('../../src/styles.js');
@@ -150,6 +151,8 @@ const config = {
     return { key, label: PRODUCT_LABELS[key], sub: PRODUCT_NOTES[key], price: (prices.length > 1 ? 'nuo ' : '') + formatPrice(Math.min(...prices)), total: formatPrice(Math.min(...prices)) };
   }),
   phoneModels: SETTINGS.phoneModels,
+  cameraByModel: CAMERA_BY_MODEL,
+  cameraLayouts: CAMERA_LAYOUTS,
   frames: SETTINGS.frames.map((key) => ({ key, label: FRAME_LABELS[key] })),
   networks: SETTINGS.lockerNetworks,
   previewDays: SETTINGS.production.creationDays,

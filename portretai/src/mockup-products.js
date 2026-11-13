@@ -3,6 +3,7 @@
 
 import sharp from 'sharp';
 import { trimPoster } from './preview.js';
+import { CAMERA_LAYOUTS, cameraFor } from './cameras.js';
 
 const SCENE_W = 2000;
 const SCENE_H = 2500;
@@ -169,7 +170,7 @@ export async function buildBlanketMockup(posterPng, size) {
  * Phone case seen from the back, lying on linen: rounded body, camera module,
  * gloss, soft shadow.
  */
-export async function buildCaseMockup(posterPng, size) {
+export async function buildCaseMockup(posterPng, size, phoneModel) {
   const print = await trimPoster(posterPng, size.bleedPx);
   const cw = 760;
   const ch = Math.round((cw * size.heightMm) / size.widthMm);
@@ -180,14 +181,21 @@ export async function buildCaseMockup(posterPng, size) {
 
   const art = await sharp(print).resize({ width: cw, height: ch, fit: 'fill' }).png().toBuffer();
   const mask = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${cw}" height="${ch}"><rect width="${cw}" height="${ch}" rx="${rad}" fill="#fff"/></svg>`);
-  const cam = Math.round(cw * 0.42);
-  const cx = Math.round(cw * 0.06);
+  const cam = CAMERA_LAYOUTS[cameraFor(phoneModel)];
+  const u = (v) => Math.round(v * cw);
   const lens = (x, y, r) =>
     `<circle cx="${x}" cy="${y}" r="${r + 9}" fill="#2b2b2e"/>` +
     `<circle cx="${x}" cy="${y}" r="${r}" fill="#0c0c10"/>` +
     `<circle cx="${x}" cy="${y}" r="${r * 0.55}" fill="#151a28"/>` +
     `<circle cx="${x - r * 0.3}" cy="${y - r * 0.3}" r="${r * 0.18}" fill="#ffffff" fill-opacity="0.35"/>`;
-  const lr = Math.round(cam * 0.17);
+  const m = cam.module;
+  const camera =
+    (m
+      ? `<rect x="${u(m.x)}" y="${u(m.y)}" width="${u(m.w)}" height="${u(m.h)}" rx="${u(m.r)}" fill="#1a1a1d"/>` +
+        `<rect x="${u(m.x) + 6}" y="${u(m.y) + 6}" width="${u(m.w) - 12}" height="${u(m.h) - 12}" rx="${u(m.r) - 4}" fill="#3a3a3f"/>`
+      : cam.lenses.map(([x, y]) => `<circle cx="${u(x)}" cy="${u(y)}" r="${u(cam.lens) + 16}" fill="#1a1a1d"/>`).join('')) +
+    cam.lenses.map(([x, y]) => lens(u(x), u(y), u(cam.lens))).join('') +
+    `<circle cx="${u(cam.flash[0])}" cy="${u(cam.flash[1])}" r="${u(0.022)}" fill="#d9d2c0"/>`;
   const overlay =
     `<svg xmlns="http://www.w3.org/2000/svg" width="${cw}" height="${ch}">` +
     `<defs>` +
@@ -197,13 +205,7 @@ export async function buildCaseMockup(posterPng, size) {
     // Raised rim of the case.
     `<rect x="3" y="3" width="${cw - 6}" height="${ch - 6}" rx="${rad - 3}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="6"/>` +
     `<rect x="9" y="9" width="${cw - 18}" height="${ch - 18}" rx="${rad - 9}" fill="none" stroke="#fff" stroke-opacity="0.22" stroke-width="3"/>` +
-    // Camera opening and module.
-    `<rect x="${cx}" y="${cx}" width="${cam}" height="${cam}" rx="${Math.round(cam * 0.24)}" fill="#1a1a1d"/>` +
-    `<rect x="${cx + 6}" y="${cx + 6}" width="${cam - 12}" height="${cam - 12}" rx="${Math.round(cam * 0.21)}" fill="#3a3a3f"/>` +
-    lens(cx + cam * 0.3, cx + cam * 0.3, lr) +
-    lens(cx + cam * 0.3, cx + cam * 0.72, lr) +
-    lens(cx + cam * 0.72, cx + cam * 0.5, lr) +
-    `<circle cx="${cx + cam * 0.75}" cy="${cx + cam * 0.2}" r="${cam * 0.05}" fill="#d9d2c0"/>` +
+    camera +
     `</svg>`;
   const body = await sharp(art)
     .composite([
@@ -231,9 +233,9 @@ export async function buildCaseMockup(posterPng, size) {
 }
 
 /** The right "how it looks" picture for any format. */
-export async function buildProductMockup(posterPng, size, frameKey) {
+export async function buildProductMockup(posterPng, size, frameKey, opts = {}) {
   if (size.kind === 'pledas') return buildBlanketMockup(posterPng, size);
-  if (size.kind === 'deklas') return buildCaseMockup(posterPng, size);
+  if (size.kind === 'deklas') return buildCaseMockup(posterPng, size, opts.phoneModel);
   const { buildWallMockup } = await import('./mockup.js');
   return buildWallMockup(posterPng, size, frameKey);
 }

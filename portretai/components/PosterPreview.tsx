@@ -9,6 +9,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import akvarele from '@/stiliai/akvarele.json';
 import aliejus from '@/stiliai/aliejus.json';
 import grafika from '@/stiliai/grafika.json';
+import CameraMark from './CameraMark';
 
 type TextSpec = { font: string; size: number; uppercase: boolean; spacing: number };
 type StyleSpec = { layout: string; name: TextSpec; secondLine: TextSpec; paper?: string };
@@ -45,12 +46,14 @@ export default function PosterPreview({
   name,
   secondLine,
   photo,
+  phoneModel,
 }: {
   style: string;
   size: string;
   name: string;
   secondLine: string;
   photo?: string;
+  phoneModel?: string;
 }) {
   const spec = STYLES[style] ?? STYLES.akvarele;
   const art = ART[style] ?? ART.akvarele;
@@ -149,13 +152,7 @@ export default function PosterPreview({
           </>
         )}
       </div>
-      {kind === 'deklas' ? (
-        <span className="camera" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
-      ) : null}
+      {kind === 'deklas' ? <CameraMark phoneModel={phoneModel} /> : null}
       <div
         className="text"
         style={{ top: pct(textTop), height: pct(textBottom - textTop), paddingTop: spec.layout === 'margins' ? pct(spec.name.size * 0.45) : 0, color: art.ink }}

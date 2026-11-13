@@ -239,7 +239,12 @@ test('order: a bad photo is refused at once, a HEIC photo is accepted, the name 
   assert.match(await poster.getAttribute('aria-label'), /^Dėklo maketas/);
   const toDelivery = page.getByRole('button', { name: 'Toliau: pristatymas' });
   assert.equal(await toDelivery.isDisabled(), true, 'phone model is required');
+  await page.getByLabel('Telefono modelis').selectOption('Samsung Galaxy S24');
+  await page.locator('.camera-lens').nth(2).waitFor();
+  assert.equal(await page.locator('.camera-module').count(), 0, 'Samsung lenses stand alone, no module');
   await page.getByLabel('Telefono modelis').selectOption('iPhone 15');
+  await page.locator('.camera-module').waitFor();
+  assert.equal(await page.locator('.camera-lens').count(), 2, 'iPhone 15 has two lenses');
   assert.equal(await toDelivery.isDisabled(), false);
   await page.getByText('Pledas', { exact: true }).click();
   await page.locator('.poster--pledas').waitFor();

@@ -280,11 +280,11 @@ export default function OrderFlow({ config, cancelled, initialProduct }: { confi
       {isPoster ? (
         <div className={`frame frame--${fields.frame}`}>
           <div className="glass">
-            <PosterPreview style={fields.style} size={format} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} />
+            <PosterPreview style={fields.style} size={format} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} phoneModel={fields.phoneModel} />
           </div>
         </div>
       ) : (
-        <PosterPreview style={fields.style} size={format} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} />
+        <PosterPreview style={fields.style} size={format} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} phoneModel={fields.phoneModel} />
       )}
     </div>
   );
