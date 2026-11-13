@@ -21,29 +21,26 @@ function noiseBuffer(width, height, sigma, mean = 128) {
 }
 
 /**
- * Blanket hanging from a wooden rail: soft vertical folds, fleece texture,
- * rounded hem, shadow on a plaster wall.
+ * Blanket lying on a bed, seen from above, with the bottom corner folded
+ * back to show the soft reverse side: the fold is what tells a viewer this
+ * is a thick fleece and not a poster.
  */
 export async function buildBlanketMockup(posterPng, size) {
   const print = await trimPoster(posterPng, size.bleedPx);
-  const bw = 1180;
+  const bw = 1240;
   const bh = Math.round((bw * size.heightMm) / size.widthMm);
-  const bx = Math.round((SCENE_W - bw) / 2);
-  const by = 300;
 
   // Fleece prints are softer than paper: slight blur, lower contrast, no pure white.
-  // A bound hem (darker band and a stitch line) is drawn on the flat print, so
-  // the folds below bend it with the fabric.
   const inset = Math.round(bw * 0.028);
   const hem =
     `<svg xmlns="http://www.w3.org/2000/svg" width="${bw}" height="${bh}">` +
-    `<rect x="0" y="0" width="${bw}" height="${bh}" fill="none" stroke="#3a2c1e" stroke-opacity="0.13" stroke-width="${inset * 2}"/>` +
-    `<rect x="${inset}" y="${inset}" width="${bw - 2 * inset}" height="${bh - 2 * inset}" rx="${inset}" fill="none" stroke="#3a2c1e" stroke-opacity="0.32" stroke-width="2.4" stroke-dasharray="9 7"/>` +
+    `<rect x="0" y="0" width="${bw}" height="${bh}" fill="none" stroke="#3a2c1e" stroke-opacity="0.12" stroke-width="${inset * 2}"/>` +
+    `<rect x="${inset}" y="${inset}" width="${bw - 2 * inset}" height="${bh - 2 * inset}" rx="${inset}" fill="none" stroke="#3a2c1e" stroke-opacity="0.3" stroke-width="2.4" stroke-dasharray="9 7"/>` +
     `<rect x="${inset + 2}" y="${inset + 2}" width="${bw - 2 * inset - 4}" height="${bh - 2 * inset - 4}" rx="${inset}" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="9 7"/>` +
     `</svg>`;
-  const soft = await sharp(print)
+  const { data, info } = await sharp(print)
     .resize({ width: bw, height: bh, fit: 'fill' })
-    .blur(1.4)
+    .blur(1.3)
     .modulate({ saturation: 0.92 })
     .linear(0.86, 18)
     .composite([{ input: Buffer.from(hem), left: 0, top: 0 }])
@@ -51,116 +48,152 @@ export async function buildBlanketMockup(posterPng, size) {
     .raw()
     .toBuffer({ resolveWithObject: true });
 
-  // Folds: a few broad, uneven waves that open up lower down. Light comes from
-  // the upper left, so slopes facing it are a little lighter; the troughs are
-  // a little darker. The hem and the sides follow the folds.
-  const { data, info } = soft;
+  // Soft wrinkles where the fleece lies on the bed: a smooth random height
+  // field, lit from the upper left, shifts and shades the print a little.
+  const gw = Math.round(bw / 40);
+  const gh = Math.round(bh / 40);
+  const field = await sharp(await noiseBuffer(gw, gh, 60))
+    .resize({ width: bw, height: bh, kernel: 'cubic' })
+    .blur(60)
+    .greyscale()
+    .raw()
+    .toBuffer();
+  // Size of the folded corner: small enough to stay clear of the name band.
+  const fold = Math.round(bw * 0.22);
+  const c = bw + bh - fold; // fold line: x + y = c
   const out = Buffer.alloc(bw * bh * 4);
-  // Only the broad waves shade the fabric; narrow ones would read as satin.
-  const waves = [
-    { k: (2 * Math.PI) / 560, a: 16, p: 0.3, drift: 0.0004, shade: 1 },
-    { k: (2 * Math.PI) / 300, a: 6, p: 1.7, drift: -0.0009, shade: 0.5 },
-    { k: (2 * Math.PI) / 140, a: 1.5, p: 4.1, drift: 0.0015, shade: 0 },
-  ];
-  const r = Math.round(bw * 0.04);
+  const r = Math.round(bw * 0.035);
   for (let y = 0; y < bh; y++) {
-    const depth = Math.min(1, Math.pow(y / (bh * 0.45), 0.8));
     for (let x = 0; x < bw; x++) {
-      let dx = 0;
-      let slope = 0;
-      let lift = 0;
-      for (const w of waves) {
-        const ph = w.k * x + w.p + w.drift * y;
-        dx += w.a * depth * Math.sin(ph);
-        slope += w.shade * w.a * depth * w.k * Math.cos(ph);
-        lift += w.shade * (w.a / 16) * depth * Math.sin(ph);
-      }
-      const sx = Math.min(bw - 1, Math.max(0, Math.round(x + dx)));
-      const si = (y * bw + sx) * info.channels;
-      const shade = 1 + Math.max(-0.06, Math.min(0.035, -slope * 0.55)) + 0.025 * lift - 0.02 * (1 - depth);
-      const o = (y * bw + x) * 4;
+      const i = y * bw + x;
+      const h = (field[i] - 128) / 128;
+      const sx = Math.min(bw - 1, Math.max(0, Math.round(x + h * 6)));
+      const sy = Math.min(bh - 1, Math.max(0, Math.round(y + h * 4)));
+      const si = (sy * bw + sx) * info.channels;
+      // Shade by height only: slopes of an 8-bit field show contour lines.
+      const shade = 1 + h * 0.035;
+      const o = i * 4;
       out[o] = Math.max(0, Math.min(255, data[si] * shade));
       out[o + 1] = Math.max(0, Math.min(255, data[si + 1] * shade));
       out[o + 2] = Math.max(0, Math.min(255, data[si + 2] * shade));
-      // Silhouette: the hem rises and falls with the folds, corners rounded.
-      const hemY = bh - 4 - 7 * depth * (1 + Math.sin(waves[0].k * x + waves[0].p + waves[0].drift * y));
-      let alpha = y > hemY ? 0 : 255;
-      if (alpha && y > hemY - r) {
+      // Silhouette: rounded corners, and the folded-back corner is cut away.
+      let a = x + y > c ? 0 : 255;
+      if (a) {
         const cx = x < r ? r : x > bw - r ? bw - r : x;
-        if (Math.hypot(x - cx, y - (hemY - r)) > r) alpha = 0;
+        const cy = y < r ? r : y > bh - r ? bh - r : y;
+        if ((x < r || x > bw - r) && (y < r || y > bh - r) && Math.hypot(x - cx, y - cy) > r) a = 0;
       }
-      out[o + 3] = alpha;
+      out[o + 3] = a;
     }
   }
-  let blanket = await sharp(out, { raw: { width: bw, height: bh, channels: 4 } }).png().toBuffer();
-  // Fleece texture: soft clumps (coarse noise scaled up) plus fine fibres.
+  let front = await sharp(out, { raw: { width: bw, height: bh, channels: 4 } }).png().toBuffer();
   const clumps = await sharp(await noiseBuffer(Math.round(bw / 5), Math.round(bh / 5), 30))
     .resize({ width: bw, height: bh, kernel: 'cubic' })
     .blur(2)
     .png()
     .toBuffer();
   const fibres = await sharp(await noiseBuffer(bw, bh, 22)).blur(0.7).png().toBuffer();
-  blanket = await sharp(blanket)
+  // The reverse side, folded over the corner: plain cream fleece, lighter at
+  // the tip, a soft roll of shadow along the fold line, and its shadow on the front.
+  const A = [bw - fold, bh];
+  const B = [bw, bh - fold];
+  const Ct = [bw - fold, bh - fold];
+  // Fold line A-B; the tip lands at Ct. Edges bow out a little and the tip
+  // is rounded, as thick fabric does; along the fold runs a soft roll.
+  const tipR = fold * 0.16;
+  const bow = fold * 0.06;
+  const mid = (p, q, k = 0.5) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
+  const tA = mid(Ct, A, tipR / fold);
+  const tB = mid(Ct, B, tipR / fold);
+  const cA = mid(A, Ct);
+  const cB = mid(B, Ct);
+  const flapPath =
+    `M${A} Q${cA[0] - bow},${cA[1]} ${tA} Q${Ct} ${tB} Q${cB[0]},${cB[1] - bow} ${B} Z`;
+  const flap =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${bw}" height="${bh}">` +
+    `<defs>` +
+    `<linearGradient id="fl" x1="${(A[0] + B[0]) / 2}" y1="${(A[1] + B[1]) / 2}" x2="${Ct[0]}" y2="${Ct[1]}" gradientUnits="userSpaceOnUse">` +
+    `<stop offset="0" stop-color="#c4bcae"/><stop offset="0.14" stop-color="#e3ddd1"/><stop offset="0.5" stop-color="#ece6dc"/><stop offset="1" stop-color="#f2eee6"/></linearGradient>` +
+    `<filter id="sh" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="24"/></filter>` +
+    `<filter id="roll" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>` +
+    `<filter id="edge"><feGaussianBlur stdDeviation="1.4"/></filter>` +
+    `</defs>` +
+    `<path class="shadow" d="${flapPath}" transform="translate(-28 -26)" fill="#1e160d" fill-opacity="0.34" filter="url(#sh)"/>` +
+    `<g class="flap" filter="url(#edge)">` +
+    `<path d="${flapPath}" fill="url(#fl)"/>` +
+    `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#8f8576" stroke-opacity="0.55" stroke-width="30" filter="url(#roll)"/>` +
+    `<line x1="${A[0] - 9}" y1="${A[1] - 9}" x2="${B[0] - 9}" y2="${B[1] - 9}" stroke="#fffdf8" stroke-opacity="0.55" stroke-width="10" filter="url(#roll)"/>` +
+    // The hem seen from the back: a stitch line just inside the two outer edges.
+    `<path d="M${A[0] - inset * 0.7},${A[1] - inset} L${Ct[0] + inset},${Ct[1] + inset + tipR * 0.6} Q${Ct[0] + inset},${Ct[1] + inset} ${Ct[0] + inset + tipR * 0.6},${Ct[1] + inset} L${B[0] - inset},${B[1] - inset * 0.7}" fill="none" stroke="#6d6253" stroke-opacity="0.45" stroke-width="2.4" stroke-dasharray="9 7"/>` +
+    `</g>` +
+    `</svg>`;
+  front = await sharp(front)
     .composite([
       { input: clumps, blend: 'soft-light' },
       { input: fibres, blend: 'soft-light' },
     ])
     .png()
     .toBuffer();
-  // Fleece has a fuzzy edge: the silhouette, blurred a little, becomes the alpha.
+  // Fuzzy edge: the silhouette, slightly blurred, is the alpha.
   const shapeRaw = Buffer.alloc(bw * bh);
   for (let i = 0; i < bw * bh; i++) shapeRaw[i] = out[i * 4 + 3];
   const shapePng = await sharp(shapeRaw, { raw: { width: bw, height: bh, channels: 1 } }).blur(1.8).png().toBuffer();
-  const rgb = await sharp(blanket).removeAlpha().raw().toBuffer();
-  blanket = await sharp(rgb, { raw: { width: bw, height: bh, channels: 3 } })
-    .joinChannel(shapePng)
+  const rgb = await sharp(front).removeAlpha().raw().toBuffer();
+  front = await sharp(rgb, { raw: { width: bw, height: bh, channels: 3 } }).joinChannel(shapePng).png().toBuffer();
+  // Flap texture: the same fleece grain over the reverse side.
+  const flapOnly = Buffer.from(flap.replace(/<path class="shadow"[^>]*\/>/, ''));
+  const flapShadow = Buffer.from(flap.replace(/<g class="flap"[\s\S]*<\/g>/, ''));
+  const flapMask = Buffer.from(flap.replace(/<path class="shadow"[^>]*\/>/, '').replace(/<line[^>]*\/>/g, '').replace('fill="url(#fl)"', 'fill="#fff"'));
+  const flapMasked = await sharp(flapOnly)
+    .composite([
+      { input: clumps, blend: 'soft-light' },
+      { input: fibres, blend: 'soft-light' },
+      { input: fibres, blend: 'soft-light' },
+      { input: flapMask, blend: 'dest-in' },
+    ])
+    .png()
+    .toBuffer();
+  const blanket = await sharp(front)
+    .composite([
+      { input: flapShadow, blend: 'over' },
+      { input: flapMasked, blend: 'over' },
+    ])
     .png()
     .toBuffer();
 
-  const railY = by - 10;
-  const scene =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${SCENE_W}" height="${SCENE_H}">` +
+  // The bed: a light linen duvet with broad soft folds, daylight from the left.
+  const W = SCENE_W;
+  const H = SCENE_H;
+  const bed =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">` +
     `<defs>` +
-    `<linearGradient id="wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ece6dc"/><stop offset="1" stop-color="#d9d1c4"/></linearGradient>` +
-    `<radialGradient id="light" cx="0.3" cy="0.15" r="0.9"><stop offset="0" stop-color="#fffaf0" stop-opacity="0.5"/><stop offset="1" stop-color="#fffaf0" stop-opacity="0"/></radialGradient>` +
-    `<linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a173"/><stop offset="0.5" stop-color="#a77b4b"/><stop offset="1" stop-color="#7d5732"/></linearGradient>` +
-    `<filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="34"/></filter>` +
-    `<filter id="tight" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="8"/></filter>` +
+    `<linearGradient id="bed" x1="0" y1="0" x2="0.35" y2="1">` +
+    `<stop offset="0" stop-color="#c9c3b8"/><stop offset="0.22" stop-color="#d4cfc5"/><stop offset="0.45" stop-color="#c4beb2"/>` +
+    `<stop offset="0.72" stop-color="#cfc9be"/><stop offset="1" stop-color="#b6afa3"/></linearGradient>` +
+    `<radialGradient id="light" cx="0.15" cy="0.1" r="1"><stop offset="0" stop-color="#fff" stop-opacity="0.45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>` +
     `</defs>` +
-    `<rect width="${SCENE_W}" height="${SCENE_H}" fill="url(#wall)"/>` +
-    `<rect width="${SCENE_W}" height="${SCENE_H}" fill="url(#light)"/>` +
-    // Shadow of the blanket on the wall.
-    `<rect x="${bx + 30}" y="${by + 40}" width="${bw}" height="${bh}" rx="40" fill="#3b3024" fill-opacity="0.28" filter="url(#soft)"/>` +
-    `<rect x="${bx + 8}" y="${by + 10}" width="${bw}" height="${bh}" rx="30" fill="#2a2118" fill-opacity="0.22" filter="url(#tight)"/>` +
-    // Rail brackets and rail.
-    `<rect x="${bx - 90}" y="${railY - 26}" width="34" height="70" rx="6" fill="#5c4128"/>` +
-    `<rect x="${bx + bw + 56}" y="${railY - 26}" width="34" height="70" rx="6" fill="#5c4128"/>` +
+    `<rect width="${W}" height="${H}" fill="url(#bed)"/>` +
+    `<rect width="${W}" height="${H}" fill="url(#light)"/>` +
     `</svg>`;
-  const rail =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${SCENE_W}" height="${SCENE_H}">` +
-    `<defs><linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4ad7d"/><stop offset="0.5" stop-color="#a77b4b"/><stop offset="1" stop-color="#7a5430"/></linearGradient>` +
-    `<filter id="s" x="-10%" y="-50%" width="120%" height="300%"><feGaussianBlur stdDeviation="6"/></filter></defs>` +
-    `<rect x="${bx - 110}" y="${railY + 30}" width="${bw + 220}" height="16" fill="#2a2118" fill-opacity="0.25" filter="url(#s)"/>` +
-    `<rect x="${bx - 110}" y="${railY - 18}" width="${bw + 220}" height="40" rx="20" fill="url(#wood)"/>` +
-    // The fabric wraps over the rail.
-    `<rect x="${bx}" y="${railY - 22}" width="${bw}" height="34" rx="14" fill="#000" fill-opacity="0"/>` +
-    `</svg>`;
-  // The fabric folds over the rail: the same colour as the blanket's top edge, in shadow.
-  const pm = await sharp(print).metadata();
-  const wrap = await sharp(print)
-    .extract({ left: 0, top: 0, width: pm.width, height: Math.max(4, Math.round(pm.height * 0.01)) })
-    .resize({ width: bw, height: 44, fit: 'fill' })
-    .blur(3)
-    .modulate({ brightness: 0.9 })
-    .png()
-    .toBuffer();
-  const grain = await noiseBuffer(SCENE_W, SCENE_H, 8);
-  const base = await sharp(Buffer.from(scene)).composite([{ input: grain, blend: 'soft-light' }]).png().toBuffer();
-  return sharp(base)
+  const linen = await sharp(await noiseBuffer(W, H, 16)).blur(0.6).png().toBuffer();
+  const bedPng = await sharp(Buffer.from(bed)).composite([{ input: linen, blend: 'soft-light' }]).png().toBuffer();
+
+  // Blanket shadow on the bed, then the blanket, both turned a little.
+  const angle = -5;
+  const shadowSvg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${bw + 200}" height="${bh + 200}">` +
+    `<filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="28"/></filter>` +
+    `<path d="M100 100 H${bw + 100} V${bh + 100 - fold} L${bw + 100 - fold} ${bh + 100} H100 Z" fill="#2a2116" fill-opacity="0.32" filter="url(#s)"/></svg>`;
+  const rotShadow = await sharp(Buffer.from(shadowSvg)).rotate(angle, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+  const rotBlanket = await sharp(blanket).rotate(angle, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+  const rb = await sharp(rotBlanket).metadata();
+  const rs = await sharp(rotShadow).metadata();
+  const left = Math.round((W - rb.width) / 2);
+  const top = Math.round((H - rb.height) / 2) - 20;
+  return sharp(bedPng)
     .composite([
-      { input: blanket, left: bx, top: by },
-      { input: Buffer.from(rail), left: 0, top: 0 },
-      { input: wrap, left: bx, top: railY - 28 },
+      { input: rotShadow, left: Math.round((W - rs.width) / 2) + 22, top: Math.round((H - rs.height) / 2) + 6 },
+      { input: rotBlanket, left, top },
     ])
     .jpeg({ quality: 86, mozjpeg: true })
     .toBuffer();

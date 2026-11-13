@@ -123,7 +123,7 @@ export default async function Home() {
               src="/produktai/pledas-900.jpg"
               srcSet="/produktai/pledas-480.jpg 480w, /produktai/pledas-900.jpg 900w"
               sizes="(min-width: 900px) 520px, 100vw"
-              alt="Pledas su Lego portretu akvarelės stiliumi ir vardu, pakabintas ant medinio skersinio"
+              alt="Pledas su Lego portretu akvarelės stiliumi ir vardu, paklotas ant lovos, vienas kampas atverstas"
               width={900}
               height={1125}
               loading="lazy"

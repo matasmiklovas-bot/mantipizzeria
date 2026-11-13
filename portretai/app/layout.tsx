@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
+import LogoMark from '@/components/LogoMark';
 import './globals.css';
 import { SETTINGS, siteUrl, contactEmail } from '@/server/settings.js';
 import Beacon from '@/components/Beacon';
@@ -38,12 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ) : null}
         <header className="site-header">
           <Link href="/" className="wordmark">
-            <svg className="mark" viewBox="0 0 24 30" width="20" height="25" aria-hidden="true">
-              <rect x="1.5" y="1.5" width="21" height="27" fill="none" stroke="currentColor" strokeWidth="2.4" />
-              <rect x="7.5" y="7.5" width="13" height="15" fill="#ff5aa5" />
-              <rect x="5.5" y="5.5" width="13" height="15" fill="#2a3bd1" style={{ mixBlendMode: 'multiply' }} />
-              <rect x="7" y="23" width="10" height="1.8" fill="currentColor" />
-            </svg>
+            <LogoMark />
             {SETTINGS.brand}
           </Link>
           <nav aria-label="Pagrindinis">
