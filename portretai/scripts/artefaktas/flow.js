@@ -153,7 +153,7 @@
 
   function cameraHtml() {
     var cam = CONFIG.cameraLayouts[CONFIG.cameraByModel[state.f.phone] || 'pro'], m = cam.module;
-    var u = function (v) { return (v * 100) + 'cqw'; };
+    var u = function (v) { return 'calc(var(--u) * ' + (v * 100) + ')'; };
     return '<span class="camera" aria-hidden="true">' +
       (m ? '<span class="camera-module" style="left:' + u(m.x) + ';top:' + u(m.y) + ';width:' + u(m.w) + ';height:' + u(m.h) + ';border-radius:' + u(m.r) + '"></span>' : '') +
       cam.lenses.map(function (p) { return '<span class="camera-lens" style="left:' + u(p[0] - cam.lens) + ';top:' + u(p[1] - cam.lens) + ';width:' + u(2 * cam.lens) + ';height:' + u(2 * cam.lens) + '"></span>'; }).join('') +
@@ -175,7 +175,7 @@
     var name = state.f.name.trim() || 'Vardas', second = state.f.second.trim();
     if (spec.name.uppercase) name = upperLt(name);
     if (second && spec.secondLine.uppercase) second = upperLt(second);
-    var pct = function (v) { return (v * 100) + 'cqw'; };
+    var pct = function (v) { return 'calc(var(--u) * ' + (v * 100) + ')'; };
     var font = function (t) { return "font-family:'" + t.family + "',serif;font-weight:" + t.weight + ';font-style:' + t.style + ';letter-spacing:' + t.spacing + 'em;margin-right:-' + t.spacing + 'em;'; };
     return '<div class="poster poster--' + kind + '" data-max="' + maxText + '" style="aspect-ratio:' + dims.w + ' / ' + dims.h + ';background:' + art.paper + '">' +
       '<div class="art" aria-hidden="true" style="left:' + pct(box.l) + ';top:' + pct(box.t) + ';width:' + pct(box.w) + ';height:' + pct(box.h) + ';background:' + art.bg + ';color:' + art.fg + '">' +
@@ -196,13 +196,15 @@
   function fitPoster() {
     var p = root.querySelector('.poster');
     if (!p) return;
+    // Safari 15 has no container units: give the poster its own unit in px.
+    p.style.setProperty('--u', (p.clientWidth / 100) + 'px');
     var limit = p.clientWidth * Number(p.getAttribute('data-max'));
     ['.name', '.second'].forEach(function (sel) {
       var el = p.querySelector(sel);
       if (!el) return;
-      el.style.fontSize = (Number(el.getAttribute('data-size')) * 100) + 'cqw';
+      el.style.fontSize = 'calc(var(--u) * ' + (Number(el.getAttribute('data-size')) * 100) + ')';
       var w = el.getBoundingClientRect().width;
-      if (w > limit && w > 0) el.style.fontSize = 'calc(' + (Number(el.getAttribute('data-size')) * 100) + 'cqw * ' + (limit / w * 0.995) + ')';
+      if (w > limit && w > 0) el.style.fontSize = 'calc(var(--u) * ' + (Number(el.getAttribute('data-size')) * 100 * (limit / w * 0.995)) + ')';
     });
   }
 

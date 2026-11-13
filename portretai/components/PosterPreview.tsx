@@ -90,6 +90,22 @@ export default function PosterPreview({
   const nameRef = useRef<HTMLSpanElement>(null);
   const secondRef = useRef<HTMLSpanElement>(null);
   const [fit, setFit] = useState({ name: 1, second: 1 });
+  // One hundredth of the poster width in px, for browsers without container
+  // units (Safari 15). Newer browsers use 1cqw from the stylesheet instead.
+  const [unit, setUnit] = useState<number | null>(null);
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const update = () => setUnit(box.clientWidth / 100);
+    update();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', update);
+      return () => window.removeEventListener('resize', update);
+    }
+    const ro = new ResizeObserver(update);
+    ro.observe(box);
+    return () => ro.disconnect();
+  }, []);
   const fitRef = useRef(fit);
 
   useIsoLayoutEffect(() => {
@@ -121,13 +137,13 @@ export default function PosterPreview({
     };
   }, [shownName, shownSecond, style, size, maxText]);
 
-  const pct = (v: number) => `${v * 100}cqw`;
+  const pct = (v: number) => `calc(var(--u) * ${v * 100})`;
 
   return (
     <div
       ref={boxRef}
       className={`poster poster--${kind}`}
-      style={{ aspectRatio: `${dims.w} / ${dims.h}`, background: art.paper }}
+      style={{ aspectRatio: `${dims.w} / ${dims.h}`, background: art.paper, ...(unit ? ({ '--u': `${unit}px` } as React.CSSProperties) : {}) }}
       role="img"
       aria-label={`${kind === 'pledas' ? 'Pledo' : kind === 'deklas' ? 'Dėklo' : 'Plakato'} maketas: vardas „${shownName}“${shownSecond ? `, antra eilutė „${shownSecond}“` : ''}`}
     >

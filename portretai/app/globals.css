@@ -770,8 +770,20 @@ fieldset {
   color: var(--ink);
 }
 
-/* Poster mock used for the live name preview. Sizes are in container units,
-   taken from the same style files as the print layout. */
+/* Poster mock used for the live name preview. Sizes are in --u, one
+   hundredth of the poster width: container units where the browser has them
+   (Safari 16+), otherwise a pixel value the component measures and sets
+   (Safari 15 on older iPads has no container units). */
+.poster,
+.preview-product--deklas {
+  --u: 2.4px;
+}
+@supports (width: 1cqw) {
+  .poster > *,
+  .preview-product--deklas > * {
+    --u: 1cqw;
+  }
+}
 .poster {
   container-type: inline-size;
   position: relative;
@@ -784,7 +796,7 @@ fieldset {
   display: flex;
   align-items: center;
   justify-content: center;
-  font: 400 3.4cqw/1.3 var(--sans);
+  font: 400 calc(var(--u) * 3.4)/1.3 var(--sans);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   text-align: center;
@@ -1500,15 +1512,15 @@ main:has(> .closing:last-child) + .site-footer {
 }
 .poster .art-tag {
   position: absolute;
-  left: 4cqw;
-  top: 4cqw;
-  padding: 1cqw 2cqw;
+  left: calc(var(--u) * 4);
+  top: calc(var(--u) * 4);
+  padding: calc(var(--u) * 1) calc(var(--u) * 2);
   background: rgba(251, 249, 244, 0.9);
   color: #3a332b;
-  font: 600 2.6cqw/1.2 var(--sans);
+  font: 600 calc(var(--u) * 2.6)/1.2 var(--sans);
   letter-spacing: 0.06em;
   text-transform: none;
-  border-radius: 1cqw;
+  border-radius: calc(var(--u) * 1);
 }
 
 /* Style swatches: the same real dog (Lego) in each style. */
@@ -1530,9 +1542,9 @@ main:has(> .closing:last-child) + .site-footer {
   height: 14%;
 }
 .poster--pledas {
-  border-radius: 2.4cqw;
+  border-radius: calc(var(--u) * 2.4);
   box-shadow:
-    inset 0 0 0 1.2cqw rgba(255, 255, 255, 0.08),
+    inset 0 0 0 calc(var(--u) * 1.2) rgba(255, 255, 255, 0.08),
     0 1px 2px rgba(40, 30, 15, 0.18),
     0 16px 30px -10px rgba(40, 30, 15, 0.32);
 }
@@ -1542,11 +1554,11 @@ main:has(> .closing:last-child) + .site-footer {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: inset 0 0 3cqw rgba(60, 45, 30, 0.22);
+  box-shadow: inset 0 0 calc(var(--u) * 3) rgba(60, 45, 30, 0.22);
   pointer-events: none;
 }
 .poster--deklas {
-  border-radius: 14cqw;
+  border-radius: calc(var(--u) * 14);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.1),
     inset 0 0 0 1px rgba(255, 255, 255, 0.35),
@@ -1570,11 +1582,11 @@ main:has(> .closing:last-child) + .site-footer {
   position: absolute;
   border-radius: 50%;
   background: radial-gradient(circle at 40% 38%, #4b4f57 0 18%, #15161a 30% 62%, #2c2d31 64% 100%);
-  box-shadow: 0 0 0 1.4cqw #3a3a3e;
+  box-shadow: 0 0 0 calc(var(--u) * 1.4) #3a3a3e;
 }
 .poster--deklas .art-tag {
   top: auto;
-  bottom: 4cqw;
+  bottom: calc(var(--u) * 4);
 }
 .poster-wrap--pledas {
   max-width: 250px;

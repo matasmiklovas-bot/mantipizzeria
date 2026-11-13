@@ -533,3 +533,31 @@ test('after the Christmas deadline the site switches by itself and offers a prin
     await late.stop();
   }
 });
+
+test('older iPad (Safari 15, no container units): the live preview keeps its layout', async () => {
+  // Chromium has container units; make the poster's children use the px unit
+  // the component measures, which is what Safari 15 falls back to.
+  const ctx = await browser.newContext({ viewport: { width: 810, height: 1080 }, hasTouch: true });
+  const page = watch(await ctx.newPage());
+  const measure = async () =>
+    page.evaluate(() => {
+      const po = document.querySelector('.poster').getBoundingClientRect();
+      const n = document.querySelector('.poster .name').getBoundingClientRect();
+      const a = document.querySelector('.poster .art').getBoundingClientRect();
+      return { inside: n.left >= po.left && n.right <= po.right + 0.5, name: [Math.round(n.left - po.left), Math.round(n.top - po.top)], art: [Math.round(a.top - po.top), Math.round(a.height)] };
+    });
+  await page.goto(site.base + '/uzsakymas');
+  await page.evaluate(() => sessionStorage.clear());
+  await page.locator('input[type=file]').first().setInputFiles(fx('sunelis.jpg'));
+  await page.getByText('Nuotrauka tinka.').waitFor({ timeout: 30000 });
+  await page.getByRole('button', { name: 'Toliau: vardas' }).click();
+  await page.getByLabel('Augintinio vardas').fill('Žąsiukė Ąžuolė');
+  await page.evaluate(() => document.fonts.ready);
+  const modern = await measure();
+  await page.addStyleTag({ content: '.poster *, .poster > * { --u: inherit !important; }' });
+  await page.waitForTimeout(100);
+  const fallback = await measure();
+  assert.deepEqual(fallback, modern);
+  assert.equal(fallback.inside, true);
+  await ctx.close();
+});
