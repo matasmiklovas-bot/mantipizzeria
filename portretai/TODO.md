@@ -74,7 +74,7 @@ Kainos svetainėje (pledas 59 €, dėklas 29 € su pristatymu) yra mano spėji
 | 25 | Valdymo puslapio slaptažodis vienas, be antro veiksnio | Naudok ilgą atsitiktinį slaptažodį |
 | 26 | Pinigų grąžinimas daromas ranka „Stripe“ paskyroje, ne iš valdymo puslapio | Atšaukus užsakymą reikia nepamiršti grąžinti pinigų |
 | 27 | Portreto generavimo valdymo puslapyje nėra: portretą darai atskirai ir įkeli | „iPad“ teks naudoti kitą įrankį arba prašyti manęs paleisti generavimą |
-| 28 | „Geros ir blogos nuotraukos“ pavyzdžiai yra schemos, ne nuotraukos | Geriau pakeisti dviem savo tikromis nuotraukomis |
+| 28 | „Geros ir blogos nuotraukos“ pavyzdžiai padaryti iš Lego nuotraukos (blogoji specialiai patamsinta ir sulieta, tai parašyta po jomis) | Jei turi tikrą blogą nuotrauką, pakeisk `public/nuotraukos/netinka.jpg` |
 | 29 | „Meta“ ir „TikTok“ pikselių kodas nepatikrintas su tikrais ID | Prieš mokamą reklamą patikrink jų įrankiuose, ar įvykiai ateina |
 
 ## E. Portreto kokybė (0 etapas, vis dar nebaigtas)

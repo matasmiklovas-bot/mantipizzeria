@@ -389,34 +389,23 @@ export default function OrderFlow({ config, cancelled, initialProduct }: { confi
 
           <div className="goodbad" aria-label="Kokia nuotrauka tinka">
             <figure>
-              <svg viewBox="0 0 160 200" role="img" aria-label="Schema: snukis užima didžiąją kadro dalį">
-                <rect width="160" height="200" fill="#fbf9f4" />
-                <path d="M46 62 L56 22 L78 52 M114 62 L104 22 L82 52" fill="none" stroke="#26221d" strokeWidth="3" strokeLinejoin="round" />
-                <ellipse cx="80" cy="96" rx="48" ry="52" fill="none" stroke="#26221d" strokeWidth="3" />
-                <circle cx="62" cy="86" r="5" fill="#26221d" />
-                <circle cx="98" cy="86" r="5" fill="#26221d" />
-                <ellipse cx="80" cy="112" rx="9" ry="6" fill="#26221d" />
-                <path d="M34 190 Q40 148 80 148 Q120 148 126 190" fill="none" stroke="#26221d" strokeWidth="3" />
-              </svg>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/nuotraukos/tinka.jpg" width={480} height={600} alt="Tinkama nuotrauka: šuo iš arti, akys aiškios, dienos šviesa" loading="lazy" />
               <figcaption>
                 <strong>Tinka</strong>
                 Snukis iš arti, akys aiškiai matosi, dienos šviesa, augintinis žiūri į kamerą arba šiek tiek į šoną.
               </figcaption>
             </figure>
             <figure>
-              <svg viewBox="0 0 160 200" role="img" aria-label="Schema: augintinis toli ir tamsoje">
-                <rect width="160" height="200" fill="#4a443c" />
-                <path d="M72 128 L74 120 L78 126 M88 128 L86 120 L82 126" fill="none" stroke="#8c8375" strokeWidth="2" />
-                <ellipse cx="80" cy="134" rx="9" ry="9" fill="none" stroke="#8c8375" strokeWidth="2" />
-                <path d="M68 168 Q70 144 80 144 Q90 144 92 168" fill="none" stroke="#8c8375" strokeWidth="2" />
-                <path d="M0 172 H160" stroke="#6a6257" strokeWidth="2" />
-              </svg>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/nuotraukos/netinka.jpg" width={480} height={600} alt="Netinkama nuotrauka: tamsi ir išplaukusi" loading="lazy" />
               <figcaption>
                 <strong>Netinka</strong>
                 Augintinis toli, tamsu, vaizdas išplaukęs, snukis uždengtas arba nuotrauka atsiųsta per „Messenger“.
               </figcaption>
             </figure>
           </div>
+          <p className="small muted goodbad-note">Abu pavyzdžiai iš tos pačios nuotraukos: dešinėje ji specialiai patamsinta ir sulieta.</p>
 
           <div className="flow-nav">
             <button type="button" className="btn" disabled={!photo} onClick={() => go(1)}>

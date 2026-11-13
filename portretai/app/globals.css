@@ -736,10 +736,28 @@ fieldset {
 .goodbad figure {
   margin: 0;
 }
-.goodbad svg {
+.goodbad img {
+  display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--line);
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--paper-deep);
+}
+.goodbad figure:first-child img {
+  box-shadow: 0 0 0 3px var(--ok);
+}
+.goodbad figure:last-child img {
+  box-shadow: 0 0 0 3px var(--bad);
+}
+.goodbad figure:first-child figcaption strong {
+  color: var(--ok);
+}
+.goodbad figure:last-child figcaption strong {
+  color: var(--bad);
+}
+.goodbad-note {
+  margin: 10px 0 0;
 }
 .goodbad figcaption {
   font-size: 14px;

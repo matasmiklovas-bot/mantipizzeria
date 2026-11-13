@@ -73,7 +73,7 @@ function clean(fragment) {
 async function inlineImages(fragment, request) {
   // One embedded copy per picture: drop srcset (it would point at files the artifact does not have).
   fragment = fragment.replace(/\s(srcSet|srcset|sizes)="[^"]*"/g, '');
-  const srcs = [...new Set([...fragment.matchAll(/src="(\/(?:api|pavyzdziai|produktai)\/[^"]+)"/g)].map((m) => m[1].replaceAll('&amp;', '&')))];
+  const srcs = [...new Set([...fragment.matchAll(/src="(\/(?:api|pavyzdziai|produktai|nuotraukos)\/[^"]+)"/g)].map((m) => m[1].replaceAll('&amp;', '&')))];
   for (const src of srcs) {
     const res = await request.get(base + src);
     if (!res.ok()) throw new Error(`Could not fetch ${src}: ${res.status()}`);
@@ -101,7 +101,7 @@ const views = {
   grazinimas: clean(inner(await get('/grazinimas'), 'main')),
   privatumas: clean(inner(await get('/privatumas'), 'main')),
 };
-const goodbad = outer(await get('/uzsakymas'), /<div class="goodbad"[^>]*>/);
+const goodbad = await inlineImages(outer(await get('/uzsakymas'), /<div class="goodbad"[^>]*>/), ctx.request);
 
 // Admin and customer snapshots of the sample order.
 await page.goto(base + '/valdymas/prisijungti');
