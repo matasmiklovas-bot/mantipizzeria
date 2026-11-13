@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import ExamplePair from '@/components/ExamplePair';
 import SizeScale from '@/components/SizeScale';
+import StyleTrio from '@/components/StyleTrio';
+import { loadStyle } from '@/src/styles.js';
 import { loadExamples } from '@/server/examples.js';
-import { SETTINGS, SIZE_LABELS, FRAME_LABELS, PRODUCT_NOTES, formatPrice, minPrice } from '@/server/settings.js';
+import { SETTINGS, SIZE_LABELS, FRAME_LABELS, STYLE_LABELS, PRODUCT_NOTES, formatPrice, minPrice } from '@/server/settings.js';
 import { deliveryStatus, formatDate, formatDateLong } from '@/server/deadline.js';
 import { SIZES } from '@/src/config.js';
 
@@ -16,6 +18,11 @@ export default async function Home() {
   const lowest = minPrice();
   const p = SETTINGS.production;
   const hero = examples[0];
+  // All three examples are the same pet from the same photo: show the photo once.
+  const oneAnimal =
+    examples.every((e) => e.photo && e.portrait && e.name === hero.name && e.photo.src && e.style) &&
+    new Set(examples.map((e) => `${e.photo?.width}x${e.photo?.height}`)).size === 1;
+  const styleKey = (label: string | null) => (Object.keys(STYLE_LABELS) as (keyof typeof STYLE_LABELS)[]).find((k) => STYLE_LABELS[k] === label);
 
   return (
     <>
@@ -72,20 +79,36 @@ export default async function Home() {
       </section>
 
       <section className="wrap section" aria-labelledby="pavyzdziai">
-        <h2 id="pavyzdziai">Pavyzdžiai</h2>
-        <div className="examples">
-          {examples.map((e, i) => (
-            <div className={e.photo || e.portrait ? 'example' : 'example empty'} key={e.index}>
-              <ExamplePair photo={e.photo} portrait={e.portrait} name={e.name} frame={['azuolas', 'juodas', 'baltas'][i % 3]} />
-              {e.name ? (
-                <p className="caption">
-                  {e.name}
-                  {e.style ? <span>{e.style}</span> : null}
-                </p>
-              ) : null}
-            </div>
-          ))}
-        </div>
+        <h2 id="pavyzdziai">{oneAnimal ? 'Viena nuotrauka, trys stiliai' : 'Pavyzdžiai'}</h2>
+        {oneAnimal && hero.photo && hero.name ? (
+          <StyleTrio
+            name={hero.name}
+            photo={hero.photo}
+            items={examples.map((e, i) => {
+              const key = styleKey(e.style);
+              return {
+                style: e.style ?? '',
+                description: key ? loadStyle(key).description : '',
+                portrait: e.portrait!,
+                frame: ['azuolas', 'juodas', 'baltas'][i % 3],
+              };
+            })}
+          />
+        ) : (
+          <div className="examples">
+            {examples.map((e, i) => (
+              <div className={e.photo || e.portrait ? 'example' : 'example empty'} key={e.index}>
+                <ExamplePair photo={e.photo} portrait={e.portrait} name={e.name} frame={['azuolas', 'juodas', 'baltas'][i % 3]} />
+                {e.name ? (
+                  <p className="caption">
+                    {e.name}
+                    {e.style ? <span>{e.style}</span> : null}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="wrap section" aria-labelledby="ne-tik">
@@ -172,8 +195,8 @@ export default async function Home() {
               <>
                 <h2 id="kaledos">Kalėdoms: užsakykite iki {formatDate(d.lastOrderDate)}</h2>
                 <p>
-                  Paskutinė diena, kai dar spėjame pristatyti iki Kalėdų, yra {formatDateLong(d.lastOrderDate)}. Į šį terminą įskaičiuotos {p.revisionBufferDays} dienos
-                  peržiūrai ir pataisymui, spauda ir pristatymas.
+                  Paskutinė diena, kai dar spėjame pristatyti iki Kalėdų, yra {formatDateLong(d.lastOrderDate)}. Į šį terminą įskaičiuotos {p.revisionBufferDays} dienos peržiūrai
+                  ir pataisymui, spauda ir pristatymas.
                 </p>
                 <p className="muted small">Vėliau užsakytus portretus pristatysime po Kalėdų ir iš karto duosime dovanų kuponą, kurį galima atsispausdinti.</p>
               </>

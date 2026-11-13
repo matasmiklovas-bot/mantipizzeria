@@ -144,7 +144,9 @@ test('home page: example, price, lead time and order button are on the first scr
   const body = await page.locator('main').innerText();
   assert.match(body, /Kalėdoms: užsakykite iki gruodžio 11 d\./);
   assert.equal(await page.locator('.faq details').count(), 6);
-  assert.equal(await page.locator('.examples .example').count(), 3);
+  // The examples are one dog in three styles: its photo is shown once, not three times.
+  assert.equal(await page.locator('.trio-strip li').count(), 3);
+  assert.equal(await page.locator('.trio img[src$="-nuotrauka.jpg"]').count(), 1);
   // No stock photos and no fake social proof.
   assert.equal(await page.locator('img[src*="unsplash"], img[src*="pexels"], img[src*="stock"]').count(), 0);
   assert.doesNotMatch(body, /atsiliepim|liko \d+ vnt|unikal|aukščiausios kokybės|nepamiršt|pasinerk|tapyta ranka/i);
