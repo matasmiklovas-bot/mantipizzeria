@@ -266,9 +266,9 @@ async function assertTextDrawn(png, layout, background) {
     }
     // A line can also stop half way (the renderer drops the rest of a path
     // it cannot read): the first and the last letter must both be there.
-    const edge = Math.max(2, Math.round(info.width * 0.15));
-    const has = (from, to) => colInk.slice(from, to).some((c) => c > 0);
-    if (!has(0, edge) || !has(info.width - edge, info.width)) {
+    const ends = item.line?.inkEnds?.(item.left - region.left);
+    const has = ([x1, x2]) => colInk.slice(Math.max(0, Math.floor(x1)), Math.min(info.width, Math.ceil(x2))).some((c) => c > 0);
+    if (ends && (!has(ends[0]) || !has(ends[1]))) {
       throw new Error(`Tekstas „${item.text}“ plakate nupieštas ne visas. Spaudos failas nesukurtas.`);
     }
   }

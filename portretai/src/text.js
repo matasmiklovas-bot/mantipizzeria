@@ -82,6 +82,15 @@ export function layoutLine(font, text, size, spacing = 0) {
   const width = x;
   return {
     width,
+    /** Horizontal extent [x1, x2] of the ink of the first and the last visible glyph. */
+    inkEnds(originX) {
+      const boxes = [];
+      for (let i = 0; i < glyphs.length; i++) {
+        const b = glyphs[i].getPath(originX + positions[i], 0, size).getBoundingBox();
+        if (Number.isFinite(b.x1) && b.x2 > b.x1) boxes.push([b.x1, b.x2]);
+      }
+      return boxes.length ? [boxes[0], boxes[boxes.length - 1]] : null;
+    },
     pathData(originX, baselineY) {
       let d = '';
       for (let i = 0; i < glyphs.length; i++) {

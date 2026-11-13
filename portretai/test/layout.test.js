@@ -135,3 +135,10 @@ test('glyph outlines never contain NaN, at any position (opentype.js rounding bu
     }
   }
 });
+
+test('the print check accepts a one-letter name in the widely spaced style', async () => {
+  // Letter spacing leaves the edges of the text box empty; the check must
+  // look at where the letters really are.
+  const r = await renderPoster({ portraitBuffer: fs.readFileSync(fx('portretas.png')), size: getSize('a4'), style: loadStyle('grafika'), name: 'I' });
+  assert.ok(r.png.length > 0);
+});
