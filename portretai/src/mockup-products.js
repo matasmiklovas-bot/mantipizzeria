@@ -8,10 +8,13 @@ const SCENE_W = 2000;
 const SCENE_H = 2500;
 
 function noiseBuffer(width, height, sigma, mean = 128) {
+  // Greyscale noise: the same value in all three channels, so it never tints.
   const raw = Buffer.alloc(width * height * 3);
-  for (let i = 0; i < raw.length; i++) {
-    const v = Math.round(mean + sigma * (Math.random() + Math.random() + Math.random() - 1.5) * 1.4);
-    raw[i] = Math.max(0, Math.min(255, v));
+  for (let i = 0; i < raw.length; i += 3) {
+    const v = Math.max(0, Math.min(255, Math.round(mean + sigma * (Math.random() + Math.random() + Math.random() - 1.5) * 1.4)));
+    raw[i] = v;
+    raw[i + 1] = v;
+    raw[i + 2] = v;
   }
   return sharp(raw, { raw: { width, height, channels: 3 } }).png().toBuffer();
 }
@@ -27,63 +30,86 @@ export async function buildBlanketMockup(posterPng, size) {
   const bx = Math.round((SCENE_W - bw) / 2);
   const by = 300;
 
-  // Fleece prints are softer than paper: slight blur and lower contrast.
+  // Fleece prints are softer than paper: slight blur, lower contrast, no pure white.
+  // A bound hem (darker band and a stitch line) is drawn on the flat print, so
+  // the folds below bend it with the fabric.
+  const inset = Math.round(bw * 0.028);
+  const hem =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${bw}" height="${bh}">` +
+    `<rect x="0" y="0" width="${bw}" height="${bh}" fill="none" stroke="#3a2c1e" stroke-opacity="0.13" stroke-width="${inset * 2}"/>` +
+    `<rect x="${inset}" y="${inset}" width="${bw - 2 * inset}" height="${bh - 2 * inset}" rx="${inset}" fill="none" stroke="#3a2c1e" stroke-opacity="0.32" stroke-width="2.4" stroke-dasharray="9 7"/>` +
+    `<rect x="${inset + 2}" y="${inset + 2}" width="${bw - 2 * inset - 4}" height="${bh - 2 * inset - 4}" rx="${inset}" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="1.4" stroke-dasharray="9 7"/>` +
+    `</svg>`;
   const soft = await sharp(print)
     .resize({ width: bw, height: bh, fit: 'fill' })
-    .blur(1.6)
-    .modulate({ saturation: 0.9 })
-    .linear(0.88, 16)
+    .blur(1.4)
+    .modulate({ saturation: 0.92 })
+    .linear(0.86, 18)
+    .composite([{ input: Buffer.from(hem), left: 0, top: 0 }])
+    .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
 
-  // Folds: the fabric hangs from the rail in a few soft waves. Each column is
-  // shifted slightly and shaded by the slope of the wave.
+  // Folds: a few broad, uneven waves that open up lower down. Light comes from
+  // the upper left, so slopes facing it are a little lighter; the troughs are
+  // a little darker. The hem and the sides follow the folds.
   const { data, info } = soft;
   const out = Buffer.alloc(bw * bh * 4);
-  // Fleece hangs in a few broad, soft folds.
+  // Only the broad waves shade the fabric; narrow ones would read as satin.
   const waves = [
-    { k: (2 * Math.PI) / 520, a: 9, p: 0.3 },
-    { k: (2 * Math.PI) / 260, a: 3, p: 1.7 },
+    { k: (2 * Math.PI) / 560, a: 16, p: 0.3, drift: 0.0004, shade: 1 },
+    { k: (2 * Math.PI) / 300, a: 6, p: 1.7, drift: -0.0009, shade: 0.5 },
+    { k: (2 * Math.PI) / 140, a: 1.5, p: 4.1, drift: 0.0015, shade: 0 },
   ];
-  const r = Math.round(bw * 0.035); // rounded hem corners
+  const r = Math.round(bw * 0.04);
   for (let y = 0; y < bh; y++) {
-    const depth = Math.min(1, y / (bh * 0.35)); // folds open up lower down
+    const depth = Math.min(1, Math.pow(y / (bh * 0.45), 0.8));
     for (let x = 0; x < bw; x++) {
       let dx = 0;
       let slope = 0;
+      let lift = 0;
       for (const w of waves) {
-        dx += w.a * depth * Math.sin(w.k * x + w.p);
-        slope += w.a * depth * w.k * Math.cos(w.k * x + w.p);
+        const ph = w.k * x + w.p + w.drift * y;
+        dx += w.a * depth * Math.sin(ph);
+        slope += w.shade * w.a * depth * w.k * Math.cos(ph);
+        lift += w.shade * (w.a / 16) * depth * Math.sin(ph);
       }
       const sx = Math.min(bw - 1, Math.max(0, Math.round(x + dx)));
       const si = (y * bw + sx) * info.channels;
-      // Gentle shading only: fabric is matte, not metal.
-      const shade = 1 + Math.max(-0.09, Math.min(0.06, slope * 0.85)) - 0.03 * (1 - depth);
+      const shade = 1 + Math.max(-0.06, Math.min(0.035, -slope * 0.55)) + 0.025 * lift - 0.02 * (1 - depth);
       const o = (y * bw + x) * 4;
       out[o] = Math.max(0, Math.min(255, data[si] * shade));
       out[o + 1] = Math.max(0, Math.min(255, data[si + 1] * shade));
       out[o + 2] = Math.max(0, Math.min(255, data[si + 2] * shade));
-      // Rounded bottom corners; the top runs over the rail.
-      let alpha = 255;
-      if (y > bh - r) {
-        const cy = bh - r;
+      // Silhouette: the hem rises and falls with the folds, corners rounded.
+      const hemY = bh - 4 - 7 * depth * (1 + Math.sin(waves[0].k * x + waves[0].p + waves[0].drift * y));
+      let alpha = y > hemY ? 0 : 255;
+      if (alpha && y > hemY - r) {
         const cx = x < r ? r : x > bw - r ? bw - r : x;
-        if (Math.hypot(x - cx, y - cy) > r) alpha = 0;
+        if (Math.hypot(x - cx, y - (hemY - r)) > r) alpha = 0;
       }
       out[o + 3] = alpha;
     }
   }
   let blanket = await sharp(out, { raw: { width: bw, height: bh, channels: 4 } }).png().toBuffer();
-  // Fleece texture: fine fibres, multiplied in.
-  const fibres = await sharp(await noiseBuffer(bw, bh, 30)).blur(1.2).png().toBuffer();
-  const fibresOk = fibres && fibres.length > 0;
-  if (fibresOk) blanket = await sharp(blanket).composite([{ input: fibres, blend: 'soft-light' }]).png().toBuffer();
-  // Keep the rounded corners after the texture pass.
-  // The rounded silhouette is the alpha channel of the raw buffer: take it as
-  // a greyscale PNG, then use it as the alpha of the textured blanket.
+  // Fleece texture: soft clumps (coarse noise scaled up) plus fine fibres.
+  const clumps = await sharp(await noiseBuffer(Math.round(bw / 5), Math.round(bh / 5), 30))
+    .resize({ width: bw, height: bh, kernel: 'cubic' })
+    .blur(2)
+    .png()
+    .toBuffer();
+  const fibres = await sharp(await noiseBuffer(bw, bh, 22)).blur(0.7).png().toBuffer();
+  blanket = await sharp(blanket)
+    .composite([
+      { input: clumps, blend: 'soft-light' },
+      { input: fibres, blend: 'soft-light' },
+    ])
+    .png()
+    .toBuffer();
+  // Fleece has a fuzzy edge: the silhouette, blurred a little, becomes the alpha.
   const shapeRaw = Buffer.alloc(bw * bh);
   for (let i = 0; i < bw * bh; i++) shapeRaw[i] = out[i * 4 + 3];
-  const shapePng = await sharp(shapeRaw, { raw: { width: bw, height: bh, channels: 1 } }).png().toBuffer();
+  const shapePng = await sharp(shapeRaw, { raw: { width: bw, height: bh, channels: 1 } }).blur(1.8).png().toBuffer();
   const rgb = await sharp(blanket).removeAlpha().raw().toBuffer();
   blanket = await sharp(rgb, { raw: { width: bw, height: bh, channels: 3 } })
     .joinChannel(shapePng)
