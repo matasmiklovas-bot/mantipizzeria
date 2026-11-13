@@ -561,3 +561,12 @@ test('older iPad (Safari 15, no container units): the live preview keeps its lay
   assert.equal(fallback.inside, true);
   await ctx.close();
 });
+
+test('a server error shows a Lithuanian page with a code, not the default English one', async () => {
+  const page = await browser.newPage();
+  await page.goto(site.base + '/bandymas/klaida');
+  await page.getByRole('heading', { name: 'Kažkas nepavyko' }).waitFor();
+  assert.match(await page.locator('main').innerText(), /nurodykite šį kodą: \w+/);
+  assert.doesNotMatch(await page.locator('body').innerText(), /Application error|server-side exception/i);
+  await page.close();
+});
