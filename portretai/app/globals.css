@@ -1409,6 +1409,8 @@ main:has(> .closing:last-child) + .site-footer {
 }
 .preview-product--deklas {
   max-width: 230px;
+  position: relative;
+  container-type: inline-size;
 }
 .preview-product--deklas .preview-img {
   border-radius: 34px;
@@ -1523,7 +1525,8 @@ main:has(> .closing:last-child) + .site-footer {
     inset 0 0 0 1px rgba(255, 255, 255, 0.35),
     0 18px 30px -12px rgba(20, 15, 10, 0.5);
 }
-.poster--deklas .camera {
+.poster--deklas .camera,
+.preview-product--deklas .camera {
   position: absolute;
   left: 6cqw;
   top: 5cqw;
@@ -1536,7 +1539,8 @@ main:has(> .closing:last-child) + .site-footer {
   -webkit-backdrop-filter: blur(2px);
   z-index: 2;
 }
-.poster--deklas .camera i {
+.poster--deklas .camera i,
+.preview-product--deklas .camera i {
   position: absolute;
   width: 15cqw;
   height: 15cqw;
@@ -1544,15 +1548,18 @@ main:has(> .closing:last-child) + .site-footer {
   background: radial-gradient(circle at 40% 38%, #4b4f57 0 18%, #15161a 30% 62%, #2c2d31 64% 100%);
   box-shadow: 0 0 0 1.4cqw #3a3a3e;
 }
-.poster--deklas .camera i:nth-child(1) {
+.poster--deklas .camera i:nth-child(1),
+.preview-product--deklas .camera i:nth-child(1) {
   left: 4.5cqw;
   top: 4.5cqw;
 }
-.poster--deklas .camera i:nth-child(2) {
+.poster--deklas .camera i:nth-child(2),
+.preview-product--deklas .camera i:nth-child(2) {
   left: 4.5cqw;
   bottom: 4.5cqw;
 }
-.poster--deklas .camera i:nth-child(3) {
+.poster--deklas .camera i:nth-child(3),
+.preview-product--deklas .camera i:nth-child(3) {
   right: 4.5cqw;
   top: 12.5cqw;
 }

@@ -35,8 +35,16 @@ export default async function PreviewPage({ params }: { params: Promise<{ token:
             <div className={`preview-product preview-product--${order.product}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="preview-img" src={img} alt={`„${order.name}“ portreto peržiūra su vandens ženklu`} width={1200} height={previewHeight(order.size, 1200)} />
+              {order.product === 'deklas' ? (
+                <span className="camera" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              ) : null}
             </div>
           )}
+          {order.product === 'deklas' ? <p className="small muted" style={{ textAlign: 'center' }}>Kampe pažymėta, kur bus telefono kamera: ten spaudos nesimatys.</p> : null}
           <p className="small muted" style={{ textAlign: 'center' }}>
             {STYLE_LABELS[order.style as keyof typeof STYLE_LABELS]} · {describeProduct(order)}
           </p>
