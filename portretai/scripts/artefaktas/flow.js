@@ -169,7 +169,7 @@
       (state.photo && state.photo.preview
         ? '<img class="art-photo" src="' + state.photo.preview + '" alt="">' +
           (spec.layout === 'full' ? '<span class="art-fade" style="background:linear-gradient(transparent,' + art.paper + ')"></span>' : '') +
-          '<span class="art-tag">Jūsų nuotrauka · bus nutapyta</span>'
+          '<span class="art-tag">Jūsų nuotrauka · portretą nupiešime</span>'
         : 'Čia bus<br>portretas') +
       '</div>' +
       '<div class="text" aria-hidden="true" style="top:' + pct(textTop) + ';height:' + pct(ratio - safe - textTop) + ';padding-top:' + (spec.layout === 'margins' ? pct(spec.name.size * 0.45) : '0') + ';color:' + art.ink + '">' +
@@ -245,7 +245,7 @@
 
     if (s.step === 1) {
       var np = nameProblem();
-      h += framedPoster() + '<p class="poster-note">Vardas plakate bus parašytas šiuo šriftu. Nuotrauka čia tik vietai parodyti: portretą nutapysime ir atsiųsime peržiūrai.</p>';
+      h += framedPoster() + '<p class="poster-note">Vardas plakate bus parašytas šiuo šriftu. Nuotrauka čia tik vietai parodyti: portretą nupiešime ir atsiųsime jums peržiūrėti.</p>';
       h += field('name', 'Augintinio vardas', 'name', { max: 30, hint: 'Iki 30 ženklų. Lietuviškos raidės (ą, č, ę, ė, į, š, ų, ū, ž) bus atspausdintos tiksliai taip, kaip įrašysite.' });
       h += field('second', 'Antra eilutė (nebūtina)', 'second', { max: 40, hint: 'Pavyzdžiui, metai „2014 – 2026“ arba trumpas tekstas. Iki 40 ženklų.' });
       h += '<p class="error" data-name-problem role="alert"' + (f.name.trim() && np ? '' : ' hidden') + '>' + esc(np || '') + '</p>';

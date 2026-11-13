@@ -139,7 +139,7 @@ export default function PosterPreview({
             <img className="art-photo" src={photo} alt="" />
             {spec.layout === 'full' ? <span className="art-fade" style={{ background: `linear-gradient(transparent, ${art.paper})` }} /> : null}
             {spec.layout === 'full' && reserve > 0 ? <span className="art-fade art-fade--top" style={{ background: `linear-gradient(${art.paper}, transparent)` }} /> : null}
-            <span className="art-tag">Jūsų nuotrauka · bus nutapyta</span>
+            <span className="art-tag">Jūsų nuotrauka · portretą nupiešime</span>
           </>
         ) : (
           <>

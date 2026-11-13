@@ -2,7 +2,7 @@ import Link from 'next/link';
 import ExamplePair from '@/components/ExamplePair';
 import SizeScale from '@/components/SizeScale';
 import { loadExamples } from '@/server/examples.js';
-import { SETTINGS, SIZE_LABELS, FRAME_LABELS, formatPrice } from '@/server/settings.js';
+import { SETTINGS, SIZE_LABELS, FRAME_LABELS, PRODUCT_NOTES, formatPrice, minPrice } from '@/server/settings.js';
 import { deliveryStatus, formatDate, formatDateLong } from '@/server/deadline.js';
 import { SIZES } from '@/src/config.js';
 
@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 export default async function Home() {
   const examples = await loadExamples();
   const d = deliveryStatus();
-  const lowest = Math.min(...SETTINGS.sizes.map((s: string) => SETTINGS.prices[s as keyof typeof SETTINGS.prices]));
+  const lowest = minPrice();
   const p = SETTINGS.production;
   const hero = examples[0];
 
@@ -22,7 +22,7 @@ export default async function Home() {
       <section className="wrap hero">
         <p className="label">Augintinių portretai pagal nuotrauką</p>
         <h1>Jūsų šuns ar katės portretas su vardu</h1>
-        <p className="lead">Atspausdintas, įrėmintas, į paštomatą.</p>
+        <p className="lead">Įrėmintas paveikslas, pledas arba telefono dėklas. Pristatome į paštomatą.</p>
 
         <ExamplePair photo={hero.photo} portrait={hero.portrait} name={hero.name} frame="azuolas" priority />
 
@@ -64,8 +64,8 @@ export default async function Home() {
           </li>
           <li>
             <div>
-              <h3>Atspausdiname, įrėminame, išsiunčiame</h3>
-              <p>Portretas atkeliauja į jūsų pasirinktą paštomatą. Siuntos numerį atsiunčiame el. paštu.</p>
+              <h3>Atspausdiname ir išsiunčiame</h3>
+              <p>Paveikslą įrėminame, pledą ir dėklą atspausdiname. Užsakymas atkeliauja į jūsų pasirinktą paštomatą. Siuntos numerį atsiunčiame el. paštu.</p>
             </div>
           </li>
         </ol>
@@ -88,8 +88,52 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="wrap section" aria-labelledby="ne-tik">
+        <h2 id="ne-tik">Ne tik ant sienos</h2>
+        <p className="section-lead">Tas pats portretas ir vardas, tik kitur: ant pledo sofoje arba ant telefono dėklo.</p>
+        <div className="goods">
+          <figure className="good good--pledas">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/produktai/pledas-900.jpg"
+              srcSet="/produktai/pledas-480.jpg 480w, /produktai/pledas-900.jpg 900w"
+              sizes="(min-width: 900px) 520px, 100vw"
+              alt="Pledas su Lego portretu akvarelės stiliumi ir vardu, pakabintas ant medinio skersinio"
+              width={900}
+              height={1125}
+              loading="lazy"
+            />
+            <figcaption>
+              <span className="good-name">Pledas</span>
+              <span className="good-price">{formatPrice(SETTINGS.prices.pledas)}</span>
+              <span className="good-note">{PRODUCT_NOTES.pledas}</span>
+              <Link href="/uzsakymas?gaminys=pledas">Užsakyti pledą</Link>
+            </figcaption>
+          </figure>
+          <figure className="good good--deklas">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/produktai/deklas-900.jpg"
+              srcSet="/produktai/deklas-480.jpg 480w, /produktai/deklas-900.jpg 900w"
+              sizes="(min-width: 900px) 400px, 80vw"
+              alt="Telefono dėklas su Lego portretu grafikos stiliumi ir vardu"
+              width={900}
+              height={1286}
+              loading="lazy"
+            />
+            <figcaption>
+              <span className="good-name">Telefono dėklas</span>
+              <span className="good-price">{formatPrice(SETTINGS.prices.deklas)}</span>
+              <span className="good-note">{PRODUCT_NOTES.deklas} Portretą išdėstome taip, kad kamera neuždengtų snukio.</span>
+              <Link href="/uzsakymas?gaminys=deklas">Užsakyti dėklą</Link>
+            </figcaption>
+          </figure>
+        </div>
+        <p className="muted small">Vaizdai sukurti kompiuteriu iš tikro spaudos failo: taip gaminys atrodys, bet tai ne nuotrauka.</p>
+      </section>
+
       <section className="wrap section" aria-labelledby="dydziai">
-        <h2 id="dydziai">Dydžiai ir medžiagos</h2>
+        <h2 id="dydziai">Paveikslų dydžiai</h2>
         <SizeScale
           sizes={SETTINGS.sizes.map((s: string) => {
             const size = SIZES[s as keyof typeof SIZES];

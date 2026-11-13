@@ -137,7 +137,7 @@ test('home page: example, price, lead time and order button are on the first scr
     const box = await locator.boundingBox();
     assert.ok(box && box.y + box.height <= fold, `${what} ends at ${box && box.y + box.height}px, below the ${fold}px fold`);
   }
-  assert.match(await page.locator('.hero .facts').innerText(), /nuo 35 €/i);
+  assert.match(await page.locator('.hero .facts').innerText(), /nuo 29 €/i);
   assert.match(await page.locator('.hero .facts').innerText(), /per 8 darbo d\./i);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false, 'no sideways scrolling');
 
@@ -200,7 +200,7 @@ test('order: a bad photo is refused at once, a HEIC photo is accepted, the name 
   await next.click();
 
   // Name step.
-  const toStyle = page.getByRole('button', { name: 'Toliau: stilius ir dydis' });
+  const toStyle = page.getByRole('button', { name: 'Toliau: gaminys ir stilius' });
   await page.getByLabel('Augintinio vardas').fill('Reksas 🐶');
   await page.getByText('Jaustukų atspausdinti negalime').waitFor();
   assert.equal(await toStyle.isDisabled(), true);
@@ -211,7 +211,7 @@ test('order: a bad photo is refused at once, a HEIC photo is accepted, the name 
   assert.match(await poster.getAttribute('aria-label'), new RegExp(NAME));
   assert.equal(await poster.locator('.name').innerText(), NAME);
   assert.match(await poster.locator('.art-photo').getAttribute('src'), /^data:image\/jpeg;base64,/, 'the customer sees their own photo in the poster');
-  assert.match(await poster.locator('.art-tag').innerText(), /bus nutapyta/);
+  assert.match(await poster.locator('.art-tag').innerText(), /portretą nupiešime/);
   await page.evaluate(() => document.fonts.ready);
   assert.match(await poster.locator('.name').evaluate((el) => getComputedStyle(el).fontFamily), /Cormorant/);
   assert.equal(await page.evaluate(() => document.fonts.check('italic 500 40px Cormorant', 'Žąsiukė Ąžuolė')), true, 'poster typeface is loaded with Lithuanian letters');
@@ -227,6 +227,24 @@ test('order: a bad photo is refused at once, a HEIC photo is accepted, the name 
   assert.equal(fits, true, 'long name stays inside the poster');
   await page.getByLabel('Augintinio vardas').fill(NAME);
   await toStyle.click();
+
+  // Product: a blanket and a phone case have no size or frame; the case needs a phone model.
+  assert.equal(await page.locator('input[name=product]').count(), 3);
+  await page.getByText('Telefono dėklas', { exact: true }).click();
+  await page.getByLabel('Telefono modelis').waitFor();
+  assert.equal(await page.locator('input[name=size]').count(), 0);
+  assert.equal(await page.locator('input[name=frame]').count(), 0);
+  assert.match(await poster.getAttribute('aria-label'), /^Dėklo maketas/);
+  const toDelivery = page.getByRole('button', { name: 'Toliau: pristatymas' });
+  assert.equal(await toDelivery.isDisabled(), true, 'phone model is required');
+  await page.getByLabel('Telefono modelis').selectOption('iPhone 15');
+  assert.equal(await toDelivery.isDisabled(), false);
+  await page.getByText('Pledas', { exact: true }).click();
+  await page.locator('.poster--pledas').waitFor();
+  assert.match(await poster.getAttribute('aria-label'), /^Pledo maketas/);
+  assert.equal(await page.locator('.frame .poster').count(), 0, 'a blanket has no frame');
+  await page.getByText('Paveikslas su rėmeliu', { exact: true }).click();
+  await page.locator('input[name=size]').first().waitFor({ state: 'attached' });
 
   // Style, size, frame: at most two sizes.
   assert.equal(await page.locator('input[name=size]').count(), 2);
