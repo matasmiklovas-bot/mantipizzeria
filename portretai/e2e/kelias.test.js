@@ -570,3 +570,13 @@ test('a server error shows a Lithuanian page with a code, not the default Englis
   assert.doesNotMatch(await page.locator('body').innerText(), /Application error|server-side exception/i);
   await page.close();
 });
+
+test('small phones (320 px): no page scrolls sideways', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 320, height: 640 }, hasTouch: true });
+  const page = await ctx.newPage();
+  for (const url of ['/', '/uzsakymas', '/uzsakymas?gaminys=deklas', '/taisykles', '/grazinimas', '/privatumas']) {
+    await page.goto(site.base + url);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), 320, url);
+  }
+  await ctx.close();
+});

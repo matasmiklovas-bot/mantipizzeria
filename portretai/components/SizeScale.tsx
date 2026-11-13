@@ -24,7 +24,7 @@ export default function SizeScale({ sizes, image }: { sizes: { key: string; labe
             </div>
           </div>
           <figcaption>
-            <strong>{s.label}</strong>
+            <strong>{s.label.replace(/ cm/g, '\u00a0cm')}</strong>
             <span>{s.price}</span>
           </figcaption>
         </figure>

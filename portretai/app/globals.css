@@ -1831,3 +1831,14 @@ li,
 dd {
   text-wrap: pretty;
 }
+
+/* Small phones (320–369 px): the size labels may wrap instead of pushing
+   the page sideways. */
+@media (max-width: 369px) {
+  .scale {
+    gap: 22px;
+  }
+  .scale figcaption {
+    white-space: normal;
+  }
+}
