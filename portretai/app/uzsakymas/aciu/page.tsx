@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import AutoRefresh from '@/components/AutoRefresh';
 import ClearDraft from '@/components/ClearDraft';
 import { getOrderByToken } from '@/server/orders.js';
-import { SETTINGS, STYLE_LABELS, SIZE_LABELS, FRAME_LABELS, formatPrice, contactEmail } from '@/server/settings.js';
+import { SETTINGS, STYLE_LABELS, describeProduct, formatPrice, contactEmail } from '@/server/settings.js';
 import { formatDateLong } from '@/server/deadline.js';
 
 export const metadata: Metadata = { title: 'Užsakymas', robots: { index: false } };
@@ -96,12 +96,8 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
           <dd>{STYLE_LABELS[order.style as keyof typeof STYLE_LABELS]}</dd>
         </div>
         <div>
-          <dt>Dydis</dt>
-          <dd>{SIZE_LABELS[order.size as keyof typeof SIZE_LABELS]}</dd>
-        </div>
-        <div>
-          <dt>Rėmelis</dt>
-          <dd>{FRAME_LABELS[order.frame as keyof typeof FRAME_LABELS]}</dd>
+          <dt>Gaminys</dt>
+          <dd>{describeProduct(order)}</dd>
         </div>
         <div className="total">
           <dt>Sumokėta</dt>

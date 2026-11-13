@@ -1,7 +1,7 @@
 // Customer and owner emails. All text is Lithuanian; every dynamic value is
 // escaped. Each template returns { subject, html, text }.
 
-import { SETTINGS, STYLE_LABELS, SIZE_LABELS, FRAME_LABELS, formatPrice, siteUrl, contactEmail } from './settings.js';
+import { SETTINGS, STYLE_LABELS, SIZE_LABELS, FRAME_LABELS, PRODUCT_LABELS, describeProduct, formatPrice, siteUrl, contactEmail } from './settings.js';
 import { formatDateLong } from './deadline.js';
 
 export const esc = (s) =>
@@ -37,8 +37,9 @@ function summaryRows(order) {
     ['Vardas plakate', order.name],
     order.secondLine ? ['Antra eilutė', order.secondLine] : null,
     ['Stilius', STYLE_LABELS[order.style]],
-    ['Dydis', SIZE_LABELS[order.size]],
-    ['Rėmelis', FRAME_LABELS[order.frame]],
+    ['Gaminys', PRODUCT_LABELS[order.product || 'plakatas']],
+    order.product === 'deklas' ? ['Telefonas', order.phoneModel] : ['Dydis', SIZE_LABELS[order.size]],
+    order.frame ? ['Rėmelis', FRAME_LABELS[order.frame]] : null,
     ['Pristatymas', `${order.deliveryNetwork} paštomatas, ${order.deliveryCity}, ${order.deliveryAddress}`],
     ['Sumokėta', formatPrice(order.priceCents)],
   ].filter(Boolean);
@@ -187,7 +188,7 @@ export const templates = {
 
   ownerNewOrder(order) {
     return {
-      subject: `Naujas užsakymas ${order.code}: ${order.name}, ${STYLE_LABELS[order.style]}, ${SIZE_LABELS[order.size]}`,
+      subject: `Naujas užsakymas ${order.code}: ${order.name}, ${STYLE_LABELS[order.style]}, ${describeProduct(order)}`,
       html: layout({
         heading: 'Naujas apmokėtas užsakymas',
         blocks: [summaryHtml(order), `Klientas: ${esc(order.customerName)}, ${esc(order.email)}, ${esc(order.phone)}`],

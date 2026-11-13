@@ -6,9 +6,17 @@ export const SETTINGS = {
   // TODO(savininkas): working name until the brand and the .lt domain are chosen.
   brand: 'Snukutis',
 
-  // Price in euro cents, frame and parcel-locker delivery included.
-  // TODO(savininkas): working prices; confirm after the print shop and frame costs are known.
-  prices: { a4: 3500, '30x40': 4500 },
+  // Price in euro cents, parcel-locker delivery included (posters with a frame).
+  // TODO(savininkas): working prices; confirm after the print shop, blanket and case suppliers quote.
+  prices: { a4: 3500, '30x40': 4500, pledas: 5900, deklas: 2900 },
+
+  // What the portrait can be printed on. Each product maps to one print format.
+  products: ['plakatas', 'pledas', 'deklas'],
+  // TODO(savininkas): only the models your case supplier really makes.
+  phoneModels: [
+    'iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14', 'iPhone 13',
+    'Samsung Galaxy S24', 'Samsung Galaxy S23', 'Samsung Galaxy A55', 'Samsung Galaxy A54',
+  ],
   pricesConfirmed: false,
 
   sizes: ['30x40', 'a4'],
@@ -88,8 +96,40 @@ export const STATUS_LABELS = {
 };
 
 export const STYLE_LABELS = { akvarele: 'Akvarelė', aliejus: 'Aliejus', grafika: 'Grafika' };
-export const SIZE_LABELS = { '30x40': '30×40 cm', a4: 'A4 (21×29,7 cm)' };
+export const PRODUCT_LABELS = { plakatas: 'Paveikslas su rėmeliu', pledas: 'Pledas', deklas: 'Telefono dėklas' };
+// TODO(savininkas): materials as your suppliers state them.
+export const PRODUCT_NOTES = {
+  plakatas: 'Atspausdintas ir įrėmintas, paruoštas kabinti.',
+  pledas: '100×150 cm, minkštas, spauda vienoje pusėje.',
+  deklas: 'Spauda ant dėklo nugarėlės, pagal jūsų telefono modelį.',
+};
+
+/** Print format (key of src/config SIZES) for a product and, for posters, the chosen size. */
+export function formatFor(product, size) {
+  if (product === 'pledas') return 'pledas';
+  if (product === 'deklas') return 'deklas';
+  return size;
+}
+export const SIZE_LABELS = { '30x40': '30×40 cm', a4: 'A4 (21×29,7 cm)', pledas: '100×150 cm', deklas: 'pagal telefono modelį' };
 export const FRAME_LABELS = { azuolas: 'Ąžuolo spalvos', juodas: 'Juodas', baltas: 'Baltas' };
+
+/** Lowest price, for "nuo … €" on the home page. */
+export function minPrice() {
+  return Math.min(...Object.values(SETTINGS.prices));
+}
+
+/**
+ * One line that says what the customer bought, e.g.
+ * "Paveikslas 30×40 cm, ąžuolo spalvos rėmelis", "Pledas 100×150 cm", "Telefono dėklas, iPhone 15".
+ * @param {{ product?: string, size: string, frame?: string|null, phoneModel?: string|null }} order
+ */
+export function describeProduct(order) {
+  const product = order.product || 'plakatas';
+  if (product === 'pledas') return 'Pledas 100×150 cm';
+  if (product === 'deklas') return `Telefono dėklas, ${order.phoneModel || 'modelis nenurodytas'}`;
+  const frame = order.frame ? `, ${FRAME_LABELS[order.frame].toLocaleLowerCase('lt-LT')} rėmelis` : '';
+  return `Paveikslas ${SIZE_LABELS[order.size]}${frame}`;
+}
 
 export function formatPrice(cents) {
   const euros = cents / 100;

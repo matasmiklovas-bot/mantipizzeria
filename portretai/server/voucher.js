@@ -6,7 +6,7 @@
 import sharp from 'sharp';
 import { PDFDocument } from 'pdf-lib';
 import { loadFont, layoutLine, fitLine, cleanText } from '../src/text.js';
-import { SETTINGS, STYLE_LABELS, SIZE_LABELS } from './settings.js';
+import { SETTINGS, STYLE_LABELS, describeProduct } from './settings.js';
 import { formatDate } from './deadline.js';
 
 const W = 2480; // A4 at 300 DPI
@@ -30,7 +30,7 @@ export async function buildVoucherPdf(order) {
   centered(serif, 'Tavo augintinio portretas', 150, 1080, ink);
   centered(serif, 'jau kuriamas', 150, 1260, ink);
   centered(serifItalic, order.name, 330, 1830, ink);
-  centered(sans, `${STYLE_LABELS[order.style]} · ${SIZE_LABELS[order.size]} · su rėmeliu`.toLocaleUpperCase('lt-LT'), 54, 2080, muted, 0.2);
+  centered(sans, `${STYLE_LABELS[order.style]} · ${describeProduct(order)}`.toLocaleUpperCase('lt-LT'), 54, 2080, muted, 0.2);
   centered(serif, `Portretą pristatysime apie ${formatDate(order.estimatedDelivery)}`, 84, 2520, ink);
   centered(serif, 'Prieš spaudą jį parodysime ir palauksime patvirtinimo.', 70, 2640, muted);
   centered(sans, `${SETTINGS.brand}  ·  užsakymas ${order.code}`.toLocaleUpperCase('lt-LT'), 44, 3080, muted, 0.22);

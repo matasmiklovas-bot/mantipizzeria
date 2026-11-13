@@ -414,3 +414,35 @@ test('cancelled payment: paying again reuses the same order; a payment for a can
   assert.equal((await orders.handlePaymentEvent(parseWebhook(late.payload, late.header))).result, 'paid_after_cancel');
   assert.equal(emails('ownerPaymentProblem', other.id).length, 1, 'owner alerted once');
 });
+
+test('products: blanket and phone case get their own format, price and print file; no frame', async () => {
+  const ok = input('x');
+  const bad = (over, re) => assert.throws(() => orders.validateOrderInput({ ...ok, ...over }), re);
+  bad({ product: 'puodelis' }, /gaminį/);
+  bad({ product: 'deklas' }, /telefono modelį/);
+  bad({ product: 'deklas', phoneModel: 'Nokia 3310' }, /telefono modelį/);
+
+  const blanketIn = orders.validateOrderInput({ ...ok, product: 'pledas', size: 'a4', frame: 'juodas' });
+  assert.deepEqual([blanketIn.size, blanketIn.frame, blanketIn.phoneModel], ['pledas', null, null], 'poster choices are ignored');
+
+  const d = await db();
+  const portrait = fs.readFileSync(fx('portretas.png'));
+  for (const [product, extra] of [['pledas', {}], ['deklas', { phoneModel: 'iPhone 15' }]]) {
+    let order = await paidOrder({ product, ...extra });
+    assert.equal(order.product, product);
+    assert.equal(order.size, product);
+    assert.equal(order.frame, null);
+    assert.equal(order.priceCents, SETTINGS.prices[product]);
+    const received = emails('orderReceived', order.id)[0];
+    assert.ok(received.html.includes(product === 'pledas' ? 'Pledas' : 'iPhone 15'), 'email names the product');
+    assert.ok(!received.html.includes('Rėmelis'), 'no frame row');
+
+    order = await orders.setPortrait(order.id, portrait);
+    order = await orders.sendPreview(order.id);
+    await orders.approvePreview(order.token, order.portraitVersion);
+    order = await d.getOrder(order.id);
+    const print = await orders.readOrderFile(order, 'print');
+    const check = await inspectPrintPdf(print.data, getSize(product));
+    assert.equal(check.ok, true, JSON.stringify(check.checks.filter((c) => !c.ok)));
+  }
+});

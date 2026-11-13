@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PreviewActions from '@/components/PreviewActions';
 import { getOrderByToken, revisionsLeft } from '@/server/orders.js';
-import { STATUS_LABELS, STYLE_LABELS, SIZE_LABELS, contactEmail } from '@/server/settings.js';
+import { STATUS_LABELS, STYLE_LABELS, describeProduct, contactEmail } from '@/server/settings.js';
+import { previewHeight } from '@/src/config.js';
 import { formatDateTime } from '@/server/deadline.js';
 
 export const metadata: Metadata = { title: 'Portreto peržiūra', robots: { index: false, follow: false } };
@@ -23,14 +24,21 @@ export default async function PreviewPage({ params }: { params: Promise<{ token:
         <>
           <h1>„{order.name}“ portreto peržiūra</h1>
           <p>Patikrinkite, ar tai jūsų augintinis ir ar vardas parašytas be klaidų. Vandens ženklo atspaude nebus.</p>
-          <div className={`frame frame--${order.frame} preview-frame`}>
-            <div className="glass">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="preview-img" src={img} alt={`„${order.name}“ portreto peržiūra su vandens ženklu`} width={1200} height={order.size === 'a4' ? 1697 : 1600} />
+          {order.frame ? (
+            <div className={`frame frame--${order.frame} preview-frame`}>
+              <div className="glass">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="preview-img" src={img} alt={`„${order.name}“ portreto peržiūra su vandens ženklu`} width={1200} height={previewHeight(order.size, 1200)} />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className={`preview-product preview-product--${order.product}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="preview-img" src={img} alt={`„${order.name}“ portreto peržiūra su vandens ženklu`} width={1200} height={previewHeight(order.size, 1200)} />
+            </div>
+          )}
           <p className="small muted" style={{ textAlign: 'center' }}>
-            {STYLE_LABELS[order.style as keyof typeof STYLE_LABELS]}, {SIZE_LABELS[order.size as keyof typeof SIZE_LABELS]}
+            {STYLE_LABELS[order.style as keyof typeof STYLE_LABELS]} · {describeProduct(order)}
           </p>
           <PreviewActions token={order.token} version={order.portraitVersion} revisionsLeft={revisionsLeft(order)} name={order.name} contact={contact} />
         </>

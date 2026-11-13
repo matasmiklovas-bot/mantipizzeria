@@ -15,7 +15,7 @@ import { storage } from './storage.js';
 import { sendEmail, ownerEmail } from './email.js';
 import { templates } from './email-templates.js';
 import { createCheckout } from './payments.js';
-import { SETTINGS } from './settings.js';
+import { SETTINGS, formatFor } from './settings.js';
 import { deliveryStatus, currentTime } from './deadline.js';
 import { randomToken, orderCode } from './crypto.js';
 import { checkPhoto } from '../src/validate.js';
@@ -129,11 +129,24 @@ function clean(value, max) {
 /** Validates customer input. Throws UserError with the field name. */
 export function validateOrderInput(input) {
   const style = clean(input.style, 20);
-  const size = clean(input.size, 10);
-  const frame = clean(input.frame, 20);
+  const product = clean(input.product || 'plakatas', 20);
   if (!SETTINGS.styles.includes(style)) throw new UserError('Pasirinkite stilių.', 'style');
-  if (!SETTINGS.sizes.includes(size)) throw new UserError('Pasirinkite dydį.', 'size');
-  if (!SETTINGS.frames.includes(frame)) throw new UserError('Pasirinkite rėmelio spalvą.', 'frame');
+  if (!SETTINGS.products.includes(product)) throw new UserError('Pasirinkite gaminį.', 'product');
+  let size;
+  let frame = null;
+  let phoneModel = null;
+  if (product === 'plakatas') {
+    size = clean(input.size, 10);
+    frame = clean(input.frame, 20);
+    if (!SETTINGS.sizes.includes(size)) throw new UserError('Pasirinkite dydį.', 'size');
+    if (!SETTINGS.frames.includes(frame)) throw new UserError('Pasirinkite rėmelio spalvą.', 'frame');
+  } else {
+    size = formatFor(product, null);
+    if (product === 'deklas') {
+      phoneModel = clean(input.phoneModel, 40);
+      if (!SETTINGS.phoneModels.includes(phoneModel)) throw new UserError('Pasirinkite telefono modelį.', 'phoneModel');
+    }
+  }
 
   const name = clean(input.name, 200);
   const secondLine = clean(input.secondLine, 200);
@@ -159,7 +172,7 @@ export function validateOrderInput(input) {
 
   if (input.acceptTerms !== true) throw new UserError('Pažymėkite, kad sutinkate su pirkimo taisyklėmis.', 'acceptTerms');
 
-  return { style, size, frame, name, secondLine, customerName, email, phone, deliveryNetwork, deliveryCity, deliveryAddress };
+  return { style, product, size, frame, phoneModel, name, secondLine, customerName, email, phone, deliveryNetwork, deliveryCity, deliveryAddress };
 }
 
 /**

@@ -17,8 +17,10 @@ create table if not exists orders (
   updated_at timestamptz not null,
 
   style text not null,
+  product text not null default 'plakatas',
   size text not null,
-  frame text not null,
+  frame text,
+  phone_model text,
   name text not null,
   second_line text not null default '',
 
@@ -62,6 +64,11 @@ create table if not exists orders (
 );
 
 create index if not exists orders_status_idx on orders (status, created_at desc);
+
+-- Added after the first version: blankets and phone cases.
+alter table orders add column if not exists product text not null default 'plakatas';
+alter table orders add column if not exists phone_model text;
+alter table orders alter column frame drop not null;
 
 create table if not exists order_events (
   id bigint generated always as identity primary key,

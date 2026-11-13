@@ -7,7 +7,8 @@ import { startWorkAction, sendPreviewAction, remindAction, markPrintingAction, m
 import PortraitUpload from '@/components/PortraitUpload';
 import { db } from '@/server/db.js';
 import { isApprovedForPrint } from '@/server/orders.js';
-import { STATUS_LABELS, STYLE_LABELS, SIZE_LABELS, FRAME_LABELS, formatPrice, siteUrl } from '@/server/settings.js';
+import { previewHeight } from '@/src/config.js';
+import { STATUS_LABELS, STYLE_LABELS, describeProduct, formatPrice, siteUrl } from '@/server/settings.js';
 import { formatDateTime, formatDateLong } from '@/server/deadline.js';
 
 export const metadata: Metadata = { title: 'Užsakymas', robots: { index: false, follow: false } };
@@ -189,7 +190,7 @@ export default async function AdminOrder({ params, searchParams }: { params: Pro
             </div>
           ) : null}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="preview-img" src={`${file('clean')}?v=${order.portraitVersion}`} alt={`„${order.name}“ plakato maketas`} width={1200} height={order.size === 'a4' ? 1697 : 1600} />
+          <img className="preview-img" src={`${file('clean')}?v=${order.portraitVersion}`} alt={`„${order.name}“ plakato maketas`} width={1200} height={previewHeight(order.size, 1200)} />
         </section>
       ) : null}
 
@@ -240,12 +241,8 @@ export default async function AdminOrder({ params, searchParams }: { params: Pro
             <dd>{STYLE_LABELS[order.style as keyof typeof STYLE_LABELS]}</dd>
           </div>
           <div>
-            <dt>Dydis</dt>
-            <dd>{SIZE_LABELS[order.size as keyof typeof SIZE_LABELS]}</dd>
-          </div>
-          <div>
-            <dt>Rėmelis</dt>
-            <dd>{FRAME_LABELS[order.frame as keyof typeof FRAME_LABELS]}</dd>
+            <dt>Gaminys</dt>
+            <dd>{describeProduct(order)}</dd>
           </div>
           <div>
             <dt>Kaina</dt>

@@ -85,6 +85,12 @@ export const FRAMES = {
   azuolas: { label: 'ąžuolo', face: '#c39a67', edge: '#9a7446', highlight: '#dab585' },
 };
 
+/** Height of a trimmed preview of the given width, for <img> width/height attributes. */
+export function previewHeight(sizeKey, width) {
+  const s = SIZES[sizeKey] || SIZES['30x40'];
+  return Math.round((width * s.heightMm) / s.widthMm);
+}
+
 export function mmToPx(mm, dpi = DPI) {
   return Math.round((mm / 25.4) * dpi);
 }

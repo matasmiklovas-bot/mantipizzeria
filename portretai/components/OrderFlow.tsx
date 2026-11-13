@@ -1,6 +1,7 @@
 'use client';
 
-// The single order path: photo → name → style, size, frame → delivery and
+// The single order path: photo → name → product, style (size, frame or phone
+// model) → delivery and
 // payment. State is kept in sessionStorage so a cancelled payment or an
 // accidental reload does not lose the uploaded photo.
 
@@ -12,6 +13,8 @@ import { track } from './Beacon';
 export type FlowConfig = {
   styles: { key: string; title: string; description: string }[];
   sizes: { key: string; label: string; price: string }[];
+  products: { key: string; label: string; note: string; price: string; total: string }[];
+  phoneModels: string[];
   frames: { key: string; label: string; color: string }[];
   networks: string[];
   nameMax: number;
@@ -26,8 +29,10 @@ type Fields = {
   name: string;
   secondLine: string;
   style: string;
+  product: string;
   size: string;
   frame: string;
+  phoneModel: string;
   customerName: string;
   email: string;
   phone: string;
@@ -39,7 +44,7 @@ type Fields = {
 
 const STORE_KEY = 'uzsakymas-v1';
 const MAX_BYTES = 15 * 1024 * 1024;
-const STEP_TITLES = ['Nuotrauka', 'Vardas', 'Stilius ir dydis', 'Pristatymas ir apmokėjimas'];
+const STEP_TITLES = ['Nuotrauka', 'Vardas', 'Gaminys ir stilius', 'Pristatymas ir apmokėjimas'];
 // Letters (Latin script, so Lithuanian included), digits, spaces and plain punctuation.
 const NAME_OK = /^[\p{Script=Latin}\p{N} .,'’&!\-–]+$/u;
 
@@ -66,7 +71,7 @@ function putWithProgress(url: string, file: File, headers: Record<string, string
   });
 }
 
-export default function OrderFlow({ config, cancelled }: { config: FlowConfig; cancelled: boolean }) {
+export default function OrderFlow({ config, cancelled, initialProduct }: { config: FlowConfig; cancelled: boolean; initialProduct?: string }) {
   const [step, setStep] = useState(0);
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [resumeToken, setResumeToken] = useState<string | null>(null);
@@ -74,8 +79,10 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
     name: '',
     secondLine: '',
     style: config.styles[0].key,
+    product: initialProduct ?? config.products[0].key,
     size: config.sizes[0].key,
     frame: config.frames[0].key,
+    phoneModel: '',
     customerName: '',
     email: '',
     phone: '',
@@ -98,7 +105,7 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
       const saved = JSON.parse(window.sessionStorage.getItem(STORE_KEY) || 'null');
       if (saved && typeof saved === 'object') {
         if (saved.photo?.photoId) setPhoto(saved.photo);
-        if (saved.fields) setFields((f) => ({ ...f, ...saved.fields, acceptTerms: false }));
+        if (saved.fields) setFields((f) => ({ ...f, ...saved.fields, ...(initialProduct ? { product: initialProduct } : {}), acceptTerms: false }));
         if (typeof saved.resumeToken === 'string') setResumeToken(saved.resumeToken);
         if (Number.isInteger(saved.step) && saved.photo?.photoId) setStep(Math.min(3, Math.max(0, saved.step)));
       }
@@ -205,7 +212,7 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
           setResumeToken(null);
           setStep(0);
         } else if (data.field === 'name') setStep(1);
-        else if (['style', 'size', 'frame'].includes(data.field)) setStep(2);
+        else if (['style', 'product', 'size', 'frame', 'phoneModel'].includes(data.field)) setStep(2);
         setSubmitting(false);
         return;
       }
@@ -227,6 +234,25 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
   const size = config.sizes.find((s) => s.key === fields.size) ?? config.sizes[0];
   const style = config.styles.find((s) => s.key === fields.style) ?? config.styles[0];
   const frame = config.frames.find((f) => f.key === fields.frame) ?? config.frames[0];
+  const product = config.products.find((p) => p.key === fields.product) ?? config.products[0];
+  const isPoster = product.key === 'plakatas';
+  // Print format the preview mirrors (keys of src/config SIZES).
+  const format = isPoster ? fields.size : product.key;
+  const total = isPoster ? size.price : product.total;
+  const needsPhone = product.key === 'deklas' && !fields.phoneModel;
+  const preview = (
+    <div className={`poster-wrap poster-wrap--${product.key}`}>
+      {isPoster ? (
+        <div className={`frame frame--${fields.frame}`}>
+          <div className="glass">
+            <PosterPreview style={fields.style} size={format} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} />
+          </div>
+        </div>
+      ) : (
+        <PosterPreview style={fields.style} size={format} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} />
+      )}
+    </div>
+  );
 
   return (
     <div className="wrap flow">
@@ -360,15 +386,9 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
       {/* ---------------------------------------------------------------- 2 */}
       {step === 1 ? (
         <section aria-label="Vardas plakate">
-          <div className="poster-wrap">
-            <div className={`frame frame--${fields.frame}`}>
-              <div className="glass">
-                <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} />
-              </div>
-            </div>
-          </div>
+          {preview}
           <p className="poster-note">
-            Vardas plakate bus parašytas šiuo šriftu. Nuotrauka čia tik vietai parodyti: portretą nutapysime ir atsiųsime peržiūrai.
+            Vardas bus parašytas šiuo šriftu. Nuotrauka čia tik vietai parodyti: portretą nutapysime ir atsiųsime peržiūrai.
           </p>
 
           <div className="field">
@@ -416,7 +436,7 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
 
           <div className="flow-nav">
             <button type="button" className="btn" disabled={Boolean(nameProblem)} onClick={() => go(2)}>
-              Toliau: stilius ir dydis
+              Toliau: gaminys ir stilius
             </button>
             <button type="button" className="btn ghost" onClick={() => go(0)}>
               Atgal
@@ -427,14 +447,24 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
 
       {/* ---------------------------------------------------------------- 3 */}
       {step === 2 ? (
-        <section aria-label="Stilius, dydis ir rėmelis">
-          <div className="poster-wrap">
-            <div className={`frame frame--${fields.frame}`}>
-              <div className="glass">
-                <PosterPreview style={fields.style} size={fields.size} name={nameTrimmed} secondLine={fields.secondLine.trim()} photo={photo?.preview} />
-              </div>
+        <section aria-label="Gaminys, stilius ir dydis">
+          {preview}
+
+          <fieldset>
+            <legend>Ant ko spausdinti</legend>
+            <div className="choices">
+              {config.products.map((p) => (
+                <label className="choice" key={p.key}>
+                  <input type="radio" name="product" value={p.key} checked={fields.product === p.key} onChange={() => set('product', p.key)} />
+                  <span>
+                    <strong>{p.label}</strong>
+                    <small>{p.note}</small>
+                  </span>
+                  <span className="price">{p.price}</span>
+                </label>
+              ))}
             </div>
-          </div>
+          </fieldset>
 
           <fieldset>
             <legend>Stilius</legend>
@@ -452,6 +482,8 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
             </div>
           </fieldset>
 
+          {isPoster ? (
+          <>
           <fieldset>
             <legend>Dydis</legend>
             <div className="choices">
@@ -484,9 +516,39 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
               ))}
             </div>
           </fieldset>
+          </>
+          ) : null}
+
+          {product.key === 'deklas' ? (
+            <div className="field">
+              <label htmlFor="phone-model">Telefono modelis</label>
+              <select
+                id="phone-model"
+                value={fields.phoneModel}
+                aria-invalid={Boolean(err('phoneModel'))}
+                aria-describedby="phone-model-hint"
+                onChange={(e) => set('phoneModel', e.target.value)}
+              >
+                <option value="">Pasirinkite…</option>
+                {config.phoneModels.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+              <span className="hint" id="phone-model-hint">
+                Jei savo modelio sąraše nerandate, parašykite mums prieš užsakydami.
+              </span>
+              {err('phoneModel') ? (
+                <p className="error" role="alert">
+                  {err('phoneModel')}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="flow-nav">
-            <button type="button" className="btn" onClick={() => go(3)}>
+            <button type="button" className="btn" disabled={needsPhone} onClick={() => go(3)}>
               Toliau: pristatymas
             </button>
             <button type="button" className="btn ghost" onClick={() => go(1)}>
@@ -552,7 +614,11 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
           <h2 style={{ fontSize: 26, margin: '26px 0 6px' }}>Jūsų užsakymas</h2>
           <dl className="summary">
             <div>
-              <dt>Vardas plakate</dt>
+              <dt>Gaminys</dt>
+              <dd>{product.label}</dd>
+            </div>
+            <div>
+              <dt>Vardas</dt>
               <dd>{nameTrimmed}</dd>
             </div>
             {fields.secondLine.trim() ? (
@@ -565,21 +631,35 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
               <dt>Stilius</dt>
               <dd>{style.title}</dd>
             </div>
-            <div>
-              <dt>Dydis</dt>
-              <dd>{size.label}</dd>
-            </div>
-            <div>
-              <dt>Rėmelis</dt>
-              <dd>{frame.label}</dd>
-            </div>
+            {isPoster ? (
+              <>
+                <div>
+                  <dt>Dydis</dt>
+                  <dd>{size.label}</dd>
+                </div>
+                <div>
+                  <dt>Rėmelis</dt>
+                  <dd>{frame.label}</dd>
+                </div>
+              </>
+            ) : product.key === 'deklas' ? (
+              <div>
+                <dt>Telefonas</dt>
+                <dd>{fields.phoneModel}</dd>
+              </div>
+            ) : (
+              <div>
+                <dt>Dydis</dt>
+                <dd>100×150 cm</dd>
+              </div>
+            )}
             <div>
               <dt>Pristatymas</dt>
               <dd>Į paštomatą, įskaičiuotas</dd>
             </div>
             <div className="total">
               <dt>Iš viso</dt>
-              <dd>{size.price}</dd>
+              <dd>{total}</dd>
             </div>
           </dl>
 
@@ -605,7 +685,7 @@ export default function OrderFlow({ config, cancelled }: { config: FlowConfig; c
 
           <div className="flow-nav">
             <button type="submit" className="btn accent" disabled={submitting}>
-              {submitting ? 'Jungiamasi prie mokėjimo…' : `Apmokėti ${size.price}`}
+              {submitting ? 'Jungiamasi prie mokėjimo…' : `Apmokėti ${total}`}
             </button>
             <button type="button" className="btn ghost" onClick={() => go(2)} disabled={submitting}>
               Atgal

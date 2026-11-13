@@ -23,8 +23,14 @@ const FONTS: Record<string, { family: string; weight: number; style: 'normal' | 
   'Jost_400Regular.ttf': { family: 'Jost', weight: 400, style: 'normal' },
 };
 
-const SIZES: Record<string, { w: number; h: number }> = { '30x40': { w: 300, h: 400 }, a4: { w: 210, h: 297 } };
-const SAFE_MM = 10;
+// Mirrors src/config.js SIZES: trim size in mm, safe zone, and for phone
+// cases the share of the height hidden behind the camera module.
+const SIZES: Record<string, { w: number; h: number; safe: number; reserve?: number }> = {
+  '30x40': { w: 300, h: 400, safe: 10 },
+  a4: { w: 210, h: 297, safe: 10 },
+  pledas: { w: 1000, h: 1500, safe: 45 },
+  deklas: { w: 75, h: 155, safe: 6, reserve: 0.25 },
+};
 const ART: Record<string, { bg: string; fg: string; paper: string; ink: string }> = {
   akvarele: { bg: 'linear-gradient(#e9dfcf 0%, #efe7da 60%, #fdfcf9 100%)', fg: '#7a6f60', paper: '#fdfcf9', ink: '#2a2622' },
   aliejus: { bg: '#2a211a', fg: '#b9a98f', paper: '#f4efe4', ink: '#2b2620' },
@@ -50,7 +56,9 @@ export default function PosterPreview({
   const art = ART[style] ?? ART.akvarele;
   const dims = SIZES[size] ?? SIZES['30x40'];
   const ratio = dims.h / dims.w; // poster height in widths
-  const safe = SAFE_MM / dims.w;
+  const safe = dims.safe / dims.w;
+  const reserve = (dims.reserve ?? 0) * ratio;
+  const kind = size === 'pledas' ? 'pledas' : size === 'deklas' ? 'deklas' : 'plakatas';
 
   // Geometry in fractions of the poster width, mirroring src/layout.js.
   let artBox: { left: number; top: number; width: number; height: number };
@@ -58,13 +66,13 @@ export default function PosterPreview({
   let maxText: number;
   if (spec.layout === 'margins') {
     const m = 0.085;
-    artBox = { left: m, top: m, width: 1 - 2 * m, height: (1 - 2 * m) / 0.8 };
+    artBox = { left: m, top: Math.max(m, reserve), width: 1 - 2 * m, height: (1 - 2 * m) / 0.8 };
     textTop = artBox.top + artBox.height;
     maxText = artBox.width;
   } else {
     const imgH = 1 / 0.8;
-    const band = Math.max(0.19 * ratio, ratio - imgH + 0.1 * imgH);
-    artBox = { left: 0, top: 0, width: 1, height: ratio - band };
+    const band = Math.max(0.19 * ratio, ratio - reserve - imgH + 0.1 * imgH);
+    artBox = { left: 0, top: reserve, width: 1, height: ratio - band - reserve };
     textTop = ratio - band;
     maxText = 1 - 2 * safe;
   }
@@ -115,10 +123,10 @@ export default function PosterPreview({
   return (
     <div
       ref={boxRef}
-      className="poster"
+      className={`poster poster--${kind}`}
       style={{ aspectRatio: `${dims.w} / ${dims.h}`, background: art.paper }}
       role="img"
-      aria-label={`Plakato maketas: vardas „${shownName}“${shownSecond ? `, antra eilutė „${shownSecond}“` : ''}`}
+      aria-label={`${kind === 'pledas' ? 'Pledo' : kind === 'deklas' ? 'Dėklo' : 'Plakato'} maketas: vardas „${shownName}“${shownSecond ? `, antra eilutė „${shownSecond}“` : ''}`}
     >
       <div
         className="art"
@@ -130,6 +138,7 @@ export default function PosterPreview({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="art-photo" src={photo} alt="" />
             {spec.layout === 'full' ? <span className="art-fade" style={{ background: `linear-gradient(transparent, ${art.paper})` }} /> : null}
+            {spec.layout === 'full' && reserve > 0 ? <span className="art-fade art-fade--top" style={{ background: `linear-gradient(${art.paper}, transparent)` }} /> : null}
             <span className="art-tag">Jūsų nuotrauka · bus nutapyta</span>
           </>
         ) : (
@@ -140,6 +149,13 @@ export default function PosterPreview({
           </>
         )}
       </div>
+      {kind === 'deklas' ? (
+        <span className="camera" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+      ) : null}
       <div
         className="text"
         style={{ top: pct(textTop), height: pct(textBottom - textTop), paddingTop: spec.layout === 'margins' ? pct(spec.name.size * 0.45) : 0, color: art.ink }}

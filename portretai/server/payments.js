@@ -8,7 +8,7 @@
 
 import Stripe from 'stripe';
 import { driverFor } from './env.js';
-import { siteUrl, STYLE_LABELS, SIZE_LABELS } from './settings.js';
+import { siteUrl, STYLE_LABELS, describeProduct } from './settings.js';
 
 const LOCAL_WEBHOOK_SECRET = 'whsec_local_development_only';
 
@@ -49,7 +49,7 @@ export async function createCheckout(order) {
           unit_amount: order.priceCents,
           product_data: {
             name: `Augintinio portretas „${order.name}“`,
-            description: `${STYLE_LABELS[order.style]}, ${SIZE_LABELS[order.size]}, su rėmeliu. Užsakymas ${order.code}.`,
+            description: `${describeProduct(order)}. Stilius: ${STYLE_LABELS[order.style].toLocaleLowerCase('lt-LT')}. Užsakymas ${order.code}.`,
           },
         },
       },
