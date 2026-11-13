@@ -52,6 +52,20 @@ Padaryk pats, su tikru telefonu ir „Stripe“ bandomuoju režimu (`sk_test_…
 | 22 | Kalėdoms pristatyti iki gruodžio 23 d.; paskutinė užsakymo diena su dabartiniais spėjimais yra gruodžio 11 d. | `server/settings.js` → `christmas`, `production` |
 | 23 | Lankomumas skaičiuojamas pačios svetainės, be slapukų ir be trečiųjų šalių | `server/analytics.js` |
 
+## C2. Pledai ir telefono dėklai (pridėta 2026-11-13)
+
+Kainos svetainėje (pledas 59 €, dėklas 29 € su pristatymu) yra mano spėjimas. Tiekėjo dar nėra.
+
+| # | Ką padaryti | Kur keisti |
+|---|---|---|
+| 30 | Rasti pledų ir dėklų gamintoją. Ką radau viešai (2026-11, tik apžvalgų tinklaraščiai, ne tiekėjų puslapiai, skaičiai tarpusavyje nesutampa): „merchOne“ flisinis pledas nuo 14,50 €, siuntimas ES nuo 3,99 €; „Gelato“ kainą rodo tik savo redaktoriuje; „Printful“ iPhone dėklas apie 7,50–14,20 $, siuntimas į ES apie 4–5,50 $. Lietuvos spaustuvių nepaklausiau | `server/settings.js` → `prices`, `pricesConfirmed` |
+| 31 | Telefonų modelių sąrašą palikti tik tų, kuriuos tiekėjas gamina. Dabar įrašyti 2026-11 parduodami iPhone 13–17 ir Galaxy S23–S26, A54, A55 | `server/settings.js` → `phoneModels` |
+| 32 | Patikrinti kameros vietas pagal tiekėjo šablonus (dabar nupieštos pagal viešas nuotraukas) | `src/cameras.js` |
+| 33 | Pledo ir dėklo gamybos ir pristatymo trukmė. Kalėdų terminas dabar skaičiuojamas pagal paveikslų spaudą | `server/settings.js` → `production` |
+| 34 | Pledo medžiaga ir skalbimo nurodymai („minkštas“ svetainėje yra spėjimas) | `server/settings.js` → `PRODUCT_NOTES`, `app/grazinimas/page.tsx` |
+
+Šaltiniai: [merchOne ir Gelato palyginimas](https://merchone.com/blog/gelato-vs-merchone-product-specs/), [Gelato kainos 2026](https://podvector.ai/articles/print-on-demand/costs-and-suppliers/gelato-print-on-demand-pricing), [Printful dėklų kaina](https://podvector.ai/articles/printful/costs-and-charges/printful-phone-case-base-cost-full-breakdown-for-pod-sellers), [Printful kainos 2026](https://www.ecommerceceo.com/printful-pricing/), [iPhone 17 kameros](https://www.backmarket.com.au/en-au/c/iphone/iphone-17-camera-review), [Galaxy S26 datos](https://www.imaging-resource.com/news/samsung-s26-s26-and-s26-ultra-release-date-price-specs-and-where-to-buy/).
+
 ## D. Žinomi trūkumai
 
 | # | Kas | Pasekmė |
