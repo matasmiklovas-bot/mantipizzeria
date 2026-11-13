@@ -12,10 +12,13 @@ export const SETTINGS = {
 
   // What the portrait can be printed on. Each product maps to one print format.
   products: ['plakatas', 'pledas', 'deklas'],
-  // TODO(savininkas): only the models your case supplier really makes.
+  // Models on sale as of 2026-11 (iPhone 17 family since 2025-09, Galaxy S26 since 2026-03).
+  // TODO(savininkas): keep only the models your case supplier really makes.
   phoneModels: [
+    'iPhone 17 Pro Max', 'iPhone 17 Pro', 'iPhone Air', 'iPhone 17',
     'iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14', 'iPhone 13',
-    'Samsung Galaxy S24', 'Samsung Galaxy S23', 'Samsung Galaxy A55', 'Samsung Galaxy A54',
+    'Samsung Galaxy S26 Ultra', 'Samsung Galaxy S26', 'Samsung Galaxy S25', 'Samsung Galaxy S24', 'Samsung Galaxy S23',
+    'Samsung Galaxy A55', 'Samsung Galaxy A54',
   ],
   pricesConfirmed: false,
 
