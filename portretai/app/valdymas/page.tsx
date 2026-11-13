@@ -5,7 +5,7 @@ import { logoutAction } from './actions';
 import { db } from '@/server/db.js';
 import { purgeExpired } from '@/server/orders.js';
 import { eventSummary } from '@/server/analytics.js';
-import { STATUSES, STATUS_LABELS, STYLE_LABELS, SIZE_LABELS, launchIssues } from '@/server/settings.js';
+import { STATUSES, STATUS_LABELS, STYLE_LABELS, describeProduct, launchIssues } from '@/server/settings.js';
 import { formatDateTime, currentTime, deliveryStatus, formatDateLong } from '@/server/deadline.js';
 
 export const metadata: Metadata = { title: 'Užsakymai', robots: { index: false, follow: false } };
@@ -91,7 +91,7 @@ export default async function AdminList({ searchParams }: { searchParams: Promis
                   <strong>{o.name}</strong>
                   <span className={badgeClass(o.status)}>{STATUS_LABELS[o.status as keyof typeof STATUS_LABELS]}</span>
                   <span className="meta">
-                    {o.code} · {STYLE_LABELS[o.style as keyof typeof STYLE_LABELS]} · {SIZE_LABELS[o.size as keyof typeof SIZE_LABELS]} · {formatDateTime(o.paidAt || o.createdAt)}
+                    {o.code} · {STYLE_LABELS[o.style as keyof typeof STYLE_LABELS]} · {describeProduct(o)} · {formatDateTime(o.paidAt || o.createdAt)}
                     {o.afterChristmas ? ' · po Kalėdų' : ''}
                     {waitingHours >= 24 ? ` · klientas tyli ${Math.floor(waitingHours / 24)} d.` : ''}
                   </span>

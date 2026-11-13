@@ -7,7 +7,8 @@ import { startWorkAction, sendPreviewAction, remindAction, markPrintingAction, m
 import PortraitUpload from '@/components/PortraitUpload';
 import { db } from '@/server/db.js';
 import { isApprovedForPrint } from '@/server/orders.js';
-import { previewHeight } from '@/src/config.js';
+import { previewHeight, SIZES } from '@/src/config.js';
+import CameraMark from '@/components/CameraMark';
 import { STATUS_LABELS, STYLE_LABELS, describeProduct, formatPrice, siteUrl } from '@/server/settings.js';
 import { formatDateTime, formatDateLong } from '@/server/deadline.js';
 
@@ -29,6 +30,21 @@ const EVENT_LABELS: Record<string, string> = {
   email_failed: 'LAIŠKAS NEIŠSIŲSTAS',
   files_purged: 'Failai ištrinti',
   status: 'Būsena',
+};
+
+const EMAIL_LABELS: Record<string, string> = {
+  orderReceived: 'užsakymas gautas',
+  previewReady: 'peržiūra paruošta',
+  previewReminder: 'priminimas apie peržiūrą',
+  revisionReceived: 'pataisymo prašymas gautas',
+  approved: 'patvirtinta',
+  inPrint: 'spausdinama',
+  shipped: 'išsiųsta',
+  cancelled: 'atšaukta',
+  ownerNewOrder: 'jums: naujas užsakymas',
+  ownerRevision: 'jums: pataisymo prašymas',
+  ownerApproved: 'jums: patvirtinta',
+  ownerPaymentProblem: 'jums: mokėjimo problema',
 };
 
 export default async function AdminOrder({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string; klaida?: string }> }) {
@@ -190,7 +206,14 @@ export default async function AdminOrder({ params, searchParams }: { params: Pro
             </div>
           ) : null}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="preview-img" src={`${file('clean')}?v=${order.portraitVersion}`} alt={`„${order.name}“ plakato maketas`} width={1200} height={previewHeight(order.size, 1200)} />
+          {order.product === 'deklas' ? (
+            <div className="preview-product preview-product--deklas">
+              <img className="preview-img" src={`${file('clean')}?v=${order.portraitVersion}`} alt={`„${order.name}“ dėklo maketas`} width={1200} height={previewHeight(order.size, 1200)} />
+              <CameraMark phoneModel={order.phoneModel} />
+            </div>
+          ) : (
+            <img className="preview-img" src={`${file('clean')}?v=${order.portraitVersion}`} alt={`„${order.name}“ maketas`} width={1200} height={previewHeight(order.size, 1200)} />
+          )}
         </section>
       ) : null}
 
@@ -213,11 +236,11 @@ export default async function AdminOrder({ params, searchParams }: { params: Pro
                 </li>
                 <li>
                   <a href={file('wall')} target="_blank">
-                    Maketas ant sienos
+                    {(order.product || 'plakatas') === 'plakatas' ? 'Maketas ant sienos' : order.product === 'pledas' ? 'Kaip atrodys pledas' : 'Kaip atrodys dėklas'}
                   </a>
                 </li>
                 <li>
-                  {isApprovedForPrint(order) ? <a href={file('print')}>Spaudos failas (PDF, 300 DPI)</a> : <span className="muted">Spaudos failas: bus išduotas, kai klientas patvirtins</span>}
+                  {isApprovedForPrint(order) ? <a href={file('print')}>Spaudos failas (PDF, {SIZES[order.size as keyof typeof SIZES]?.dpi ?? 300} DPI)</a> : <span className="muted">Spaudos failas: bus išduotas, kai klientas patvirtins</span>}
                 </li>
               </>
             ) : null}
@@ -311,7 +334,7 @@ export default async function AdminOrder({ params, searchParams }: { params: Pro
             <li key={`${e.at}-${i}`}>
               {formatDateTime(e.at)} · {EVENT_LABELS[e.type] ?? e.type}
               {e.type === 'status' && e.data?.to ? `: ${STATUS_LABELS[e.data.to as keyof typeof STATUS_LABELS] ?? e.data.to}` : ''}
-              {(e.type === 'email_sent' || e.type === 'email_failed') && e.data?.kind ? `: ${e.data.kind}` : ''}
+              {(e.type === 'email_sent' || e.type === 'email_failed') && e.data?.kind ? `: ${EMAIL_LABELS[String(e.data.kind)] ?? String(e.data.kind)}` : ''}
               {e.type === 'email_failed' && e.data?.error ? ` (${e.data.error})` : ''}
             </li>
           ))}
