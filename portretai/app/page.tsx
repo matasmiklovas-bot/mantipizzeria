@@ -158,6 +158,7 @@ export default async function Home() {
       <section className="wrap section" aria-labelledby="dydziai">
         <h2 id="dydziai">Paveikslų dydžiai</h2>
         <SizeScale
+          image={hero.portrait}
           sizes={SETTINGS.sizes.map((s: string) => {
             const size = SIZES[s as keyof typeof SIZES];
             return {
