@@ -28,7 +28,9 @@ export default async function Home() {
     <>
       <section className="wrap hero">
         <p className="label">Augintinių portretai pagal nuotrauką</p>
-        <h1>Jūsų šuns ar katės portretas su vardu</h1>
+        <h1>
+          Jūsų šuns ar katės portretas <span className="ink-mark">su vardu</span>
+        </h1>
         <p className="lead">Įrėmintas paveikslas, pledas arba telefono dėklas. Pristatome į paštomatą.</p>
 
         <ExamplePair photo={hero.photo} portrait={hero.portrait} name={hero.name} frame="azuolas" priority />

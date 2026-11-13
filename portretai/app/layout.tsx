@@ -27,8 +27,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="lt">
       <head>
-        <link rel="preload" href="/sriftai/CormorantGaramond_500Medium.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/sriftai/Jost_400Regular.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/sriftai/Bricolage_latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
         {process.env.ALLOW_TEST_HOOKS === '1' ? (
@@ -40,7 +40,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/" className="wordmark">
             <svg className="mark" viewBox="0 0 24 30" width="20" height="25" aria-hidden="true">
               <rect x="1.5" y="1.5" width="21" height="27" fill="none" stroke="currentColor" strokeWidth="2.4" />
-              <rect x="5.5" y="5.5" width="13" height="15" fill="#8a4b2a" />
+              <rect x="7.5" y="7.5" width="13" height="15" fill="#ff5aa5" />
+              <rect x="5.5" y="5.5" width="13" height="15" fill="#2a3bd1" style={{ mixBlendMode: 'multiply' }} />
               <rect x="7" y="23" width="10" height="1.8" fill="currentColor" />
             </svg>
             {SETTINGS.brand}
