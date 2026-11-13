@@ -14,18 +14,18 @@ function layout({ heading, blocks, button }) {
     .map((b) => (b.raw ? b.raw : `<p style="margin:0 0 16px;">${b}</p>`))
     .join('\n');
   const cta = button
-    ? `<p style="margin:26px 0;"><a href="${esc(button.url)}" style="display:inline-block;background:#26221d;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:6px;font-weight:600;">${esc(button.label)}</a></p>` +
-      `<p style="margin:0 0 16px;font-size:13px;color:#6e665b;word-break:break-all;overflow-wrap:anywhere;">Jei mygtukas neveikia, nukopijuokite šią nuorodą į naršyklę:<br>${esc(button.url)}</p>`
+    ? `<p style="margin:26px 0;"><a href="${esc(button.url)}" style="display:inline-block;background:#2a3bd1;color:#ffffff;text-decoration:none;padding:14px 26px;border-radius:999px;font-weight:700;border-bottom:4px solid #ff5aa5;">${esc(button.label)}</a></p>` +
+      `<p style="margin:0 0 16px;font-size:13px;color:#555764;word-break:break-all;overflow-wrap:anywhere;">Jei mygtukas neveikia, nukopijuokite šią nuorodą į naršyklę:<br>${esc(button.url)}</p>`
     : '';
   return `<!doctype html>
 <html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body style="margin:0;background:#f6f2ea;">
-<div style="max-width:560px;margin:0 auto;padding:28px 20px 40px;font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:16px;line-height:1.55;color:#26221d;">
-<p style="margin:0 0 22px;font-family:Georgia,'Times New Roman',serif;font-size:20px;">${esc(SETTINGS.brand)}</p>
-<h1 style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:26px;line-height:1.2;">${esc(heading)}</h1>
+<body style="margin:0;background:#f2f1ec;">
+<div style="max-width:560px;margin:0 auto;padding:28px 20px 40px;font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:16px;line-height:1.55;color:#17171f;">
+<p style="margin:0 0 22px;font-size:20px;font-weight:800;letter-spacing:-0.03em;color:#2a3bd1;">${esc(SETTINGS.brand)}</p>
+<h1 style="margin:0 0 18px;font-weight:800;font-size:26px;line-height:1.15;letter-spacing:-0.02em;">${esc(heading)}</h1>
 ${body}
 ${cta}
-<p style="margin:30px 0 0;padding-top:16px;border-top:1px solid #d9d1c3;font-size:13px;color:#6e665b;">${
+<p style="margin:30px 0 0;padding-top:16px;border-top:1px solid #d3d1c8;font-size:13px;color:#555764;">${
     contact ? `Klausimai: atsakykite į šį laišką arba rašykite ${esc(contact)}.` : 'Klausimai: atsakykite į šį laišką.'
   }</p>
 </div></body></html>`;
@@ -60,8 +60,8 @@ function summaryHtml(order) {
       summaryRows(order)
         .map(
           ([k, v]) =>
-            `<tr><td style="padding:7px 12px 7px 0;border-top:1px solid #d9d1c3;color:#6e665b;vertical-align:top;white-space:nowrap;">${esc(k)}</td>` +
-            `<td style="padding:7px 0;border-top:1px solid #d9d1c3;">${esc(v)}</td></tr>`,
+            `<tr><td style="padding:7px 12px 7px 0;border-top:1px solid #d3d1c8;color:#555764;vertical-align:top;white-space:nowrap;">${esc(k)}</td>` +
+            `<td style="padding:7px 0;border-top:1px solid #d3d1c8;">${esc(v)}</td></tr>`,
         )
         .join('') +
       '</table>',
@@ -87,7 +87,7 @@ export const templates = {
           summaryHtml(order),
           `<strong>Kas toliau.</strong> Per ${lead} darbo d. atsiųsime portreto peržiūrą el. paštu. Spausdiname tik tada, kai paspaudžiate „Tinka“. Vienas pataisymas nemokamas.`,
           late
-            ? `<strong>Pristatymas po Kalėdų.</strong> Numatoma pristatymo data: ${esc(formatDateLong(order.estimatedDelivery))}. Jei tai dovana, atsispausdinkite dovanų kuponą ir padėkite po eglute: <a href="${esc(voucherUrl(order))}" style="color:#8a4b2a;">dovanų kuponas (PDF)</a>.`
+            ? `<strong>Pristatymas po Kalėdų.</strong> Numatoma pristatymo data: ${esc(formatDateLong(order.estimatedDelivery))}. Jei tai dovana, atsispausdinkite dovanų kuponą ir padėkite po eglute: <a href="${esc(voucherUrl(order))}" style="color:#2a3bd1;">dovanų kuponas (PDF)</a>.`
             : `Numatoma pristatymo data: ${esc(formatDateLong(order.estimatedDelivery))}, jei peržiūrą patvirtinsite per vieną dieną.`,
           `Nuotrauką laikome privačiai ir ištrinsime praėjus ${SETTINGS.retentionDays} dienų po išsiuntimo.`,
         ],
@@ -111,7 +111,7 @@ export const templates = {
         heading: reminder ? 'Portretas vis dar laukia patvirtinimo' : 'Portretas paruoštas peržiūrai',
         blocks: [
           `<strong>${esc(order.name)}</strong> portretas paruoštas. Kol nepatvirtinsite, nespausdiname.`,
-          { raw: `<p style="margin:0 0 18px;"><a href="${esc(url)}"><img src="${esc(img)}" alt="${esc(order.name)}: portreto peržiūra" width="320" style="display:block;width:320px;max-width:100%;height:auto;border:1px solid #d9d1c3;"></a></p>` },
+          { raw: `<p style="margin:0 0 18px;"><a href="${esc(url)}"><img src="${esc(img)}" alt="${esc(order.name)}: portreto peržiūra" width="320" style="display:block;width:320px;max-width:100%;height:auto;border:1px solid #d3d1c8;"></a></p>` },
           'Patikrinkite, ar tai jūsų augintinis ir ar vardas parašytas be klaidų. Peržiūroje yra vandens ženklas, atspaude jo nebus.',
           revisionsLeft > 0 ? 'Jei kas nors netinka, tame pačiame puslapyje parašykite, ką pataisyti. Vienas pataisymas nemokamas.' : null,
         ],
