@@ -115,3 +115,23 @@ test('Lithuanian accents are really drawn in the print image', async () => {
     assert.equal(darkPlain, 0, `no ink expected ${zone} unaccented letters`);
   }
 });
+
+test('glyph outlines never contain NaN, at any position (opentype.js rounding bug)', async () => {
+  const { loadFont, layoutLine } = await import('../src/text.js');
+  // The bug showed for these exact lines in the gift voucher: the line was cut after "Ą".
+  for (const [file, text] of [
+    ['CormorantGaramond_500Medium_Italic.ttf', 'Žąsiukė Ąžuolė'],
+    ['CormorantGaramond_500Medium.ttf', 'Portretą pristatysime apie sausio 8 d.'],
+    ['Jost_600SemiBold.ttf', 'ŽĄSIUKĖ ĄŽUOLĖ'],
+    ['PlayfairDisplay_500Medium.ttf', 'ŠUNIUKAS ČIUČIA'],
+  ]) {
+    const font = loadFont(file);
+    for (const size of [84, 150, 330, 412.37]) {
+      const line = layoutLine(font, text, size, 0.12);
+      for (const x of [0, 158.3952, 1033.7, 1240 - line.width / 2]) {
+        const d = line.pathData(x, 1830.25);
+        assert.doesNotMatch(d, /NaN|Infinity|e[+-]/, `${file} "${text}" at ${size}px, x=${x}`);
+      }
+    }
+  }
+});

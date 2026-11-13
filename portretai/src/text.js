@@ -47,6 +47,26 @@ export function capHeight(font, size) {
  * with the line's left edge at x and its baseline at y.
  * @param {number} spacing extra space between letters, in em
  */
+// Our own SVG serialiser. opentype.js 2.0.0 Path.toPathData() rounds through
+// strings and turns tiny fractions (e.g. 1.2e-7) into NaN, and caches the
+// NaN: the renderer then silently drops the rest of the line, so a name
+// could print cut off ("Žąsiukė Ą"). toFixed has no such case.
+const num = (v) => {
+  if (!Number.isFinite(v)) throw new Error(`Bad glyph coordinate: ${v}`);
+  const r = Math.round(v * 100) / 100;
+  return Object.is(r, -0) ? '0' : String(r);
+};
+export function svgPath(commands) {
+  let d = '';
+  for (const c of commands) {
+    if (c.type === 'M' || c.type === 'L') d += `${c.type}${num(c.x)} ${num(c.y)}`;
+    else if (c.type === 'Q') d += `Q${num(c.x1)} ${num(c.y1)} ${num(c.x)} ${num(c.y)}`;
+    else if (c.type === 'C') d += `C${num(c.x1)} ${num(c.y1)} ${num(c.x2)} ${num(c.y2)} ${num(c.x)} ${num(c.y)}`;
+    else if (c.type === 'Z') d += 'Z';
+  }
+  return d;
+}
+
 export function layoutLine(font, text, size, spacing = 0) {
   const scale = size / font.unitsPerEm;
   const glyphs = font.stringToGlyphs(text);
@@ -65,7 +85,7 @@ export function layoutLine(font, text, size, spacing = 0) {
     pathData(originX, baselineY) {
       let d = '';
       for (let i = 0; i < glyphs.length; i++) {
-        d += glyphs[i].getPath(originX + positions[i], baselineY, size).toPathData(2);
+        d += svgPath(glyphs[i].getPath(originX + positions[i], baselineY, size).commands);
       }
       return d;
     },

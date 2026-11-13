@@ -253,12 +253,23 @@ async function assertTextDrawn(png, layout, background) {
     const n = parseInt(background.slice(1), 16);
     const bg = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
     let ink = 0;
-    for (let i = 0; i < data.length; i += info.channels) {
-      if (Math.abs(data[i] - bg[0]) + Math.abs(data[i + 1] - bg[1]) + Math.abs(data[i + 2] - bg[2]) > 120) ink++;
+    const colInk = new Uint32Array(info.width);
+    for (let i = 0, px = 0; i < data.length; i += info.channels, px++) {
+      if (Math.abs(data[i] - bg[0]) + Math.abs(data[i + 1] - bg[1]) + Math.abs(data[i + 2] - bg[2]) > 120) {
+        ink++;
+        colInk[px % info.width]++;
+      }
     }
     const coverage = ink / (data.length / info.channels);
     if (coverage < 0.03) {
       throw new Error(`Tekstas „${item.text}“ plakate neatsirado (padengimas ${(coverage * 100).toFixed(1)} %). Spaudos failas nesukurtas.`);
+    }
+    // A line can also stop half way (the renderer drops the rest of a path
+    // it cannot read): the first and the last letter must both be there.
+    const edge = Math.max(2, Math.round(info.width * 0.15));
+    const has = (from, to) => colInk.slice(from, to).some((c) => c > 0);
+    if (!has(0, edge) || !has(info.width - edge, info.width)) {
+      throw new Error(`Tekstas „${item.text}“ plakate nupieštas ne visas. Spaudos failas nesukurtas.`);
     }
   }
 }
