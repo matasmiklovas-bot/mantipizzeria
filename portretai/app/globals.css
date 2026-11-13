@@ -1722,3 +1722,59 @@ select[aria-invalid='true'] {
     overflow: visible;
   }
 }
+
+/* ---- Desktop: one grid for header, home page and footer -------------- */
+/* The home page uses the same 980 px as the hero; reading text keeps a
+   comfortable line length inside it. Forms and legal pages stay narrow. */
+@media (min-width: 900px) {
+  .site-header,
+  .site-footer .wrap,
+  .wrap.section,
+  .closing .wrap {
+    max-width: 980px;
+  }
+  .wrap.section > h2,
+  .wrap.section > p,
+  .wrap.section > .steps,
+  .wrap.section > .notice,
+  .wrap.section > .swatches,
+  .faq details,
+  .closing .wrap > * {
+    max-width: 660px;
+  }
+  .trio {
+    grid-template-columns: 210px minmax(0, 1fr);
+    column-gap: 40px;
+  }
+  .trio-note {
+    max-width: 420px;
+  }
+  /* Three steps side by side, read left to right like a timeline. */
+  .wrap.section > .steps {
+    max-width: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 40px;
+    border-top: 1px solid var(--line);
+  }
+  .wrap.section > .steps li,
+  .wrap.section > .steps li:last-child {
+    grid-template-columns: 1fr;
+    border: 0;
+    padding: 18px 0 0;
+  }
+  .wrap.section > .steps li::before {
+    margin-bottom: 6px;
+  }
+  .trio-strip {
+    gap: 32px;
+  }
+  .goods {
+    grid-template-columns: 1.15fr 1fr;
+    gap: 64px;
+    max-width: 900px;
+  }
+  .good--deklas {
+    margin-top: 140px;
+  }
+}
