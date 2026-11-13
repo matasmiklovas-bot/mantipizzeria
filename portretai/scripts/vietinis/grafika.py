@@ -43,8 +43,40 @@ for _ in range(3):
     g = cv2.bilateralFilter(g, 9, 18, 7)
 # Five tone bands by quantiles of the animal, so every ink is used.
 vals = g[alpha > 0.6]
-edges = np.quantile(vals, [0.16, 0.38, 0.62, 0.86])
+# A white or cream animal (samoyed, westie, white cat) must stay white: most of
+# the coat goes to the two lightest inks, only real shadows get the grey ones.
+light_coat = np.median(vals) > 175
+edges = np.quantile(vals, [0.05, 0.14, 0.32, 0.62] if light_coat else [0.16, 0.38, 0.62, 0.86])
 band = np.digitize(g, edges).astype(np.uint8)          # 0 darkest .. 4 lightest
+# A coat of several colours (merle, tricolour, tabby, calico) loses them when
+# split by lightness alone: copper and grey of the same lightness merge into
+# one beige. Then the five inks are found by colour clustering instead, with
+# hue weighted four times as much as lightness, and numbered darkest to lightest.
+lab_sm = cv2.cvtColor(cv2.bilateralFilter(photo, 9, 30, 7), cv2.COLOR_BGR2LAB).astype(np.float32)
+chroma = np.hypot(lab_sm[..., 1] - 128, lab_sm[..., 2] - 128)
+# A black dog is dark and colourless; a dark wet ginger dog is dark but
+# coloured, and should print as ginger, not as black.
+black_coat = np.median(vals) < 70 and np.median(chroma[alpha > 0.6]) < 10
+multicolour = False
+if not light_coat:
+    sel = alpha > 0.6
+    # Several colours: clear white or grey patches next to clearly coloured ones.
+    # (A one-colour ginger coat has no light neutral patches and stays on the
+    # lightness bands, which suit it better.)
+    colourful = (chroma[sel] > 18).mean()
+    light_neutral = ((lab_sm[..., 0][sel] > 150) & (chroma[sel] < 14)).mean()
+    if colourful > 0.1 and 0.1 < light_neutral < 0.9:
+        feats = np.stack([lab_sm[..., 0], 4 * (lab_sm[..., 1] - 128), 4 * (lab_sm[..., 2] - 128)], -1)
+        sample = feats[sel].reshape(-1, 3)
+        if len(sample) > 60000:
+            sample = sample[rng.choice(len(sample), 60000, replace=False)]
+        _, _, centers = cv2.kmeans(sample.astype(np.float32), 5, None, (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 40, 0.5), 4, cv2.KMEANS_PP_CENTERS)
+        order = np.argsort(centers[:, 0])
+        centers = centers[order]
+        d = ((feats[..., None, :] - centers[None, None, :, :]) ** 2).sum(-1)
+        band = d.argmin(-1).astype(np.uint8)
+        multicolour = True
+        print('colour clusters', np.round(centers).astype(int).tolist(), 'colourful', round(float(colourful), 2), 'light neutral', round(float(light_neutral), 2), file=sys.stderr)
 band = cv2.medianBlur(band, 9)
 # Remove specks: any patch under 0.06 % of the picture joins its neighbour.
 min_area = int(0.0006 * w * h)
@@ -69,7 +101,7 @@ for b in range(5):
     sel = (band == b) & (alpha > 0.6)
     inks_lab.append(lab_full[sel].mean(0) if sel.any() else np.array([30 + 50 * b, 128, 128], np.float32))
 inks_lab = np.array(inks_lab)
-inks_lab[:, 1:] = 128 + (inks_lab[:, 1:] - 128) * 1.18
+inks_lab[:, 1:] = 128 + (inks_lab[:, 1:] - 128) * (1.18 if light_coat else 1.3)
 # Lightness: keep the animal's own range (a white dog stays white), but make
 # sure neighbouring inks differ enough to read as separate colours.
 L = np.sort(inks_lab[:, 0])
@@ -81,16 +113,64 @@ for i in range(1, 5):
 if L[-1] > 250:
     L -= L[-1] - 250
 inks_lab[:, 0] = L
+single_colour = not (light_coat or black_coat or multicolour)
+if single_colour:
+    # One-colour coat (ginger, red, brown, golden): a designed ramp in the
+    # coat's own hue, light peach to deep brown. Photo means in shade are
+    # muddy; a screen printer would mix clean inks of one hue instead.
+    sel = (alpha > 0.6) & (chroma > 10)
+    ha = np.median(lab_sm[..., 1][sel] - 128)
+    hb = np.median(lab_sm[..., 2][sel] - 128)
+    hue = np.arctan2(hb, ha)
+    # Warm coats (red, ginger, brown, golden) photograph pinkish in shade;
+    # pull their hue halfway to a clean orange.
+    if np.radians(15) < hue < np.radians(95):
+        hue = 0.5 * hue + 0.5 * np.radians(62)
+    C = float(np.clip(np.hypot(ha, hb) * 2.8, 36, 72))
+    Ls = np.array([46, 86, 128, 170, 212], np.float32)
+    cf = np.array([0.55, 1.0, 1.12, 1.0, 0.82], np.float32)
+    dh = np.radians(np.array([-10, -6, 0, 5, 10], np.float32))   # darker inks a little redder
+    inks_lab[:, 0] = Ls
+    inks_lab[:, 1] = 128 + C * cf * np.cos(hue + dh)
+    inks_lab[:, 2] = 128 + C * cf * np.sin(hue + dh)
+elif not light_coat and not black_coat:
+    # A screen print is lighter and cleaner than a photo in shade: lift the
+    # inks so the lightest is near paper and the darkest is still a colour.
+    # (A black dog keeps its own dark range.)
+    lo, hi = max(L[0], 52), max(L[-1], 222)
+    inks_lab[:, 0] = lo + (L - L[0]) * (hi - lo) / max(L[-1] - L[0], 1e-3)
+if light_coat:
+    # Paper-white coat with warm, creamy shadows: neutral greys read as dirt.
+    inks_lab[:, 0] = [118, 160, 196, 226, 246]
+    inks_lab[:, 1] = 128 + np.array([3, 3, 2, 1, 0], np.float32)
+    inks_lab[:, 2] = 128 + np.array([6, 9, 10, 9, 6], np.float32)
 # A sixth ink, near black, only for what is truly dark in the photo: eyes,
 # nose, mouth (and the whole coat of a black dog).
 accent_lab = np.array([22, 128 + (inks_lab[0, 1] - 128) * 0.4, 128 + (inks_lab[0, 2] - 128) * 0.4], np.float32)
 inks_lab = np.vstack([inks_lab, accent_lab])
 INKS = cv2.cvtColor(np.clip(inks_lab, 0, 255).astype(np.uint8).reshape(1, 6, 3), cv2.COLOR_LAB2BGR)[0].astype(np.float32)
-dark_px = (lab_full[..., 0] < 58) & (alpha > 0.5)
+# On a white coat the eyes are lighter than on a dark one, but still far
+# darker than the fur around them.
+dark_px = (lab_full[..., 0] < (95 if light_coat else 58 if black_coat else 30 if single_colour else 46)) & (alpha > 0.5)
+if light_coat:
+    # Dark background shows through the fur at the outline: only the inside counts.
+    inside = cv2.erode((alpha > 0.5).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)))
+    dark_px &= inside.astype(bool)
 dark_px = cv2.morphologyEx(dark_px.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
 dark_big = cv2.GaussianBlur(cv2.resize(dark_px.astype(np.float32), (W, H), interpolation=cv2.INTER_CUBIC), (0, 0), 4) > 0.5
 big = np.where(dark_big, 5, big)
-flat = INKS[big]
+# Tongue and inner ears: a seventh ink, pink, where the photo is clearly pink
+# (red stronger than yellow). A copper or ginger coat is yellower, so it stays out.
+pa, pb = lab_full[..., 1] - 128, lab_full[..., 2] - 128
+pink_px = (pa > 16) & (pa > 1.15 * pb) & (lab_full[..., 0] > 80) & (alpha > 0.6)
+pink_px = cv2.morphologyEx(pink_px.astype(np.uint8), cv2.MORPH_OPEN, np.ones((5, 5), np.uint8)).astype(bool)
+if pink_px.sum() > 0.002 * w * h:
+    pink_lab = lab_full[pink_px].mean(0)
+    pink_lab[1:] = 128 + (pink_lab[1:] - 128) * 1.1
+    pink_ink = cv2.cvtColor(np.clip(pink_lab, 0, 255).astype(np.uint8).reshape(1, 1, 3), cv2.COLOR_LAB2BGR)[0].astype(np.float32)
+    INKS = np.vstack([INKS, pink_ink])
+    pink_big = cv2.GaussianBlur(cv2.resize(pink_px.astype(np.float32), (W, H), interpolation=cv2.INTER_CUBIC), (0, 0), 4) > 0.5
+    big = np.where(pink_big & ~dark_big, 6, big)
 flat = INKS[big]
 
 A = cv2.resize(alpha, (W, H), interpolation=cv2.INTER_CUBIC)
