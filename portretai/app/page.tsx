@@ -243,8 +243,7 @@ export default async function Home() {
         <details>
           <summary>Kada gausiu?</summary>
           <p>
-            Per {d.leadDays} darbo dienas nuo apmokėjimo: {p.creationDays} d. portretui sukurti, iki {p.revisionBufferDays} d. peržiūrai ir pataisymui, {p.printDays} d. spaudai ir
-            rėminimui, {p.deliveryDays} d. pristatymui. Kuo greičiau patvirtinsite peržiūrą, tuo greičiau gausite.
+            Per {d.leadDays} darbo dienas nuo apmokėjimo: {p.creationDays} d. portretui sukurti, iki {p.revisionBufferDays} d. peržiūrai ir pataisymui, {p.printDays} d. spaudai, {p.deliveryDays} d. pristatymui. Kuo greičiau patvirtinsite peržiūrą, tuo greičiau gausite.
           </p>
         </details>
         <details>

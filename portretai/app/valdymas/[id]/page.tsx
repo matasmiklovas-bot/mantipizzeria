@@ -157,7 +157,7 @@ export default async function AdminOrder({ params, searchParams }: { params: Pro
           <form action={markShippedAction}>
             <input type="hidden" name="id" value={order.id} />
             <p>
-              Įrėminkite, supakuokite, išsiųskite į {order.deliveryNetwork} paštomatą ({order.deliveryCity}, {order.deliveryAddress}) ir įrašykite siuntos numerį.
+              {(order.product || 'plakatas') === 'plakatas' ? 'Įrėminkite, supakuokite' : 'Patikrinkite gaminį, supakuokite'}, išsiųskite į {order.deliveryNetwork} paštomatą ({order.deliveryCity}, {order.deliveryAddress}) ir įrašykite siuntos numerį.
             </p>
             <div className="field">
               <label htmlFor="tracking">Siuntos numeris</label>

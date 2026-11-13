@@ -31,10 +31,17 @@ ${cta}
 </div></body></html>`;
 }
 
+/** What happens once the print is ready, per product. */
+function afterPrint(order) {
+  return (order.product || 'plakatas') === 'plakatas'
+    ? 'Atspausdintą įrėminsime ir išsiųsime į jūsų paštomatą.'
+    : 'Kai tik bus atspausdinta, išsiųsime į jūsų paštomatą.';
+}
+
 function summaryRows(order) {
   const rows = [
     ['Užsakymo numeris', order.code],
-    ['Vardas plakate', order.name],
+    ['Vardas', order.name],
     order.secondLine ? ['Antra eilutė', order.secondLine] : null,
     ['Stilius', STYLE_LABELS[order.style]],
     ['Gaminys', PRODUCT_LABELS[order.product || 'plakatas']],
@@ -149,9 +156,9 @@ export const templates = {
       subject: `„${order.name}“ portretas spausdinamas (${order.code})`,
       html: layout({
         heading: 'Portretas spausdinamas',
-        blocks: [`<strong>${esc(order.name)}</strong> portretas atiduotas spaustuvei. Atspausdintą įrėminsime ir išsiųsime į jūsų paštomatą.`],
+        blocks: [`<strong>${esc(order.name)}</strong> portretas atiduotas spaudai. ${afterPrint(order)}`],
       }),
-      text: `„${order.name}“ portretas atiduotas spaustuvei. Atspausdintą įrėminsime ir išsiųsime į jūsų paštomatą.\n`,
+      text: `„${order.name}“ portretas atiduotas spaudai. ${afterPrint(order)}\n`,
     };
   },
 

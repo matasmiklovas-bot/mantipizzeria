@@ -56,7 +56,7 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
         </li>
         <li>
           <div>
-            <h3>Patvirtinus spausdiname ir rėminame</h3>
+            <h3>{(order.product || 'plakatas') === 'plakatas' ? 'Patvirtinus spausdiname ir įrėminame' : 'Patvirtinus atiduodame spaudai'}</h3>
             <p>Be jūsų patvirtinimo į spaudą neatiduodame.</p>
           </div>
         </li>
@@ -82,7 +82,7 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
 
       <dl className="summary" style={{ marginTop: 28 }}>
         <div>
-          <dt>Vardas plakate</dt>
+          <dt>Vardas</dt>
           <dd>{order.name}</dd>
         </div>
         {order.secondLine ? (

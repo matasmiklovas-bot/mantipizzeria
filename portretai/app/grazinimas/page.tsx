@@ -33,8 +33,13 @@ export default function ReturnsPage() {
         <li>sudužęs stiklas, sulūžęs ar subraižytas rėmelis;</li>
         <li>sulankstytas, suplėšytas ar sušlapęs atspaudas;</li>
         <li>spaudos defektas: dryžiai, dėmės, aiškiai ne tos spalvos nei patvirtintoje peržiūroje;</li>
-        <li>ne tas vardas, stilius, dydis ar rėmelio spalva nei užsakyta.</li>
+        <li>pledo spauda nusitrynusi ar išblukusi po pirmo skalbimo pagal priežiūros nurodymus;</li>
+        <li>dėklas netinka jūsų užsakytam telefono modeliui;</li>
+        <li>ne tas vardas, stilius, gaminys, dydis, rėmelio spalva ar telefono modelis nei užsakyta.</li>
       </ul>
+      <p>
+        <span className="todo">TODO(savininkas): pledo priežiūros nurodymai (skalbimo temperatūra, džiovinimas) iš tiekėjo; juos įdėti į siuntą ir čia.</span>
+      </p>
       <p>Ką daryti:</p>
       <ul>
         <li>nufotografuokite pakuotę ir portretą;</li>

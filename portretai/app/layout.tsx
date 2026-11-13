@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: `%s · ${SETTINGS.brand}`,
   },
   description:
-    'Įkeliate šuns ar katės nuotrauką ir įrašote vardą. Sukuriame portretą, atspausdiname, įrėminame ir išsiunčiame į paštomatą. Prieš spaudą atsiunčiame peržiūrą.',
+    'Įkeliate šuns ar katės nuotrauką ir įrašote vardą. Nupiešiame portretą ir atspausdiname ant paveikslo su rėmeliu, pledo arba telefono dėklo. Prieš spaudą atsiunčiame peržiūrą.',
   openGraph: { type: 'website', locale: 'lt_LT', siteName: SETTINGS.brand },
 };
 

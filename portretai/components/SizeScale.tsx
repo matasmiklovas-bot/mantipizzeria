@@ -9,9 +9,9 @@ export default function SizeScale({ sizes }: { sizes: { key: string; label: stri
           <div className="frame frame--juodas thin" style={{ width: s.w * PX_PER_CM, height: s.h * PX_PER_CM }}>
             <div className="glass ph-size">
               <span>
-                {s.w} cm
+                {String(s.w).replace('.', ',')} cm
                 <br />×<br />
-                {s.h} cm
+                {String(s.h).replace('.', ',')} cm
               </span>
             </div>
           </div>

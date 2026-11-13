@@ -17,8 +17,8 @@ export default function TermsPage() {
 
       <h2>2. Kas parduodama</h2>
       <p>
-        Augintinio portretas, sukurtas pagal pirkėjo įkeltą nuotrauką, su pirkėjo nurodytu vardu, atspausdintas ant popieriaus ir įrėmintas. Kiekvienas portretas gaminamas tik
-        tam užsakymui; sandėlyje paruoštų prekių nėra.
+        Augintinio portretas, sukurtas pagal pirkėjo įkeltą nuotrauką, su pirkėjo nurodytu vardu, atspausdintas pirkėjo pasirinktame gaminyje: ant popieriaus ir įrėmintas,
+        ant pledo arba ant telefono dėklo. Kiekvienas gaminys gaminamas tik tam užsakymui; sandėlyje paruoštų prekių nėra.
       </p>
       <p>{SETTINGS.aiDisclosure}</p>
 
@@ -26,15 +26,17 @@ export default function TermsPage() {
       <ul>
         {SETTINGS.sizes.map((s: string) => (
           <li key={s}>
-            {SIZE_LABELS[s as keyof typeof SIZE_LABELS]} su rėmeliu: {formatPrice(SETTINGS.prices[s as keyof typeof SETTINGS.prices])}
+            Paveikslas {SIZE_LABELS[s as keyof typeof SIZE_LABELS]} su rėmeliu: {formatPrice(SETTINGS.prices[s as keyof typeof SETTINGS.prices])}
           </li>
         ))}
+        <li>Pledas {SIZE_LABELS.pledas}: {formatPrice(SETTINGS.prices.pledas)}</li>
+        <li>Telefono dėklas: {formatPrice(SETTINGS.prices.deklas)}</li>
       </ul>
-      <p>Į kainą įeina portreto sukūrimas, spauda, rėmelis ir pristatymas į paštomatą Lietuvoje. Kaina, rodoma apmokėjimo puslapyje, yra galutinė.</p>
+      <p>Į kainą įeina portreto sukūrimas, spauda, paveikslo rėmelis ir pristatymas į paštomatą Lietuvoje. Kaina, rodoma apmokėjimo puslapyje, yra galutinė.</p>
 
       <h2>4. Užsakymas ir apmokėjimas</h2>
       <p>
-        Užsakymas laikomas pateiktu, kai pirkėjas įkelia nuotrauką, nurodo vardą, pasirenka stilių, dydį, rėmelio spalvą ir paštomatą, sutinka su šiomis taisyklėmis ir apmoka.
+        Užsakymas laikomas pateiktu, kai pirkėjas įkelia nuotrauką, nurodo vardą, pasirenka gaminį, stilių (paveikslui ir dydį bei rėmelio spalvą, dėklui telefono modelį) ir paštomatą, sutinka su šiomis taisyklėmis ir apmoka.
         Gaminti pradedame tik gavę apmokėjimą. Apmokėjimą apdoroja mokėjimų paslaugos teikėjas; kortelės duomenų pardavėjas nemato ir nesaugo.
       </p>
 
