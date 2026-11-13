@@ -8,7 +8,7 @@
   var root = document.getElementById('flow');
   if (!root) return;
 
-  var STEP_TITLES = ['Nuotrauka', 'Vardas', 'Stilius ir dydis', 'Pristatymas ir apmokėjimas'];
+  var STEP_TITLES = ['Nuotrauka', 'Vardas', 'Gaminys ir stilius', 'Pristatymas ir apmokėjimas'];
   var NAME_OK = /^[\p{Script=Latin}\p{N} .,'’&!\-–]+$/u;
   var state = {
     step: 0,
@@ -16,7 +16,7 @@
     errors: [],
     busy: false,
     f: {
-      name: '', second: '', style: CONFIG.styles[0].key, size: CONFIG.sizes[0].key, frame: CONFIG.frames[0].key,
+      name: '', second: '', style: CONFIG.styles[0].key, product: CONFIG.products[0].key, phone: '', size: CONFIG.sizes[0].key, frame: CONFIG.frames[0].key,
       network: CONFIG.networks[0], city: '', address: '', customer: '', email: '', phone: '', terms: false,
     },
     fieldError: null,
@@ -147,16 +147,20 @@
     grafika: { bg: 'linear-gradient(#e2d3b6 0%, #e2d3b6 78%, #efe7d6 100%)', fg: '#6d6046', paper: '#efe7d6', ink: '#2a2622' },
   };
 
+  function isPoster() { return state.f.product === 'plakatas'; }
+  // Print format the preview mirrors (keys of src/config SIZES).
+  function format() { return isPoster() ? state.f.size : state.f.product; }
+
   function posterHtml() {
-    var spec = CONFIG.layouts[state.f.style], art = ART[state.f.style], dims = CONFIG.dims[state.f.size];
-    var ratio = dims.h / dims.w, safe = 10 / dims.w, box, textTop, maxText;
+    var spec = CONFIG.layouts[state.f.style], art = ART[state.f.style], kind = isPoster() ? 'plakatas' : state.f.product, dims = CONFIG.dims[format()];
+    var ratio = dims.h / dims.w, safe = dims.safe / dims.w, reserve = dims.reserve * ratio, box, textTop, maxText;
     if (spec.layout === 'margins') {
       var m = 0.085;
-      box = { l: m, t: m, w: 1 - 2 * m, h: (1 - 2 * m) / 0.8 };
+      box = { l: m, t: Math.max(m, reserve), w: 1 - 2 * m, h: (1 - 2 * m) / 0.8 };
       textTop = box.t + box.h; maxText = box.w;
     } else {
-      var imgH = 1 / 0.8, band = Math.max(0.19 * ratio, ratio - imgH + 0.1 * imgH);
-      box = { l: 0, t: 0, w: 1, h: ratio - band };
+      var imgH = 1 / 0.8, band = Math.max(0.19 * ratio, ratio - reserve - imgH + 0.1 * imgH);
+      box = { l: 0, t: reserve, w: 1, h: ratio - band - reserve };
       textTop = ratio - band; maxText = 1 - 2 * safe;
     }
     var name = state.f.name.trim() || 'Vardas', second = state.f.second.trim();
@@ -164,14 +168,16 @@
     if (second && spec.secondLine.uppercase) second = upperLt(second);
     var pct = function (v) { return (v * 100) + 'cqw'; };
     var font = function (t) { return "font-family:'" + t.family + "',serif;font-weight:" + t.weight + ';font-style:' + t.style + ';letter-spacing:' + t.spacing + 'em;margin-right:-' + t.spacing + 'em;'; };
-    return '<div class="poster" data-max="' + maxText + '" style="aspect-ratio:' + dims.w + ' / ' + dims.h + ';background:' + art.paper + '">' +
+    return '<div class="poster poster--' + kind + '" data-max="' + maxText + '" style="aspect-ratio:' + dims.w + ' / ' + dims.h + ';background:' + art.paper + '">' +
       '<div class="art" aria-hidden="true" style="left:' + pct(box.l) + ';top:' + pct(box.t) + ';width:' + pct(box.w) + ';height:' + pct(box.h) + ';background:' + art.bg + ';color:' + art.fg + '">' +
       (state.photo && state.photo.preview
         ? '<img class="art-photo" src="' + state.photo.preview + '" alt="">' +
           (spec.layout === 'full' ? '<span class="art-fade" style="background:linear-gradient(transparent,' + art.paper + ')"></span>' : '') +
+          (spec.layout === 'full' && reserve > 0 ? '<span class="art-fade art-fade--top" style="background:linear-gradient(' + art.paper + ',transparent)"></span>' : '') +
           '<span class="art-tag">Jūsų nuotrauka · portretą nupiešime</span>'
         : 'Čia bus<br>portretas') +
       '</div>' +
+      (kind === 'deklas' ? '<span class="camera" aria-hidden="true"><i></i><i></i><i></i></span>' : '') +
       '<div class="text" aria-hidden="true" style="top:' + pct(textTop) + ';height:' + pct(ratio - safe - textTop) + ';padding-top:' + (spec.layout === 'margins' ? pct(spec.name.size * 0.45) : '0') + ';color:' + art.ink + '">' +
       '<span class="name" data-size="' + spec.name.size + '" style="' + font(spec.name) + 'font-size:' + pct(spec.name.size) + '">' + esc(name) + '</span>' +
       (second ? '<span class="second" data-size="' + spec.secondLine.size + '" style="' + font(spec.secondLine) + 'font-size:' + pct(spec.secondLine.size) + ';margin-top:' + pct(spec.secondLine.size * 1.1) + ';opacity:.82">' + esc(second) + '</span>' : '') +
@@ -192,6 +198,7 @@
   }
 
   function framedPoster() {
+    if (!isPoster()) return '<div class="poster-wrap poster-wrap--' + state.f.product + '">' + posterHtml() + '</div>';
     return '<div class="poster-wrap"><div class="frame frame--' + state.f.frame + '"><div class="glass">' + posterHtml() + '</div></div></div>';
   }
 
@@ -245,23 +252,33 @@
 
     if (s.step === 1) {
       var np = nameProblem();
-      h += framedPoster() + '<p class="poster-note">Vardas plakate bus parašytas šiuo šriftu. Nuotrauka čia tik vietai parodyti: portretą nupiešime ir atsiųsime jums peržiūrėti.</p>';
+      h += framedPoster() + '<p class="poster-note">Vardas bus parašytas šiuo šriftu. Nuotrauka čia tik vietai parodyti: portretą nupiešime ir atsiųsime jums peržiūrėti.</p>';
       h += field('name', 'Augintinio vardas', 'name', { max: 30, hint: 'Iki 30 ženklų. Lietuviškos raidės (ą, č, ę, ė, į, š, ų, ū, ž) bus atspausdintos tiksliai taip, kaip įrašysite.' });
       h += field('second', 'Antra eilutė (nebūtina)', 'second', { max: 40, hint: 'Pavyzdžiui, metai „2014 – 2026“ arba trumpas tekstas. Iki 40 ženklų.' });
       h += '<p class="error" data-name-problem role="alert"' + (f.name.trim() && np ? '' : ' hidden') + '>' + esc(np || '') + '</p>';
-      h += '<div class="flow-nav"><button type="button" class="btn" data-go="2"' + (np ? ' disabled' : '') + '>Toliau: stilius ir dydis</button><button type="button" class="btn ghost" data-go="0">Atgal</button></div>';
+      h += '<div class="flow-nav"><button type="button" class="btn" data-go="2"' + (np ? ' disabled' : '') + '>Toliau: gaminys ir stilius</button><button type="button" class="btn ghost" data-go="0">Atgal</button></div>';
     }
 
     if (s.step === 2) {
       h += framedPoster();
+      h += '<fieldset><legend>Ant ko spausdinti</legend>' + radios('product', CONFIG.products, f.product, function (o) { return '<span class="price">' + esc(o.price) + '</span>'; }) + '</fieldset>';
+      if (f.product === 'deklas') {
+        h += '<div class="field"><label for="phone-model">Telefono modelis</label><select id="phone-model" data-phone><option value="">Pasirinkite…</option>' +
+          CONFIG.phoneModels.map(function (m) { return '<option' + (m === f.phone ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') +
+          '</select><span class="hint">Jei savo modelio sąraše nerandate, parašykite mums prieš užsakydami.</span></div>';
+      }
       h += '<fieldset><legend>Stilius</legend>' + radios('style', CONFIG.styles.map(function (o) { return { key: o.key, title: o.title, sub: o.description }; }), f.style, function (o) { return '<span class="style-chip style-chip--' + o.key + '" aria-hidden="true"></span>'; }) + '</fieldset>';
-      h += '<fieldset><legend>Dydis</legend>' + radios('size', CONFIG.sizes.map(function (o) { return { key: o.key, label: o.label, sub: 'Su rėmeliu ir pristatymu į paštomatą', price: o.price }; }), f.size, function (o) { return '<span class="price">' + esc(o.price) + '</span>'; }) + '</fieldset>';
-      h += '<fieldset><legend>Rėmelio spalva</legend>' + radios('frame', CONFIG.frames, f.frame, function (o) { return '<span class="frame frame--' + o.key + ' mini" aria-hidden="true"><span class="glass"></span></span>'; }) + '</fieldset>';
-      h += '<div class="flow-nav"><button type="button" class="btn" data-go="3">Toliau: pristatymas</button><button type="button" class="btn ghost" data-go="1">Atgal</button></div>';
+      if (isPoster()) h += '<fieldset><legend>Dydis</legend>' + radios('size', CONFIG.sizes.map(function (o) { return { key: o.key, label: o.label, sub: 'Su rėmeliu ir pristatymu į paštomatą', price: o.price }; }), f.size, function (o) { return '<span class="price">' + esc(o.price) + '</span>'; }) + '</fieldset>';
+      if (isPoster()) h += '<fieldset><legend>Rėmelio spalva</legend>' + radios('frame', CONFIG.frames, f.frame, function (o) { return '<span class="frame frame--' + o.key + ' mini" aria-hidden="true"><span class="glass"></span></span>'; }) + '</fieldset>';
+      h += '<div class="flow-nav"><button type="button" class="btn" data-go="3"' + (f.product === 'deklas' && !f.phone ? ' disabled' : '') + '>Toliau: pristatymas</button><button type="button" class="btn ghost" data-go="1">Atgal</button></div>';
     }
 
     if (s.step === 3) {
-      var size = find(CONFIG.sizes, f.size), style = find(CONFIG.styles, f.style), frame = find(CONFIG.frames, f.frame);
+      var size = find(CONFIG.sizes, f.size), style = find(CONFIG.styles, f.style), frame = find(CONFIG.frames, f.frame), product = find(CONFIG.products, f.product);
+      var total = isPoster() ? size.price : product.total;
+      var rows = isPoster()
+        ? '<div><dt>Dydis</dt><dd>' + esc(size.label) + '</dd></div><div><dt>Rėmelis</dt><dd>' + esc(frame.label) + '</dd></div>'
+        : f.product === 'deklas' ? '<div><dt>Telefono modelis</dt><dd>' + esc(f.phone) + '</dd></div>' : '<div><dt>Dydis</dt><dd>100×150 cm</dd></div>';
       h += '<form data-pay novalidate>';
       h += '<fieldset><legend>Paštomatų tinklas</legend>' + radios('network', CONFIG.networks.map(function (n) { return { key: n, label: n }; }), f.network) + '</fieldset>';
       h += field('city', 'Miestas', 'city', { max: 60, ac: 'address-level2' });
@@ -270,16 +287,17 @@
       h += field('email', 'El. paštas', 'email', { type: 'email', mode: 'email', ac: 'email', hint: 'Čia per ' + CONFIG.previewDays + ' darbo d. atsiųsime portreto peržiūrą. Be jūsų patvirtinimo nespausdiname.' });
       h += field('phone', 'Telefonas', 'phone', { type: 'tel', mode: 'tel', max: 30, ac: 'tel', hint: 'Į šį numerį paštomatas atsiųs atsiėmimo kodą.' });
       h += '<h2 style="font-size:26px;margin:26px 0 6px">Jūsų užsakymas</h2><dl class="summary">' +
-        '<div><dt>Vardas plakate</dt><dd>' + esc(f.name.trim()) + '</dd></div>' +
+        '<div><dt>Gaminys</dt><dd>' + esc(product.label) + '</dd></div>' +
+        '<div><dt>Vardas</dt><dd>' + esc(f.name.trim()) + '</dd></div>' +
         (f.second.trim() ? '<div><dt>Antra eilutė</dt><dd>' + esc(f.second.trim()) + '</dd></div>' : '') +
-        '<div><dt>Stilius</dt><dd>' + esc(style.title) + '</dd></div><div><dt>Dydis</dt><dd>' + esc(size.label) + '</dd></div>' +
-        '<div><dt>Rėmelis</dt><dd>' + esc(frame.label) + '</dd></div><div><dt>Pristatymas</dt><dd>Į paštomatą, įskaičiuotas</dd></div>' +
-        '<div class="total"><dt>Iš viso</dt><dd>' + esc(size.price) + '</dd></div></dl>';
+        '<div><dt>Stilius</dt><dd>' + esc(style.title) + '</dd></div>' + rows +
+        '<div><dt>Pristatymas</dt><dd>Į paštomatą, įskaičiuotas</dd></div>' +
+        '<div class="total"><dt>Iš viso</dt><dd>' + esc(total) + '</dd></div></dl>';
       h += '<p class="small muted">' + esc(CONFIG.deliveryNote) + '</p><p class="small muted">' + esc(CONFIG.aiDisclosure) + '</p>';
       var termsErr = s.fieldError && s.fieldError.field === 'terms';
       h += '<label class="check"><input type="checkbox" data-key="terms"' + (f.terms ? ' checked' : '') + (termsErr ? ' aria-invalid="true"' : '') + '><span>Sutinku su <a href="#taisykles">pirkimo taisyklėmis</a> ir <a href="#privatumas">privatumo politika</a>. Žinau, kad pagal mano užsakymą pagaminto portreto grąžinti negalima, nebent jis su defektu.</span></label>';
       if (termsErr) h += '<p class="error" role="alert">' + esc(s.fieldError.message) + '</p>';
-      h += '<div class="flow-nav"><button type="submit" class="btn accent">Apmokėti ' + esc(size.price) + '</button><button type="button" class="btn ghost" data-go="2">Atgal</button></div></form>';
+      h += '<div class="flow-nav"><button type="submit" class="btn accent">Apmokėti ' + esc(total) + '</button><button type="button" class="btn ghost" data-go="2">Atgal</button></div></form>';
     }
 
     root.innerHTML = h;
@@ -313,6 +331,7 @@
     var t = e.target;
     if (t.hasAttribute('data-file') && t.files && t.files[0]) return checkFile(t.files[0]);
     if (t.type === 'radio') { state.f[t.name] = t.value; if (state.step === 2) render(); }
+    if (t.hasAttribute('data-phone')) { state.f.phone = t.value; render(); }
     if (t.type === 'checkbox') state.f.terms = t.checked;
   });
   root.addEventListener('input', function (e) {
@@ -321,8 +340,7 @@
     state.f[key] = t.value;
     if (state.fieldError && state.fieldError.field === key) { state.fieldError = null; t.removeAttribute('aria-invalid'); }
     if (state.step === 1) {
-      var wrap = root.querySelector('.poster-wrap .glass');
-      wrap.innerHTML = posterHtml();
+      root.querySelector('.poster').outerHTML = posterHtml();
       fitPoster();
       var np = nameProblem(), msg = root.querySelector('[data-name-problem]'), next = root.querySelector('[data-go="2"]');
       msg.textContent = np || '';
@@ -342,6 +360,11 @@
     window.demoDialog('Čia klientas būtų nukreiptas į „Stripe“ mokėjimo puslapį. Šioje peržiūroje mokėjimas išjungtas, užsakymas nesukuriamas.', 'Kas būna po apmokėjimo', '#perziura');
   });
   window.addEventListener('resize', fitPoster);
+  // "Užsakyti pledą" on the home page opens the flow with that product chosen.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[data-product]');
+    if (a) { state.f.product = a.getAttribute('data-product'); render(); }
+  });
 
   render();
 })();

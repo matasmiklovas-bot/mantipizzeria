@@ -24,7 +24,7 @@ const base = (process.argv[2] || 'http://127.0.0.1:3000').replace(/\/+$/, '');
 const password = process.env.ADMIN_PASSWORD;
 if (!password) throw new Error('Set ADMIN_PASSWORD to the running site’s admin password.');
 
-const { SETTINGS, STYLE_LABELS, SIZE_LABELS, FRAME_LABELS, formatPrice } = await import('../../server/settings.js');
+const { SETTINGS, STYLE_LABELS, SIZE_LABELS, FRAME_LABELS, PRODUCT_LABELS, PRODUCT_NOTES, formatPrice } = await import('../../server/settings.js');
 const { deliveryStatus, formatDate } = await import('../../server/deadline.js');
 const { loadStyle } = await import('../../src/styles.js');
 const { SIZES } = await import('../../src/config.js');
@@ -58,7 +58,9 @@ function clean(fragment) {
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<input type="hidden" name="\$ACTION[^>]*>/g, '')
     .replace(/\s(action|formAction|formaction)="[^"]*"/g, '')
-    .replace(/\shref="(\/[^"#?]*)(\?[^"]*)?"/g, (all, p) => {
+    .replace(/\shref="(\/[^"#?]*)(\?[^"]*)?"/g, (all, p, q) => {
+      const product = p === '/uzsakymas' && q ? /gaminys=(\w+)/.exec(q) : null;
+      if (product) return ` href="#uzsakymas" data-product="${product[1]}"`;
       if (p.startsWith('/valdymas/') && p !== '/valdymas/patikra') return ' href="#valdymas-uzsakymas"';
       if (p.startsWith('/perziura/')) return ' href="#perziura"';
       if (p.startsWith('/kuponas/')) return ' href="#pradzia" data-demo="Dovanų kuponas (PDF) tikroje svetainėje atsisiunčiamas po apmokėjimo."';
@@ -68,7 +70,9 @@ function clean(fragment) {
 }
 
 async function inlineImages(fragment, request) {
-  const srcs = [...new Set([...fragment.matchAll(/src="(\/(?:api|pavyzdziai)\/[^"]+)"/g)].map((m) => m[1].replaceAll('&amp;', '&')))];
+  // One embedded copy per picture: drop srcset (it would point at files the artifact does not have).
+  fragment = fragment.replace(/\s(srcSet|srcset|sizes)="[^"]*"/g, '');
+  const srcs = [...new Set([...fragment.matchAll(/src="(\/(?:api|pavyzdziai|produktai)\/[^"]+)"/g)].map((m) => m[1].replaceAll('&amp;', '&')))];
   for (const src of srcs) {
     const res = await request.get(base + src);
     if (!res.ok()) throw new Error(`Could not fetch ${src}: ${res.status()}`);
@@ -138,7 +142,14 @@ const config = {
     }),
   ),
   sizes: SETTINGS.sizes.map((key) => ({ key, label: SIZE_LABELS[key], price: formatPrice(SETTINGS.prices[key]) })),
-  dims: Object.fromEntries(SETTINGS.sizes.map((key) => [key, { w: SIZES[key].widthMm, h: SIZES[key].heightMm }])),
+  dims: Object.fromEntries(
+    Object.keys(SIZES).map((key) => [key, { w: SIZES[key].widthMm, h: SIZES[key].heightMm, safe: SIZES[key].safeMm ?? 10, reserve: SIZES[key].topReserve ?? 0 }]),
+  ),
+  products: SETTINGS.products.map((key) => {
+    const prices = key === 'plakatas' ? SETTINGS.sizes.map((s) => SETTINGS.prices[s]) : [SETTINGS.prices[key]];
+    return { key, label: PRODUCT_LABELS[key], sub: PRODUCT_NOTES[key], price: (prices.length > 1 ? 'nuo ' : '') + formatPrice(Math.min(...prices)), total: formatPrice(Math.min(...prices)) };
+  }),
+  phoneModels: SETTINGS.phoneModels,
   frames: SETTINGS.frames.map((key) => ({ key, label: FRAME_LABELS[key] })),
   networks: SETTINGS.lockerNetworks,
   previewDays: SETTINGS.production.creationDays,
