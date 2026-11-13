@@ -1778,3 +1778,17 @@ select[aria-invalid='true'] {
     margin-top: 140px;
   }
 }
+
+/* Even line lengths in headings ("portretas su / vardu" reads badly).
+   Older Safari ignores this and wraps as before. */
+h1,
+h2,
+h3,
+.trio-note {
+  text-wrap: balance;
+}
+p,
+li,
+dd {
+  text-wrap: pretty;
+}
