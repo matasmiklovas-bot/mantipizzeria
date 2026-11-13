@@ -45,7 +45,7 @@ function summaryRows(order) {
     order.secondLine ? ['Antra eilutė', order.secondLine] : null,
     ['Stilius', STYLE_LABELS[order.style]],
     ['Gaminys', PRODUCT_LABELS[order.product || 'plakatas']],
-    order.product === 'deklas' ? ['Telefonas', order.phoneModel] : ['Dydis', SIZE_LABELS[order.size]],
+    order.product === 'deklas' ? ['Telefono modelis', order.phoneModel] : ['Dydis', SIZE_LABELS[order.size]],
     order.frame ? ['Rėmelis', FRAME_LABELS[order.frame]] : null,
     ['Pristatymas', `${order.deliveryNetwork} paštomatas, ${order.deliveryCity}, ${order.deliveryAddress}`],
     ['Sumokėta', formatPrice(order.priceCents)],
