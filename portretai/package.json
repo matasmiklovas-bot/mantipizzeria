@@ -11,6 +11,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "prebuild": "node scripts/pavyzdziai-mazinti.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

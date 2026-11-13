@@ -14,3 +14,5 @@ Tada faile pavyzdziai.json surašyk vardus ir stilius, pvz.:
 
 Kol failų nėra, svetainė rodo tuščias vietas su užrašu „vieta tikram pavyzdžiui“.
 Dėk tik savo nuotraukas arba tas, kurias rodyti viešai leido klientas.
+
+Mažesnes kopijas telefonams (1-portretas-480.jpg, 1-nuotrauka-360.jpg ir t. t.) svetainė pasidaro pati prieš kiekvieną „npm run build“. Jų daryti nereikia.

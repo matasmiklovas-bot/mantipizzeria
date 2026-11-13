@@ -1,7 +1,7 @@
 // The two poster sizes drawn to the same scale, each with the real example
 // portrait inside, so the difference is easy to see.
 
-type Img = { src: string; width: number; height: number } | null;
+type Img = { src: string; width: number; height: number; srcSet?: string } | null;
 
 export default function SizeScale({ sizes, image }: { sizes: { key: string; label: string; price: string; w: number; h: number }[]; image?: Img }) {
   const PX_PER_CM = 5;
@@ -13,7 +13,7 @@ export default function SizeScale({ sizes, image }: { sizes: { key: string; labe
             <div className={image ? 'glass' : 'glass ph-size'}>
               {image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="scale-img" src={image.src} width={image.width} height={image.height} alt="" loading="lazy" />
+                <img className="scale-img" src={image.src} srcSet={image.srcSet} sizes="150px" width={image.width} height={image.height} alt="" loading="lazy" />
               ) : (
                 <span>
                   {String(s.w).replace('.', ',')} cm

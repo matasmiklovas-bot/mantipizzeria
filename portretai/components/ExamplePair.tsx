@@ -2,7 +2,7 @@
 // portrait in a frame. Without real files it shows clearly labelled empty
 // places, never borrowed or invented pictures.
 
-type Img = { src: string; width: number; height: number } | null;
+type Img = { src: string; width: number; height: number; srcSet?: string } | null;
 
 export default function ExamplePair({
   photo,
@@ -23,7 +23,7 @@ export default function ExamplePair({
       <figure className="before polaroid">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo.src} width={photo.width} height={photo.height} alt={`${label}: nuotrauka`} loading={priority ? 'eager' : 'lazy'} decoding="async" />
+          <img src={photo.src} srcSet={photo.srcSet} sizes="(min-width: 900px) 170px, 36vw" width={photo.width} height={photo.height} alt={`${label}: nuotrauka`} loading={priority ? 'eager' : 'lazy'} decoding="async" />
         ) : (
           <div className="ph ph-photo">
             <span>Vieta tikrai nuotraukai</span>
@@ -41,6 +41,8 @@ export default function ExamplePair({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={portrait.src}
+                srcSet={portrait.srcSet}
+                sizes="(min-width: 900px) 280px, 55vw"
                 width={portrait.width}
                 height={portrait.height}
                 alt={`${label}: portretas su vardu`}

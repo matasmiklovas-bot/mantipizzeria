@@ -13,14 +13,18 @@ async function image(file) {
   if (!fs.existsSync(full)) return null;
   try {
     const meta = await sharp(full).metadata();
-    return { src: `/pavyzdziai/${file}`, width: meta.width, height: meta.height };
+    // A small copy (made by scripts/pavyzdziai-mazinti.mjs) for phones.
+    const small = fs.readdirSync(DIR).find((f) => f.startsWith(file.replace('.jpg', '-')) && /-\d+\.jpg$/.test(f));
+    const smallW = small ? Number(small.match(/-(\d+)\.jpg$/)[1]) : 0;
+    const srcSet = small && smallW < meta.width ? `/pavyzdziai/${small} ${smallW}w, /pavyzdziai/${file} ${meta.width}w` : undefined;
+    return { src: `/pavyzdziai/${file}`, width: meta.width, height: meta.height, srcSet };
   } catch {
     return null;
   }
 }
 
 /**
- * @typedef {{ src: string, width: number, height: number } | null} ExampleImage
+ * @typedef {{ src: string, width: number, height: number, srcSet?: string } | null} ExampleImage
  * @typedef {{ index: number, name: string | null, style: string | null, photo: ExampleImage, portrait: ExampleImage }} Example
  */
 
