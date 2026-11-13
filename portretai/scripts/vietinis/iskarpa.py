@@ -11,6 +11,12 @@ h, w = m.shape
 n, lab, st, _ = cv2.connectedComponentsWithStats(m.astype(np.uint8), 8)
 if n > 1:
     m = lab == (1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA])))
+# A failed cut-out (an extreme close-up, an animal hidden behind something)
+# leaves only scraps: whiskers, an ear. Painting those would make a portrait
+# of nothing, so stop here and say why.
+if n < 2 or m.mean() < 0.06:
+    sys.exit('Gyvūno kontūras nerastas arba per mažas (%.1f %% kadro). Reikia kitos nuotraukos: '
+             'visa galva ir krūtinė, ne tik snukio dalis.' % (100 * (m.mean() if n > 1 else 0)))
 ys, xs = np.nonzero(m)
 y_top, y_bot = ys.min(), ys.max()
 bh = y_bot - y_top

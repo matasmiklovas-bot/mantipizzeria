@@ -185,7 +185,20 @@ node bin/portretas.js kurti --nuotrauka nuotrauka.jpg --paruostas-portretas alie
 
 Trys skaičiai `130 150 1060` yra iškarpos kairysis kraštas, viršus ir plotis nuotraukos pikseliais: galva ir krūtinė turi tilpti į 4:5 stačiakampį. Nebūtinas `655,975,74,64` yra elipsė (centras x,y ir pusašiai), kurią programa užtapo prieš tapydama: pavyzdžiui, antkaklis po smakru, kuris portrete atrodo kaip atvira burna. Tokių elipsių galima nurodyti kelias.
 
-Rezultatą visada peržiūrėk iš arti (failas `*-akys.jpg` šalia rezultato): akys turi būti aiškios, be dėmių. Šie nustatymai suderinti pagal vieną nuotrauką (Lego); su kitomis nuotraukomis gali reikėti kitos iškarpos.
+Paprasčiau: viena komanda padaro visus tris stilius ir plakatus, iškarpą parenka pati:
+
+```
+bash scripts/vietinis/visi-stiliai.sh nuotrauka.jpg isnet-general-use.onnx "Lego" isvestis/lego
+```
+
+Rezultatą visada peržiūrėk iš arti (failas `*-akys.jpg` šalia rezultato): akys turi būti aiškios, be dėmių.
+
+Ką išbandžiau (2026-11-13) ir kaip sekėsi:
+
+- rudas šlapias spanielis (Lego), baltas samojedas, trispalvis aviganis: visi trys stiliai tinkami parodyti klientui, bet kiekvieną vis tiek peržiūrėk;
+- baltam šuniui grafika naudoja kreminius tonus, kelių spalvų kailiui (marmurinis, trispalvis) dažai parenkami pagal atspalvį, rausvas liežuvis spausdinamas atskiru dažu;
+- labai artimas kadras (matosi tik dalis snukio): fono iškirpti nepavyksta, skriptas sustoja ir parašo, kad reikia kitos nuotraukos;
+- šuo su drabužiu (megztiniu): drabužis piešiamas kaip kailio dalis. Jei klientas jo nenori, paprašyk kitos nuotraukos.
 
 Kitos komandos:
 
