@@ -2408,3 +2408,181 @@ input[type='checkbox'] {
     max-width: none;
   }
 }
+
+/* ---- Forms in the studio look ------------------------------------------ */
+input[type='text'],
+input[type='email'],
+input[type='tel'],
+input[type='password'],
+textarea,
+select {
+  border: 1.5px solid #8e8f99;
+  border-radius: 12px;
+  background-color: #fff;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='tel']:focus,
+input[type='password']:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 3px 3px 0 var(--pink);
+}
+input[aria-invalid='true'],
+textarea[aria-invalid='true'],
+select[aria-invalid='true'] {
+  border-color: var(--bad);
+  border-width: 2px;
+}
+.choice {
+  border-radius: 14px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.upload,
+.upload-done,
+.alert {
+  border-radius: 14px;
+}
+.upload strong {
+  font: 700 22px/1.2 var(--display);
+  letter-spacing: -0.02em;
+  color: var(--blue);
+}
+.upload {
+  border-color: var(--blue);
+  background: #fff;
+}
+.upload:hover {
+  box-shadow: 4px 4px 0 var(--pink);
+}
+.field label,
+fieldset legend {
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Hero: every product with its price, one tap to order it. */
+.product-chips {
+  list-style: none;
+  margin: 22px calc(-1 * var(--pad)) 0;
+  padding: 4px var(--pad) 8px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.product-chips::-webkit-scrollbar {
+  display: none;
+}
+.product-chips li {
+  flex: none;
+}
+.product-chips a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 15px;
+  line-height: 1.2;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.product-chips a:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--pink);
+  color: var(--ink);
+}
+.product-chips img {
+  width: 40px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--paper-deep);
+}
+.product-chips strong {
+  display: block;
+  font: 700 16px/1.15 var(--display);
+  letter-spacing: -0.015em;
+}
+
+/* A tinted band behind the products, so the page has a rhythm. */
+.section.band {
+  position: relative;
+  margin-top: 52px;
+  padding-block: 44px 40px;
+  background: #e3e5f3;
+  box-shadow: 0 0 0 100vmax #e3e5f3;
+  clip-path: inset(0 -100vmax);
+}
+.section.band > h2::before {
+  filter: drop-shadow(2px 1px 0 var(--pink));
+}
+
+/* FAQ answers open smoothly where the browser can animate to auto height. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (interpolate-size: allow-keywords) {
+    :root {
+      interpolate-size: allow-keywords;
+    }
+    .faq details::details-content {
+      height: 0;
+      overflow: clip;
+      transition:
+        height 0.3s ease,
+        content-visibility 0.3s allow-discrete;
+    }
+    .faq details[open]::details-content {
+      height: auto;
+    }
+  }
+}
+
+@media (min-width: 900px) {
+  .product-chips {
+    margin: 22px 0 0;
+    padding: 4px 0 8px;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+@media (max-width: 899px) {
+  .product-chips {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 22px 0 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .product-chips a {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 6px 6px 9px;
+    font-size: 14px;
+  }
+  .product-chips img {
+    width: 100%;
+    height: 72px;
+  }
+  .product-chips span {
+    padding-left: 4px;
+  }
+  .product-chips strong {
+    font-size: 15px;
+  }
+}

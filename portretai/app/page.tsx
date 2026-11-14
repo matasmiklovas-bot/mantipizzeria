@@ -54,6 +54,29 @@ export default async function Home() {
             ? `Užsakius šiandien, pristatysime apie ${formatDate(d.estimatedDelivery)}`
             : `Užsakius šiandien, pristatysime po Kalėdų, apie ${formatDate(d.estimatedDelivery)}`}
         </p>
+        <ul className="product-chips" aria-label="Gaminiai ir kainos">
+          {[
+            {
+              key: 'plakatas',
+              label: 'Paveikslas',
+              price: `nuo ${formatPrice(Math.min(...SETTINGS.sizes.map((s: string) => SETTINGS.prices[s as keyof typeof SETTINGS.prices])))}`,
+              img: '/pavyzdziai/1-portretas-480.jpg',
+            },
+            { key: 'pledas', label: 'Pledas', price: formatPrice(SETTINGS.prices.pledas), img: '/produktai/pledas-480.jpg' },
+            { key: 'deklas', label: 'Dėklas', price: formatPrice(SETTINGS.prices.deklas), img: '/produktai/deklas-480.jpg' },
+          ].map((p) => (
+            <li key={p.key}>
+              <Link href={`/uzsakymas?gaminys=${p.key}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.img} alt="" width={48} height={60} loading="lazy" />
+                <span>
+                  <strong>{p.label}</strong>
+                  {p.price}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="wrap section" aria-labelledby="kaip">
@@ -113,7 +136,7 @@ export default async function Home() {
         )}
       </section>
 
-      <section className="wrap section" aria-labelledby="ne-tik">
+      <section className="wrap section band" aria-labelledby="ne-tik">
         <h2 id="ne-tik">Ne tik ant sienos</h2>
         <p className="section-lead">Tas pats portretas ir vardas, tik kitur: ant pledo sofoje arba ant telefono dėklo.</p>
         <div className="goods">
