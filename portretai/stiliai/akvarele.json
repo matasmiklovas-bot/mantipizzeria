@@ -1,0 +1,19 @@
+{
+  "title": "Akvarelė",
+  "description": "Akvarelės stiliaus portretas baltame fone: šviesu, lengva, tinka šviesiam interjerui.",
+  "layout": "full",
+  "name": {
+    "font": "CormorantGaramond_500Medium_Italic.ttf",
+    "size": 0.125,
+    "uppercase": false,
+    "spacing": 0
+  },
+  "secondLine": {
+    "font": "Jost_400Regular.ttf",
+    "size": 0.0235,
+    "uppercase": true,
+    "spacing": 0.2
+  },
+  "textColor": "auto",
+  "fade": 0.1
+}

@@ -1,0 +1,13 @@
+node_modules/
+# Generated posters and customer photos never go into git.
+isvestis/
+apklausa.html
+.env
+.env.*
+!.env.example
+# Website build output and local stand-in data (orders, uploaded photos).
+.next/
+next-env.d.ts
+.data/
+*.tsbuildinfo
+.artefaktas/

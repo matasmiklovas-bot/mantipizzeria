@@ -1,0 +1,30 @@
+// The studio mark: a spaniel's face printed in two inks, the pink plate
+// slightly off register. Same drawing as app/icon.svg.
+
+export default function LogoMark({ size = 30, id = 'snk' }: { size?: number; id?: string }) {
+  // Each copy on a page needs its own ids for the shared shapes.
+  const ears = `${id}-ears`;
+  const head = `${id}-head`;
+  return (
+    <svg className="mark" viewBox="0 0 40 40" width={size} height={size} aria-hidden="true">
+      <defs>
+        <g id={ears}>
+          <path d="M9.5 9.5c-4.2.8-6.6 6.5-5.8 13.2.4 3.4 2.4 5.6 4.8 5.2 2.3-.4 3.2-3.4 3.3-6.4L12.5 12z" />
+          <path d="M30.5 9.5c4.2.8 6.6 6.5 5.8 13.2-.4 3.4-2.4 5.6-4.8 5.2-2.3-.4-3.2-3.4-3.3-6.4L27.5 12z" />
+        </g>
+        <path id={head} d="M20 5.5c6.4 0 10.5 4.6 10.5 11.2 0 3.2-.8 6-1.9 8.6-1.5 3.6-4.6 7.2-8.6 7.2s-7.1-3.6-8.6-7.2c-1.1-2.6-1.9-5.4-1.9-8.6C9.5 10.1 13.6 5.5 20 5.5z" />
+      </defs>
+      <g fill="#ff5aa5" transform="translate(2.2 2.2)">
+        <use href={`#${ears}`} />
+        <use href={`#${head}`} />
+      </g>
+      <use href={`#${head}`} fill="#2a3bd1" />
+      <use href={`#${ears}`} fill="#1a2380" />
+      <ellipse cx="20" cy="24.8" rx="5.4" ry="4.6" fill="#f2f1ec" />
+      <circle cx="15.6" cy="17" r="1.6" fill="#f2f1ec" />
+      <circle cx="24.4" cy="17" r="1.6" fill="#f2f1ec" />
+      <path d="M17.4 22.4c0-1.1 1.2-1.7 2.6-1.7s2.6.6 2.6 1.7c0 1.3-1.4 2.4-2.6 2.4s-2.6-1.1-2.6-2.4z" fill="#17171f" />
+      <path d="M20 24.6v2.2M17.6 27.4c1.4 1 3.4 1 4.8 0" stroke="#17171f" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}

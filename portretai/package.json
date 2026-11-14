@@ -1,0 +1,45 @@
+{
+  "name": "portretai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pet portrait poster pipeline: photo check, stylization, upscaling, layout, print PDF, preview, wall mockup.",
+  "bin": {
+    "portretas": "./bin/portretas.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prebuild": "node scripts/pavyzdziai-mazinti.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "node --test \"test/*.test.js\"",
+    "test:e2e": "next build && node --test \"e2e/*.test.js\"",
+    "paleidimo-patikra": "node scripts/paleidimo-patikra.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
+    "heic-convert": "^2.1.0",
+    "next": "^16.2.9",
+    "opentype.js": "^2.0.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "sharp": "^0.35.5",
+    "stripe": "^22.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^5.9.3"
+  },
+  "browserslist": [
+    "chrome 111",
+    "edge 111",
+    "firefox 111",
+    "safari 15"
+  ]
+}
