@@ -124,7 +124,7 @@ function watch(page) {
 test('home page: example, price, lead time and order button are on the first screen of a small phone', async () => {
   const page = watch(await customer.newPage());
   await page.goto(site.base + '/', { waitUntil: 'networkidle' });
-  assert.equal(await page.locator('h1').innerText(), 'Jūsų šuns ar katės portretas su vardu');
+  assert.equal(await page.locator('h1').innerText(), 'Jūsų augintinio portretas su vardu');
   // The demo banner exists only on stand-ins; production has no banner, so
   // measure the fold as production visitors see it.
   const banner = await page.locator('.demo-banner').boundingBox();

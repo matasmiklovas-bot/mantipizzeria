@@ -22,7 +22,7 @@ const blue = '#2a3bd1';
 const pink = '#ff5aa5';
 const ink = '#17171f';
 text(display, SETTINGS.brand, 40, 140, 104, ink, -0.03);
-text(display, 'Šuns ar katės', 76, 70, 236, ink, -0.035);
+text(display, 'Jūsų augintinio', 76, 70, 236, ink, -0.035);
 text(display, 'portretas', 76, 70, 316, ink, -0.035);
 // "su vardu" printed in two inks, like the site headline.
 const sv = layoutLine(display, 'su vardu', 76, -0.035);
@@ -58,5 +58,5 @@ const out = await sharp(Buffer.from(svg))
   .jpeg({ quality: 86, mozjpeg: true })
   .toBuffer();
 fs.writeFileSync(new URL('../app/opengraph-image.jpg', import.meta.url), out);
-fs.writeFileSync(new URL('../app/opengraph-image.alt.txt', import.meta.url), 'Šuns portretas su vardu įrėmintas, šalia užrašas „Šuns ar katės portretas su vardu“.\n');
+fs.writeFileSync(new URL('../app/opengraph-image.alt.txt', import.meta.url), 'Šuns portretas su vardu įrėmintas, šalia užrašas „Jūsų augintinio portretas su vardu“.\n');
 console.log('app/opengraph-image.jpg', out.length, 'B');

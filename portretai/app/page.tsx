@@ -27,9 +27,9 @@ export default async function Home() {
   return (
     <>
       <section className="wrap hero">
-        <p className="label">Augintinių portretai pagal nuotrauką</p>
+        <p className="label">Šuns ar katės portretas pagal vieną nuotrauką</p>
         <h1>
-          Jūsų šuns ar katės portretas <span className="ink-mark">su vardu</span>
+          Jūsų augintinio portretas <span className="ink-mark">su vardu</span>
         </h1>
         <p className="lead">Įrėmintas paveikslas, pledas arba telefono dėklas. Pristatome į paštomatą.</p>
 
