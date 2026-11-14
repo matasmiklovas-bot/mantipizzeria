@@ -159,36 +159,40 @@ export default async function Home() {
 
       <section className="wrap section" aria-labelledby="dydziai">
         <h2 id="dydziai">Paveikslų dydžiai</h2>
-        <SizeScale
-          image={hero.portrait}
-          sizes={SETTINGS.sizes.map((s: string) => {
-            const size = SIZES[s as keyof typeof SIZES];
-            return {
-              key: s,
-              label: SIZE_LABELS[s as keyof typeof SIZE_LABELS],
-              price: `${formatPrice(SETTINGS.prices[s as keyof typeof SETTINGS.prices])} su rėmeliu`,
-              w: size.widthMm / 10,
-              h: size.heightMm / 10,
-            };
-          })}
-        />
-        <p>Į kainą įeina portretas, spauda, rėmelis ir pristatymas į paštomatą Lietuvoje.</p>
-        <p className="muted small" style={{ marginBottom: 8 }}>
-          Rėmelio spalvos:
-        </p>
-        <ul className="swatches">
-          {SETTINGS.frames.map((f: string) => (
-            <li key={f}>
-              <span className={`frame frame--${f} mini`} aria-hidden="true">
-                <span className="glass" />
-              </span>
-              {FRAME_LABELS[f as keyof typeof FRAME_LABELS]}
-            </li>
-          ))}
-        </ul>
-        {SETTINGS.paper ? <p>Popierius: {SETTINGS.paper}.</p> : null}
-        {SETTINGS.frameMaterial ? <p>Rėmelis: {SETTINGS.frameMaterial}.</p> : null}
-        <p className="muted small">Trys stiliai: akvarelė, aliejus ir grafika. Stilių pasirenkate užsakydami.</p>
+        <div className="sizes-grid">
+          <SizeScale
+            image={hero.portrait}
+            sizes={SETTINGS.sizes.map((s: string) => {
+              const size = SIZES[s as keyof typeof SIZES];
+              return {
+                key: s,
+                label: SIZE_LABELS[s as keyof typeof SIZE_LABELS],
+                price: `${formatPrice(SETTINGS.prices[s as keyof typeof SETTINGS.prices])} su rėmeliu`,
+                w: size.widthMm / 10,
+                h: size.heightMm / 10,
+              };
+            })}
+          />
+          <div className="sizes-text">
+            <p>Į kainą įeina portretas, spauda, rėmelis ir pristatymas į paštomatą Lietuvoje.</p>
+            <p className="muted small" style={{ marginBottom: 8 }}>
+              Rėmelio spalvos:
+            </p>
+            <ul className="swatches">
+              {SETTINGS.frames.map((f: string) => (
+                <li key={f}>
+                  <span className={`frame frame--${f} mini`} aria-hidden="true">
+                    <span className="glass" />
+                  </span>
+                  {FRAME_LABELS[f as keyof typeof FRAME_LABELS]}
+                </li>
+              ))}
+            </ul>
+            {SETTINGS.paper ? <p>Popierius: {SETTINGS.paper}.</p> : null}
+            {SETTINGS.frameMaterial ? <p>Rėmelis: {SETTINGS.frameMaterial}.</p> : null}
+            <p className="muted small">Trys stiliai: akvarelė, aliejus ir grafika. Stilių pasirenkate užsakydami.</p>
+          </div>
+        </div>
       </section>
 
       {!d.seasonOver ? (
@@ -246,7 +250,8 @@ export default async function Home() {
         <details>
           <summary>Kada gausiu?</summary>
           <p>
-            Per {d.leadDays} darbo dienas nuo apmokėjimo: {p.creationDays} d. portretui sukurti, iki {p.revisionBufferDays} d. peržiūrai ir pataisymui, {p.printDays} d. spaudai, {p.deliveryDays} d. pristatymui. Kuo greičiau patvirtinsite peržiūrą, tuo greičiau gausite.
+            Per {d.leadDays} darbo dienas nuo apmokėjimo: {p.creationDays} d. portretui sukurti, iki {p.revisionBufferDays} d. peržiūrai ir pataisymui, {p.printDays} d. spaudai,{' '}
+            {p.deliveryDays} d. pristatymui. Kuo greičiau patvirtinsite peržiūrą, tuo greičiau gausite.
           </p>
         </details>
         <details>
