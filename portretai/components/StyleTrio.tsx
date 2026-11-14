@@ -12,7 +12,9 @@ export default function StyleTrio({ name, photo, items }: { name: string; photo:
         <img src={photo.src} srcSet={photo.srcSet} sizes="(min-width: 900px) 210px, 128px" width={photo.width} height={photo.height} alt={`${name}: nuotrauka, iš kurios piešėme`} loading="lazy" decoding="async" />
         <figcaption>{name} nuotrauka</figcaption>
       </figure>
-      <p className="trio-note">Iš šios vienos nuotraukos nupiešėme tris portretus. Stilių pasirenkate užsakydami.</p>
+      <p className="trio-note">
+        <strong>Susipažinkite: {name}.</strong> Visus pavyzdžius šioje svetainėje darome iš šios vienos nuotraukos, kad matytumėte tik stiliaus ir gaminio skirtumą. Stilių pasirenkate užsakydami.
+      </p>
       <ol className="trio-strip" aria-label="Tas pats augintinis trimis stiliais">
         {items.map((it) => (
           <li key={it.style}>

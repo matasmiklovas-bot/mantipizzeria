@@ -138,7 +138,7 @@ export default async function Home() {
 
       <section className="wrap section band" aria-labelledby="ne-tik">
         <h2 id="ne-tik">Ne tik ant sienos</h2>
-        <p className="section-lead">Tas pats portretas ir vardas, tik kitur: ant pledo sofoje arba ant telefono dėklo.</p>
+        <p className="section-lead">Tas pats Lego, tas pats vardas, tik kitur: ant pledo ir ant telefono dėklo.</p>
         <div className="goods">
           <figure className="good good--pledas">
             {/* eslint-disable-next-line @next/next/no-img-element */}

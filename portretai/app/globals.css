@@ -2275,8 +2275,12 @@ input[type='checkbox'] {
   font: 500 19px/1.4 var(--sans);
   color: var(--ink);
 }
-.trio-note::first-line {
+.trio-note strong {
+  display: block;
+  font: 700 1.25em/1.15 var(--display);
+  letter-spacing: -0.02em;
   color: var(--blue);
+  margin-bottom: 6px;
 }
 .good img {
   border-radius: 14px;
