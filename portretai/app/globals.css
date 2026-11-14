@@ -2590,3 +2590,27 @@ fieldset legend {
     font-size: 15px;
   }
 }
+
+/* Small phones: the style note and the size row must fit 320 px. */
+.trio-note {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 369px) {
+  .trio {
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 14px 14px;
+  }
+  .trio-note {
+    font-size: 16px;
+  }
+  .product-chips strong {
+    font-size: 13px;
+  }
+  .product-chips a {
+    font-size: 12px;
+  }
+}
+.sizes-grid {
+  min-width: 0;
+}
