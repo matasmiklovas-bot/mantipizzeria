@@ -251,7 +251,7 @@ export async function buildCaseMockup(posterPng, size, phoneModel) {
   const scene =
     `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">` +
     `<defs><filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="26"/></filter></defs>` +
-    `<rect width="${W}" height="${H}" fill="#d9d7d0"/>` +
+    `<rect width="${W}" height="${H}" fill="#f1d9e4"/>` +
     `<rect x="${pad + 26}" y="${pad + 40}" width="${cw}" height="${ch}" rx="${rad}" fill="#2e2418" fill-opacity="0.35" filter="url(#sh)"/>` +
     `</svg>`;
   // Linen: crossed fine threads.
@@ -259,7 +259,7 @@ export async function buildCaseMockup(posterPng, size, phoneModel) {
   const base = await sharp(Buffer.from(scene)).composite([{ input: linen, blend: 'soft-light' }]).png().toBuffer();
   const flat = await sharp(base).composite([{ input: body, left: pad, top: pad }]).png().toBuffer();
   return sharp(flat)
-    .rotate(-7, { background: '#d9d7d0' })
+    .rotate(-7, { background: '#f1d9e4' })
     .resize({ width: 1400, height: 2000, fit: 'cover' })
     .jpeg({ quality: 86, mozjpeg: true })
     .toBuffer();
