@@ -241,12 +241,6 @@ var CONFIG = {
   /* Ikonos */
   $$("i[data-ic]").forEach(el => (el.outerHTML = ic(el.dataset.ic)));
 
-  /* Juosta */
-  const trades = ["Santechnikai", "Kirpyklos", "Autoservisai", "Masažas", "Elektrikai", "Kosmetologės", "Staliai", "Stogdengiai", "Plytelių klojėjai", "Siuvėjos"];
-  const towns = ["Šiauliai", "Panevėžys", "Alytus", "Marijampolė", "Utena", "Telšiai", "Mažeikiai", "Tauragė", "Jonava", "Kėdainiai", "Biržai", "Rokiškis"];
-  const fill = (el, items) => { const h = items.map(t => `<span>${t}</span>`).join(""); el.innerHTML = h + h; };
-  fill($("#marq1"), trades); fill($("#marq2"), towns);
-
   /* DUK */
   $$(".qa").forEach(qa => {
     const b = $(".qa-q", qa);
@@ -283,9 +277,22 @@ var CONFIG = {
   setCmp(50);
   const cmpMove = e => { const r = cmpScr.getBoundingClientRect(); setCmp((e.clientX - r.left) / r.width * 100); };
   const cmpStop = () => { cmpTouched = true; if (cmpHint) { cmpHint.kill(); cmpHint = null; } };
-  cmpScr.addEventListener("pointerdown", e => { cmpStop(); cmpDrag = true; try { cmpScr.setPointerCapture(e.pointerId); } catch (x) {} cmpMove(e); });
-  cmpScr.addEventListener("pointermove", e => { if (cmpDrag) cmpMove(e); });
-  ["pointerup", "pointercancel", "lostpointercapture"].forEach(t => cmpScr.addEventListener(t, () => (cmpDrag = false)));
+  let cmpStart = null;
+  const cmpBegin = e => { cmpStop(); cmpDrag = true; cmpStart = null; try { cmpScr.setPointerCapture(e.pointerId); } catch (x) {} cmpMove(e); };
+  cmpScr.addEventListener("pointerdown", e => {
+    const onKnob = !!(e.target && e.target.closest && e.target.closest(".cmp-handle"));
+    if (e.pointerType === "mouse" || onKnob) { cmpBegin(e); return; }
+    cmpStart = { x: e.clientX, y: e.clientY, id: e.pointerId };
+  });
+  cmpScr.addEventListener("pointermove", e => {
+    if (cmpDrag) { cmpMove(e); return; }
+    if (!cmpStart || e.pointerId !== cmpStart.id) return;
+    const dx = e.clientX - cmpStart.x, dy = e.clientY - cmpStart.y;
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) cmpBegin(e);
+    else if (Math.abs(dy) > 10) cmpStart = null;
+  });
+  cmpScr.addEventListener("pointerup", e => { if (cmpStart && !cmpDrag) { cmpStop(); cmpMove(e); } cmpDrag = false; cmpStart = null; });
+  ["pointercancel", "lostpointercapture"].forEach(t => cmpScr.addEventListener(t, () => { cmpDrag = false; cmpStart = null; }));
   cmpH.addEventListener("keydown", e => {
     if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); cmpStop(); setCmp(cmpState.p + (e.key === "ArrowLeft" ? -5 : 5)); }
   });
@@ -326,6 +333,25 @@ var CONFIG = {
     else { calcState.year = year; calcState.days = days; renderCalc(); }
   };
   [cC, cP].forEach(i => i.addEventListener("input", () => calc(true)));
+  /* Safari ant iPad leidžia tempti tik pataikius ant rutuliuko; čia veikia bet kurioje juostos vietoje */
+  [cC, cP].forEach(inp => {
+    let active = false;
+    const setX = e => {
+      const r = inp.getBoundingClientRect();
+      const t = Math.max(0, Math.min(1, (e.clientX - r.left - 15) / Math.max(1, r.width - 30)));
+      const v = Math.round(t * 1000);
+      if (+inp.value !== v) { inp.value = v; calc(true); }
+    };
+    inp.addEventListener("pointerdown", e => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      e.preventDefault();
+      active = true;
+      try { inp.setPointerCapture(e.pointerId); } catch (x) {}
+      setX(e);
+    });
+    inp.addEventListener("pointermove", e => { if (active) setX(e); });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach(t => inp.addEventListener(t, () => (active = false)));
+  });
   calc(false);
 
   /* Teksto pritaikymas pločiui */
@@ -382,7 +408,6 @@ var CONFIG = {
   ScrollTrigger.config({ ignoreMobileResize: true });
   html.classList.add("motion");
   const fine = mq("(pointer: fine)");
-  const hoverFine = mq("(hover: hover) and (pointer: fine)");
 
   /* Sklandus slinkimas (tik pelei; liečiant lieka natūralus) */
   let lenis = null;
@@ -402,36 +427,6 @@ var CONFIG = {
     else target.scrollIntoView({ behavior: "smooth" });
   }));
 
-  /* Bendras slinkimo greitis (juostai ir pasvirimui) */
-  let vel = 0, prevY = window.pageYOffset;
-  gsap.ticker.add(() => {
-    const y = window.pageYOffset;
-    vel += ((y - prevY) - vel) * 0.25;
-    prevY = y;
-  });
-
-  /* ---------- Žymeklis ---------- */
-  if (hoverFine) {
-    html.classList.add("has-cur");
-    const cur = $("#cur"), curTxt = $("#curTxt");
-    const cx = gsap.quickTo(cur, "x", { duration: 0.35, ease: "power3.out" });
-    const cy = gsap.quickTo(cur, "y", { duration: 0.35, ease: "power3.out" });
-    addEventListener("pointermove", e => {
-      if (e.pointerType !== "mouse") return;
-      cx(e.clientX); cy(e.clientY);
-      const t = e.target && e.target.closest ? e.target : null;
-      if (!t) return;
-      const lab = t.closest("[data-cur]");
-      const link = t.closest("a, button, input, .qa-q, .cmp-handle");
-      cur.classList.toggle("on-label", !!lab && !link);
-      cur.classList.toggle("on-link", !!link);
-      curTxt.textContent = lab && !link ? lab.getAttribute("data-cur") : "";
-      cur.classList.toggle("dark", !!t.closest(".story, .cta, .calc, .tile.dark, .plan.feat"));
-      cur.classList.remove("hidden");
-    });
-    document.addEventListener("mouseleave", () => cur.classList.add("hidden"));
-  }
-
   /* ---------- Įžanga ---------- */
   const pre = $("#pre");
   function runPre(done) {
@@ -447,14 +442,15 @@ var CONFIG = {
         refreshAll();
       }
     });
-    tl.from(".pre-pin", { y: -160, opacity: 0, duration: 1, ease: "bounce.out" }, 0)
-      .from(letters, { yPercent: 115, duration: 0.9, stagger: 0.05, ease: "expo.out" }, 0.15)
-      .fromTo(letters, { "--w": 62 }, { "--w": 118, duration: 1.1, stagger: 0.05, ease: "power3.out" }, 0.15)
-      .to(".pre-mask", { scaleX: 0, duration: 1.15, ease: "power2.inOut" }, 0.3)
-      .to(o, { v: 100, duration: 1.15, ease: "power2.inOut", onUpdate: () => (num.textContent = Math.round(o.v) + " cm") }, 0.3)
-      .to(".pre-in", { y: -50, opacity: 0, duration: 0.5, ease: "power2.in" }, 1.55)
-      .to(pre, { yPercent: -100, duration: 1, ease: "power4.inOut" }, 1.65)
-      .add(done, 1.9);
+    try { sessionStorage.setItem("m-seen", "1"); } catch (e) {}
+    tl.from(".pre-pin", { y: -120, opacity: 0, duration: 0.8, ease: "bounce.out" }, 0)
+      .from(letters, { yPercent: 115, duration: 0.7, stagger: 0.035, ease: "expo.out" }, 0.1)
+      .fromTo(letters, { "--w": 62 }, { "--w": 118, duration: 0.8, stagger: 0.035, ease: "power3.out" }, 0.1)
+      .to(".pre-mask", { scaleX: 0, duration: 0.8, ease: "power2.inOut" }, 0.2)
+      .to(o, { v: 100, duration: 0.8, ease: "power2.inOut", onUpdate: () => (num.textContent = Math.round(o.v) + " cm") }, 0.2)
+      .to(".pre-in", { y: -40, opacity: 0, duration: 0.35, ease: "power2.in" }, 1.02)
+      .to(pre, { yPercent: -100, duration: 0.8, ease: "power4.inOut" }, 1.08)
+      .add(done, 1.3);
   }
 
   /* ---------- Hero ---------- */
@@ -484,7 +480,7 @@ var CONFIG = {
 
   /* „Naujas skambutis“ – pranešimas pasikartoja */
   const t1 = $(".stage-tag.t1");
-  gsap.timeline({ repeat: -1, repeatDelay: 3.2, delay: 5 })
+  gsap.timeline({ repeat: -1, repeatDelay: 7, delay: 5 })
     .to(t1, { scale: 1.08, duration: 0.18, ease: "power2.out" })
     .to(t1, { scale: 1, duration: 0.7, ease: "elastic.out(1, .35)" })
     .fromTo($(".tg-ico", t1), { rotation: 0 }, { rotation: 14, duration: 0.07, yoyo: true, repeat: 7, ease: "none" }, 0);
@@ -536,23 +532,6 @@ var CONFIG = {
   } else {
     gsap.fromTo(stageIn, { rotationY: -7, rotationX: 3 }, { rotationY: 7, rotationX: -3, duration: 6, yoyo: true, repeat: -1, ease: "sine.inOut" });
   }
-
-  /* ---------- Juosta: greitis ir pasvirimas ---------- */
-  const rows = [{ el: $("#marq1"), dir: -1, x: 0 }, { el: $("#marq2"), dir: 1, x: 0 }];
-  let marqOn = false, dirMul = 1, skew = 0;
-  ScrollTrigger.create({ trigger: ".marq", start: "top bottom", end: "bottom top", onToggle: s => (marqOn = s.isActive) });
-  gsap.ticker.add((t, dt) => {
-    if (!marqOn) return;
-    if (Math.abs(vel) > 0.5) dirMul = vel > 0 ? 1 : -1;
-    const boost = Math.min(16, Math.abs(vel) * 0.35);
-    skew += (Math.max(-14, Math.min(14, -vel * 0.5)) - skew) * 0.12;
-    rows.forEach(r => {
-      const half = r.el.scrollWidth / 2;
-      if (!half) return;
-      r.x = gsap.utils.wrap(-half, 0, r.x + r.dir * dirMul * (0.7 + boost) * (dt / 16.67));
-      r.el.style.transform = `translate3d(${r.x.toFixed(1)}px,0,0) skewX(${(skew * r.dir * -1).toFixed(2)}deg)`;
-    });
-  });
 
   /* ---------- Antraštės ---------- */
   $$(".rv-h").forEach(h => {
@@ -703,11 +682,7 @@ var CONFIG = {
       const h = $("h3", card);
       gsap.fromTo(h, { "--w": 62 }, { "--w": 100, ease: "none", scrollTrigger: { trigger: card, containerAnimation: tween, start: "left right", end: "center center", scrub: true } });
     });
-    /* pasvirimas pagal greitį */
-    let sk = 0;
-    const skewTick = () => { sk += (Math.max(-7, Math.min(7, -vel * 0.25)) - sk) * 0.1; gsap.set(cards, { skewX: sk }); };
-    gsap.ticker.add(skewTick);
-    return () => { gsap.ticker.remove(skewTick); gsap.set(cards, { skewX: 0 }); html.classList.remove("motion-desk"); gsap.set(track, { clearProps: "transform" }); };
+    return () => { html.classList.remove("motion-desk"); gsap.set(track, { clearProps: "transform" }); };
   });
   mm.add("(max-width: 900px)", () => {
     gsap.from($$(".card", track).slice(0, 2), { x: 120, rotation: 4, opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.12, scrollTrigger: { trigger: trackWrap, start: "top 85%", once: true } });

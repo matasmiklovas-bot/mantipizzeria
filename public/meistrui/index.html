@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=DM+Serif+Display:ital@0;1&family=Onest:wght@400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<script>!function(d){var r=d.documentElement,s=!1;r.className+=" js";try{s=sessionStorage.getItem("m-safe")==="1"}catch(e){}if(s)r.className+=" safe";try{if(!s&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches)r.className+=" is-pre"}catch(e){}setTimeout(function(){r.className=r.className.replace(" is-pre","")},6000)}(document);</script>
+<script>!function(d){var r=d.documentElement,s=!1;r.className+=" js";try{s=sessionStorage.getItem("m-safe")==="1"}catch(e){}if(s)r.className+=" safe";var v=!1;try{v=sessionStorage.getItem("m-seen")==="1"}catch(e){}try{if(!s&&!v&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches)r.className+=" is-pre"}catch(e){}setTimeout(function(){r.className=r.className.replace(" is-pre","")},6000)}(document);</script>
 </head>
 <body>
 <div class="pre" id="pre" aria-hidden="true">
@@ -29,7 +29,6 @@
     <div class="pre-tape"><span class="pre-mask"></span><span class="pre-cap">Matuojame jūsų svetainę</span><span class="pre-num" id="preNum">0 cm</span></div>
   </div>
 </div>
-<div class="cur hidden" id="cur" aria-hidden="true"><span class="cur-ring"><span class="cur-txt" id="curTxt"></span></span></div>
 
 <header class="nav" id="nav">
   <div class="wrap nav-in">
@@ -88,12 +87,6 @@
       </div>
     </div>
   </section>
-
-  <!-- JUOSTA -->
-  <div class="marq" aria-hidden="true">
-    <div class="marq-row" id="marq1"></div>
-    <div class="marq-row out" id="marq2"></div>
-  </div>
 
   <!-- TEIGINYS -->
   <section class="state">
@@ -251,10 +244,6 @@
             <div class="acts"><span>Skambinti</span><span>Maršrutas</span><span>Svetainė</span></div>
           </div></div>
           <div><h3>Google žemėlapių profilis</h3><p>Sutvarkau jūsų kortelę: nuotraukos, darbo laikas, telefonas ir nuoroda į svetainę.</p></div>
-        </article>
-        <article class="tile full">
-          <div class="viz"><div class="v-resp"><div class="v-dev"><i class="h"></i><i class="a"></i><i></i><i></i><i style="width:70%"></i></div></div></div>
-          <div><h3>Telefonui ir kompiuteriui</h3><p>Dauguma jūsų klientų ieško telefone, todėl svetainė pirmiausia kuriama telefonui. Kompiuteryje ji atrodo taip pat gerai.</p></div>
         </article>
       </div>
     </div>

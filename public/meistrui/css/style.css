@@ -738,7 +738,7 @@ html.has-cur .cur { display: block; position: fixed; top: 0; left: 0; z-index: 2
 .cmp-lbl { position: absolute; top: 16px; z-index: 6; padding: 8px 14px; border-radius: 99px; font-size: 13px; font-weight: 600; transition: opacity .3s; pointer-events: none; }
 .cmp-lbl.l { left: 16px; background: rgba(18, 19, 22, .82); color: #fff; }
 .cmp-lbl.r { right: 16px; background: var(--hi); color: var(--ink); }
-.cmp-handle { position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; margin-left: -1.5px; background: #fff; z-index: 7; box-shadow: 0 0 0 1px rgba(18, 19, 22, .12), 0 0 24px rgba(18, 19, 22, .25); outline: none; }
+.cmp-handle { touch-action: none; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; margin-left: -1.5px; background: #fff; z-index: 7; box-shadow: 0 0 0 1px rgba(18, 19, 22, .12), 0 0 24px rgba(18, 19, 22, .25); outline: none; }
 .cmp-knob { position: absolute; top: 50%; left: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; background: var(--hi); color: var(--ink); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 26px rgba(18, 19, 22, .3), 0 0 0 5px rgba(255, 255, 255, .9); transition: transform .3s var(--ease); }
 .cmp-knob .ic { width: 24px; height: 24px; }
 .tab-scr:active .cmp-knob, .cmp-handle:focus .cmp-knob { transform: scale(1.12); }
@@ -835,12 +835,16 @@ html.has-cur .cur { display: block; position: fixed; top: 0; left: 0; z-index: 2
 .calc h3 { font: 800 clamp(32px, 3.2vw, 48px)/1 var(--display); letter-spacing: -.03em; font-variation-settings: "wdth" 108; }
 .calc-copy p { color: var(--d-mute); margin-top: 14px; font-size: 15px; max-width: 34ch; }
 .calc-ctrl { display: flex; flex-direction: column; gap: 30px; position: relative; }
-.calc label { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 15px; margin-bottom: 14px; }
+.calc label { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 15px; margin-bottom: 6px; }
 .calc output { font: 700 22px/1 var(--display); color: var(--hi); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.calc input[type=range] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 8px; border-radius: 99px; margin: 0; cursor: pointer; touch-action: none;
+.calc input[type=range] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 30px; margin: 0; padding: 0; background: transparent; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.calc input[type=range]::-webkit-slider-runnable-track { height: 8px; border-radius: 99px; border: 0;
   background: linear-gradient(90deg, var(--hi) 0, var(--hi) var(--p, 50%), #34363B var(--p, 50%), #34363B 100%); }
-.calc input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; border-radius: 50%; background: var(--d-text); border: 7px solid var(--hi); box-shadow: 0 4px 14px rgba(0, 0, 0, .45); }
+.calc input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -11px; border-radius: 50%; background: var(--d-text); border: 7px solid var(--hi); box-shadow: 0 4px 14px rgba(0, 0, 0, .45); }
+.calc input[type=range]::-moz-range-track { height: 8px; border-radius: 99px; background: #34363B; border: 0; }
+.calc input[type=range]::-moz-range-progress { height: 8px; border-radius: 99px; background: var(--hi); }
 .calc input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--d-text); border: 7px solid var(--hi); }
+.calc input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); }
 .calc input[type=range]:focus { outline: none; }
 .calc input[type=range]:focus-visible { outline: 2px solid var(--hi); outline-offset: 8px; }
 .calc-out { display: flex; flex-direction: column; gap: 14px; position: relative; }
@@ -863,7 +867,7 @@ html.has-cur .cur { display: block; position: fixed; top: 0; left: 0; z-index: 2
 
 /* ===================== Pataisymai ===================== */
 .calc-out b.long { font-size: clamp(26px, 2.5vw, 38px); }
-.calc-scale { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--d-mute); font-variant-numeric: tabular-nums; }
+.calc-scale { display: flex; justify-content: space-between; margin-top: 4px; font-size: 12px; color: var(--d-mute); font-variant-numeric: tabular-nums; }
 .cta-me { display: flex; align-items: center; gap: 14px; padding-bottom: 20px; border-bottom: 1px solid var(--d-line); }
 .cta-av { width: 54px; height: 54px; border-radius: 50%; background: var(--hi); color: var(--ink); display: flex; align-items: center; justify-content: center; font: 800 18px/1 var(--display); letter-spacing: -.02em; flex: none; }
 .cta-me b { display: block; font: 700 22px/1.15 var(--display); letter-spacing: -.01em; font-variation-settings: "wdth" 106; }
