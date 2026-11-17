@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Atskira statinė svetainė su sumažintomis bibliotekomis
     "public/meistrui/**",
+    "meistrui-src/**",
   ]),
 ]);
 

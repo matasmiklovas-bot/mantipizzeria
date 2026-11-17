@@ -8,8 +8,10 @@ var CONFIG = {
   area: "Palangoje, Klaipėdoje ir visoje Lietuvoje"
 };
 
-(function () {
+(async function () {
   "use strict";
+  /* Ilgas paruošimas skaidomas į trumpas užduotis, kad naršyklė spėtų piešti ir reaguoti */
+  const tick = () => new Promise(r => setTimeout(r, 0));
   const html = document.documentElement;
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
@@ -90,7 +92,7 @@ var CONFIG = {
     <g stroke="#fff" stroke-width="4" fill="none" opacity=".8"><path d="M-10 80H310"/><path d="M40 -10V150"/><path d="M150 -10V150"/><path d="M262 -10V150"/><path d="M-10 18H310"/></g>
     <g transform="translate(150 66)"><path d="M0-28C-13-28-20-18-20-9-20 5 0 18 0 18S20 5 20-9C20-18 13-28 0-28Z" style="fill:var(--s-strong)"/><circle cy="-10" r="6.5" fill="#fff"/></g></svg>`;
 
-  function siteHTML(key) {
+  function siteHTML(key, short) {
     const b = BRANDS[key];
     return `<div class="site b-${key}">
       <div class="s-head">${b.pat}
@@ -105,10 +107,10 @@ var CONFIG = {
         </div>
       </div>
       <div class="s-sec"><p class="s-label">Paslaugos ir kainos</p>${b.services.map(s => `<div class="s-row"><span class="s-ico">${ic(s[0])}</span><span><b>${s[1]}</b><small>${s[2]}</small></span><em>${s[3]}</em></div>`).join("")}</div>
-      <div class="s-sec"><p class="s-label">Darbo laikas</p><div class="s-hours"><span class="s-open"><i></i>Atidaryta · uždaroma ${b.close}</span>${b.hours.map(h => `<div><span>${h[0]}</span><span>${h[1]}</span></div>`).join("")}</div></div>
+      ${short ? "" : `<div class="s-sec"><p class="s-label">Darbo laikas</p><div class="s-hours"><span class="s-open"><i></i>Atidaryta · uždaroma ${b.close}</span>${b.hours.map(h => `<div><span>${h[0]}</span><span>${h[1]}</span></div>`).join("")}</div></div>
       <div class="s-sec"><p class="s-label">Kur mus rasti</p><div class="s-map">${miniMap}<span class="s-addr">${ic("map-pin")}${b.addr}</span></div></div>
       <div class="s-sec"><p class="s-label">${b.cta}</p><div class="s-form">${b.form.map(f => `<span class="s-field">${f}</span>`).join("")}<span class="s-btn s-call">${b.cta}</span></div></div>
-      <div class="s-foot">© ${b.name} · ${b.town}</div>
+      <div class="s-foot">© ${b.name} · ${b.town}</div>`}
     </div>`;
   }
   const pinSvg = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2C9.4 2 4.5 7 4.5 13.3 4.5 21.6 16 30 16 30s11.5-8.4 11.5-16.7C27.5 7 22.6 2 16 2Z" fill="#EDECE7"/><circle cx="16" cy="13" r="4.6" fill="#FF4F12"/></svg>`;
@@ -119,13 +121,13 @@ var CONFIG = {
   const motion = hasLibs && !reduce && !html.classList.contains("safe");
 
   /* Telefonai su pavyzdžiais */
-  $$(".phone[data-site]").forEach(p => (p.innerHTML = shell(siteHTML(p.dataset.site), motion && !!p.closest(".stage"))));
-  $$(".phone[data-img]").forEach(p => (p.innerHTML = shell(`<img src="${p.dataset.img}" alt="Manti Pizzeria meniu telefone">`)));
+  $$(".phone[data-site]").forEach(p => { if (!p.firstElementChild) p.innerHTML = shell(siteHTML(p.dataset.site, true), motion && !!p.closest(".stage")); });
+  $$(".phone[data-img]").forEach(p => (p.firstElementChild ? 0 : p.innerHTML = shell(`<img src="${p.dataset.img}" alt="Manti Pizzeria meniu telefone" width="400" height="866" loading="lazy" decoding="async">`)));
 
   /* Kortelės */
   const track = $("#track");
   const order = ["vamzdis", "zirkles", "ratas", "ramybe"];
-  track.insertAdjacentHTML("afterbegin", order.map((k, i) => {
+  if (!$(".card.k-vamzdis", track)) track.insertAdjacentHTML("afterbegin", order.map((k, i) => {
     const b = BRANDS[k];
     return `<article class="card k-${k}">
       <span class="card-big" aria-hidden="true">${ic(b.icon)}</span>
@@ -135,19 +137,25 @@ var CONFIG = {
         <p class="c-trade">${b.line}</p>
         <ul>${b.features.map(f => `<li>${ic("check")}${f}</li>`).join("")}</ul>
       </div>
-      <div class="card-ph"><div class="phone">${shell(siteHTML(k))}</div></div>
+      <div class="card-ph" role="img" aria-label="${b.name}: ${b.trade.toLowerCase()} svetainės pavyzdys telefone"><div class="phone" data-lazy-site="${k}"></div></div>
     </article>`;
   }).join(""));
   const trackWrap = $("#trackWrap");
+  /* Pavyzdinės svetainės kortelėse sukuriamos tik prie jų priartėjus */
+  const fillLazy = p => { if (p.getAttribute("data-filled")) return; p.setAttribute("data-filled", "1"); p.innerHTML = shell(siteHTML(p.getAttribute("data-lazy-site"))); };
+  const lazyPhones = $$(".phone[data-lazy-site]");
+  if ("IntersectionObserver" in window) {
+    const lio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { fillLazy(e.target); lio.unobserve(e.target); } }), { rootMargin: "900px 900px" });
+    lazyPhones.forEach(p => lio.observe(p));
+  } else lazyPhones.forEach(fillLazy);
   const resetTrack = () => { trackWrap.scrollLeft = 0; };
-  resetTrack();
   requestAnimationFrame(resetTrack);
   addEventListener("load", resetTrack);
 
   /* Istorijos telefonas */
   const storyPhone = $("#storyPhone");
   const sk = `<div class="q-sk"><i></i><i></i><i></i><i></i></div>`;
-  storyPhone.innerHTML = shell(`
+  if (!storyPhone.firstElementChild) storyPhone.innerHTML = shell(`
     <div class="q">
       <div class="q-status"><span>21:40</span><span class="s-sys">${ic("signal")}${ic("wifi")}${ic("battery-full")}</span></div>
       <div class="q-bar">${ic("search")}<span id="qText">santechnikas Šiauliai</span><span class="q-caret"></span></div>
@@ -162,14 +170,14 @@ var CONFIG = {
         ${sk}${sk}${sk}
       </div>
     </div>
-    <div class="scr-site" id="scrSite">${siteHTML("vamzdis")}</div>
+    <div class="scr-site" id="scrSite">${siteHTML("vamzdis", true)}</div>
     <span class="tap" id="tap"></span>
     <div class="call" id="scrCall"><small>Skambinama…</small><b>Vamzdis</b><small>Santechnikas, Šiauliai</small><div class="call-av">${ic("droplets")}</div>
       <div class="call-grid"><span>${ic("mic-off")}</span><span>${ic("grid-3x3")}</span><span>${ic("volume-2")}</span><span>${ic("user-plus")}</span><span>${ic("video")}</span><span>${ic("pause")}</span><span class="end">${ic("phone")}</span></div>
     </div>`);
 
   /* ---------- Palyginimas: Facebook ir svetainė ---------- */
-  $("#cmpA").innerHTML = `<div class="fb">
+  if (!$("#cmpA").firstElementChild) $("#cmpA").innerHTML = `<div class="fb">
     <div class="fb-top"><span class="fb-s">${ic("search")}Ieškoti</span><span class="fb-ic"><span>${ic("house")}</span><span>${ic("users")}</span><span>${ic("bell")}</span></span></div>
     <div class="fb-body">
       <div class="fb-prof"><div class="fb-cover"></div><div class="fb-av">JS</div>
@@ -194,7 +202,7 @@ var CONFIG = {
     <span class="cmp-note bad" style="left:4%;top:62%">${ic("circle-x")}Telefono nėra</span>
     <span class="cmp-note bad" style="left:52%;top:84%">${ic("circle-x")}3 klausimai be atsakymo</span>
   </div>`;
-  $("#cmpB").innerHTML = `<div class="ws">
+  if (!$("#cmpB").firstElementChild) $("#cmpB").innerHTML = `<div class="ws">
     <div class="ws-nav"><span class="ws-logo"><span class="ws-mark">${ic("droplets")}</span>Vamzdis</span><span class="ws-links"><span>Paslaugos</span><span>Kainos</span><span>Atsiliepimai</span><span>Kontaktai</span></span><span class="ws-cta">${ic("phone")}Skambinti</span></div>
     <div class="ws-hero">${BRANDS.vamzdis.pat}
       <div><span class="ws-chip"><i></i>Dirbame dabar · iki 21:00</span><p class="ws-h">Prakiuro? Atvažiuojame tą pačią dieną.</p><p class="ws-lead">Santechnikos darbai Šiauliuose ir rajone. Kaina žinoma iš anksto, darbams suteikiame garantiją.</p>
@@ -215,6 +223,7 @@ var CONFIG = {
   let mapEls = null;
   if (M) {
     const svg = $("#ltSvg");
+    if (!svg.firstElementChild) {
     svg.setAttribute("viewBox", `0 0 ${M.w} ${M.h}`);
     $("#ltBox").style.paddingBottom = (M.h / M.w * 100).toFixed(3) + "%";
     svg.innerHTML = `<defs><radialGradient id="ltNbG" cx="50%" cy="50%" r="62%"><stop offset="58%" stop-color="#fff"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="ltNbM" maskUnits="userSpaceOnUse" x="0" y="0" width="${M.w}" height="${M.h}"><rect width="${M.w}" height="${M.h}" fill="url(#ltNbG)"/></mask></defs><path class="lt-nb" mask="url(#ltNbM)" d="${M.nb}"/><path class="lt-land" d="${M.lt}"/><path class="lt-edge" id="ltEdge" d="${M.lt}"/>
@@ -223,6 +232,7 @@ var CONFIG = {
       const t = M.towns.filter(x => x[0] === q[1])[0];
       return `<div class="lt-bub" style="left:${(t[1] / M.w * 100).toFixed(2)}%;top:${(t[2] / M.h * 100).toFixed(2)}%"><i>${ic("search")}</i><span>${q[0]} <b>${q[1]}</b></span></div>`;
     }).join("");
+    }
     mapEls = {
       edge: $("#ltEdge"), land: $(".lt-land", svg), nb: $(".lt-nb", svg),
       dots: $$(".lt-dot", svg), labels: $$(".lt-town text", svg), bubs: $$(".lt-bub"),
@@ -231,8 +241,8 @@ var CONFIG = {
   }
 
   /* Bento detalės */
-  $("#vStars").innerHTML = [0, 1, 2, 3, 4].map(i => ic("star", "f").replace('class="ic f"', `class="ic f" style="--i:${i}"`)).join("");
-  $("#vMap").insertAdjacentHTML("afterbegin", `<svg class="streets" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  if (!$("#vStars").firstElementChild) $("#vStars").innerHTML = [0, 1, 2, 3, 4].map(i => ic("star", "f").replace('class="ic f"', `class="ic f" style="--i:${i}"`)).join("");
+  if (!$("#vMap .streets")) $("#vMap").insertAdjacentHTML("afterbegin", `<svg class="streets" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <rect x="236" y="20" width="120" height="78" rx="10" fill="#CFE0C4"/><rect x="30" y="170" width="90" height="64" rx="10" fill="#CFE0C4"/>
     <path d="M-20 214C80 176 150 250 250 206S380 150 440 166" stroke="#BFD3E6" stroke-width="26" fill="none"/>
     <g stroke="#fff" stroke-width="14" fill="none" stroke-linecap="round"><path d="M-20 120H420"/><path d="M200 -20V280"/><path d="M330 -20L290 280"/></g>
@@ -240,6 +250,8 @@ var CONFIG = {
 
   /* Ikonos */
   $$("i[data-ic]").forEach(el => (el.outerHTML = ic(el.dataset.ic)));
+  /* Kūrimo metu puslapis surenkamas iš anksto ir įrašomas į HTML */
+  if (location.search.indexOf("prerender") > -1) return;
 
   /* DUK */
   $$(".qa").forEach(qa => {
@@ -367,7 +379,7 @@ var CONFIG = {
     if (prev) el.style.setProperty("--w", prev);
   }
   const ctaBig = $("#ctaBig"), footWord = $("#footWord");
-  footWord.innerHTML = Array.prototype.map.call(footWord.textContent, c => `<span class="ch">${c}</span>`).join("");
+  if (!$(".ch", footWord)) footWord.innerHTML = Array.prototype.map.call(footWord.textContent, c => `<span class="ch">${c}</span>`).join("");
   footWord.style.fontVariationSettings = '"wdth" var(--w, 125)';
   const fitAll = () => { fitText(ctaBig, 125); fitText(footWord, 125, footWord.clientWidth - 8); };
 
@@ -405,7 +417,20 @@ var CONFIG = {
 
   try {
   gsap.registerPlugin(ScrollTrigger);
-  ScrollTrigger.config({ ignoreMobileResize: true });
+  ScrollTrigger.config({ ignoreMobileResize: true, autoRefreshEvents: "visibilitychange,resize" });
+  /* Pasirodymo animacijos per IntersectionObserver: jis nematuoja viso puslapio, todėl nestabdo naršyklės */
+  const onView = (el, fn, bottom) => {
+    if (!el) return;
+    if (!("IntersectionObserver" in window)) { fn(); return; }
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); fn(); } }, { rootMargin: "0px 0px -" + (bottom || 12) + "% 0px" });
+    io.observe(el);
+  };
+  const reveal = (targets, vars, trigger, bottom) => {
+    const t = gsap.utils.toArray(targets);
+    if (!t.length) return;
+    const tw = gsap.from(t, Object.assign({ paused: true }, vars));
+    onView(typeof trigger === "string" ? $(trigger) : (trigger || t[0]), () => tw.play(), bottom);
+  };
   html.classList.add("motion");
   const fine = mq("(pointer: fine)");
 
@@ -419,65 +444,18 @@ var CONFIG = {
     if (lenis) lenis.scrollTo(target, { duration: 1.6 });
     else if (target === 0) { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (x) { window.scrollTo(0, 0); } }
     else target.scrollIntoView({ behavior: "smooth" });
+    if (target && target.hasAttribute && target.hasAttribute("tabindex")) { try { target.focus({ preventScroll: true }); } catch (x) {} }
   }));
-
-  /* ---------- Įžanga ---------- */
-  const pre = $("#pre");
-  function runPre(done) {
-    if (!html.classList.contains("is-pre")) { done(); return; }
-    if (lenis) lenis.stop();
-    const letters = $$(".pre-word span", pre);
-    const num = $("#preNum");
-    const o = { v: 0 };
-    const tl = gsap.timeline({
-      onComplete: () => {
-        html.classList.remove("is-pre"); pre.style.display = "none";
-        if (lenis) lenis.start();
-        refreshAll();
-      }
-    });
-    try { sessionStorage.setItem("m-seen", "1"); } catch (e) {}
-    tl.from(".pre-pin", { y: -120, opacity: 0, duration: 0.8, ease: "bounce.out" }, 0)
-      .from(letters, { yPercent: 115, duration: 0.7, stagger: 0.035, ease: "expo.out" }, 0.1)
-      .fromTo(letters, { "--w": 62 }, { "--w": 118, duration: 0.8, stagger: 0.035, ease: "power3.out" }, 0.1)
-      .to(".pre-mask", { scaleX: 0, duration: 0.8, ease: "power2.inOut" }, 0.2)
-      .to(o, { v: 100, duration: 0.8, ease: "power2.inOut", onUpdate: () => (num.textContent = Math.round(o.v) + " cm") }, 0.2)
-      .to(".pre-in", { y: -40, opacity: 0, duration: 0.35, ease: "power2.in" }, 1.02)
-      .to(pre, { yPercent: -100, duration: 0.8, ease: "power4.inOut" }, 1.08)
-      .add(done, 1.3);
-  }
 
   /* ---------- Hero ---------- */
   const title = $("#heroTitle");
   title.setAttribute("aria-label", "Meistrams, kuriuos verta rasti.");
-  $$(".wi", title).forEach(wi => { wi.setAttribute("aria-hidden", "true"); wi.innerHTML = Array.prototype.map.call(wi.textContent, c => `<span class="ch">${c}</span>`).join(""); });
+  if (fine) $$(".wi", title).forEach(wi => { wi.setAttribute("aria-hidden", "true"); wi.innerHTML = Array.prototype.map.call(wi.textContent, c => `<span class="ch">${c}</span>`).join(""); });
   const chars = $$(".ch", title);
-  const wis = $$(".wi", title);
-  const mark = $("#heroMark");
-  const markLen = mark.getTotalLength();
-  gsap.set(mark, { strokeDasharray: markLen, strokeDashoffset: markLen });
-  gsap.set(".stage .pf", { opacity: 0 });
-
+  /* Pirmojo ekrano animacija vyksta CSS, nuo pirmo kadro; čia tik pažymime jos pabaigą */
   let introDone = false;
-  const intro = gsap.timeline({ paused: true, defaults: { ease: "expo.out" }, onComplete: () => { introDone = true; cacheChars(); } });
-  intro
-    .from(nav, { yPercent: -100, duration: 1.2 }, 0)
-    .from(wis, { yPercent: 118, duration: 1.4, stagger: 0.09 }, 0.05)
-    .fromTo(chars, { "--cw": 62 }, { "--cw": 100, duration: 1.8, stagger: 0.018, ease: "power3.out" }, 0.05)
-    .to(mark, { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut" }, 0.9)
-    .from("[data-in]", { y: 26, opacity: 0, duration: 1.2, stagger: 0.08 }, 0.35)
-    .fromTo(".stage .pf", { y: 300, rotation: i => [-14, 16, 0][i], opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 1.7, stagger: 0.12, ease: "power4.out" }, 0.1)
-    .to(".stage .boot", { opacity: 0, duration: 0.6, stagger: 0.15, ease: "power1.inOut" }, 1.0)
-    .from(".stage .site", { y: 40, scale: 0.94, duration: 1.2, stagger: 0.15 }, 1.0)
-    .from(".stage-glow", { opacity: 0, scale: 0.6, duration: 2 }, 0.4)
-    .from(".stage-tag", { scale: 0.6, opacity: 0, duration: 1, stagger: 0.18, ease: "back.out(1.7)" }, 1.3);
+  setTimeout(() => { introDone = true; cacheChars(); }, 1800);
 
-  /* „Naujas skambutis“ – pranešimas pasikartoja */
-  const t1 = $(".stage-tag.t1");
-  gsap.timeline({ repeat: -1, repeatDelay: 7, delay: 5 })
-    .to(t1, { scale: 1.08, duration: 0.18, ease: "power2.out" })
-    .to(t1, { scale: 1, duration: 0.7, ease: "elastic.out(1, .35)" })
-    .fromTo($(".tg-ico", t1), { rotation: 0 }, { rotation: 14, duration: 0.07, yoyo: true, repeat: 7, ease: "none" }, 0);
 
   /* Raidžių tempimas (pelė arba pirštas) */
   let charPos = [];
@@ -485,12 +463,11 @@ var CONFIG = {
     const tr = title.getBoundingClientRect();
     charPos = chars.map(c => { const r = c.getBoundingClientRect(); return { el: c, x: r.left - tr.left + r.width / 2, y: r.top - tr.top + r.height / 2, cur: 100 }; });
   }
-  {
+  if (fine) {
     let mx = -1e4, my = -1e4, live = false;
     const hero = $(".hero");
-    const pm = e => { const tr = title.getBoundingClientRect(); mx = e.clientX - tr.left; my = e.clientY - tr.top; live = true; };
+    const pm = e => { if (e.pointerType !== "mouse") return; const tr = title.getBoundingClientRect(); mx = e.clientX - tr.left; my = e.clientY - tr.top; live = true; };
     hero.addEventListener("pointermove", pm);
-    hero.addEventListener("pointerdown", pm);
     ["pointerleave", "pointerup", "pointercancel"].forEach(t => hero.addEventListener(t, () => { mx = my = -1e4; }));
     gsap.ticker.add(() => {
       if (!introDone || !live) return;
@@ -500,23 +477,26 @@ var CONFIG = {
         const d = Math.hypot(mx - s.x, (my - s.y) * 1.25);
         const k = Math.max(0, 1 - d / 210);
         const tgt = 100 + 15 * k * k * (3 - 2 * k);
-        s.cur += (tgt - s.cur) * 0.12;
-        if (Math.abs(tgt - s.cur) > 0.05) moving = true;
+        const prev = s.cur;
+        s.cur += (tgt - s.cur) * 0.14;
+        if (Math.abs(tgt - s.cur) < 0.04) s.cur = tgt;
+        if (s.cur === prev) continue;
+        moving = true;
         s.el.style.setProperty("--cw", s.cur.toFixed(2));
         s.el.style.setProperty("--cg", Math.round(800 + 100 * (s.cur - 100) / 15));
       }
-      if (!moving && mx < -1e3) live = false;
+      if (!moving) live = false;
     });
   }
 
+  await tick();
   /* Telefonų plūduriavimas, paralaksas ir 3D */
-  $$(".stage .phone").forEach((p, i) => gsap.to(p, { y: -14, duration: 2.6 + i * 0.5, yoyo: true, repeat: -1, ease: "sine.inOut", delay: i * 0.4 }));
   gsap.to(".stage .px", { y: (i, el) => -150 * parseFloat(el.parentElement.getAttribute("data-depth") || 1), ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
   const stageIn = $("#stageIn");
   if (fine) {
     const rx = gsap.quickTo(stageIn, "rotationX", { duration: 1.2, ease: "power3.out" });
     const ry = gsap.quickTo(stageIn, "rotationY", { duration: 1.2, ease: "power3.out" });
-    const tags = $$(".stage-tag").map(t => ({ d: parseFloat(t.getAttribute("data-depth")), x: gsap.quickTo(t, "x", { duration: 1, ease: "power3.out" }), y: gsap.quickTo(t, "y", { duration: 1, ease: "power3.out" }) }));
+    const tags = $$(".stage-tag.t2").map(t => ({ d: parseFloat(t.getAttribute("data-depth")), x: gsap.quickTo(t, "x", { duration: 1, ease: "power3.out" }), y: gsap.quickTo(t, "y", { duration: 1, ease: "power3.out" }) }));
     $(".hero").addEventListener("pointermove", e => {
       if (e.pointerType !== "mouse") return;
       const nx = e.clientX / innerWidth - 0.5, ny = e.clientY / innerHeight - 0.5;
@@ -527,12 +507,14 @@ var CONFIG = {
     gsap.fromTo(stageIn, { rotationY: -7, rotationX: 3 }, { rotationY: 7, rotationX: -3, duration: 6, yoyo: true, repeat: -1, ease: "sine.inOut" });
   }
 
+  await tick();
   /* ---------- Antraštės ---------- */
   $$(".rv-h").forEach(h => {
     h.innerHTML = h.textContent.trim().split(/\s+/).map(w => `<span class="wd"><span class="wi">${w}</span></span>`).join(" ");
-    gsap.from($$(".wi", h), { yPercent: 118, rotation: 4, duration: 1.3, ease: "expo.out", stagger: 0.07, scrollTrigger: { trigger: h, start: "top 88%", once: true } });
+    reveal($$(".wi", h), { yPercent: 118, rotation: 4, duration: 1.3, ease: "expo.out", stagger: 0.07 }, h, 12);
   });
 
+  await tick();
   /* ---------- Žemėlapis ---------- */
   if (mapEls) {
     const len = mapEls.edge.getTotalLength();
@@ -548,31 +530,38 @@ var CONFIG = {
       mapQ.textContent = q[0] + " " + q[1];
       gsap.fromTo(mapQ, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out", overwrite: true });
     };
-    const Q0 = 1.9, QS = 0.5;
-    const mtl = gsap.timeline({
-      scrollTrigger: {
-        trigger: "#mapPin", start: "top top", end: () => "+=" + innerHeight * 1.3, pin: true, scrub: 0.5, anticipatePin: 1,
-        onUpdate: s => { const t = s.progress * mtl.duration(); setQ(Math.min(QUERIES.length - 1, Math.max(0, Math.floor((t - Q0) / QS)))); }
-      }
-    });
-    mtl.to(mapEls.edge, { strokeDashoffset: 0, duration: 1.5, ease: "none" }, 0)
-      .from(mapEls.nb, { opacity: 0, duration: 0.8 }, 0.2)
-      .from(mapEls.land, { opacity: 0, duration: 0.7 }, 0.9)
-      .from(mapEls.dots, { scale: 0, duration: 0.4, stagger: { each: 0.018, from: "random" }, ease: "back.out(3)" }, 0.9)
-      .from(mapEls.labels, { opacity: 0, duration: 0.4, stagger: 0.02 }, 1.3);
+    gsap.set([mapEls.nb, mapEls.land], { opacity: 0 });
+    gsap.set(mapEls.dots, { scale: 0 });
+    gsap.set(mapEls.labels, { opacity: 0 });
+    const mIntro = gsap.timeline({ paused: true })
+      .to(mapEls.edge, { strokeDashoffset: 0, duration: 1.6, ease: "power2.inOut" }, 0)
+      .to(mapEls.nb, { opacity: 1, duration: 0.8 }, 0.3)
+      .to(mapEls.land, { opacity: 1, duration: 0.7 }, 0.9)
+      .to(mapEls.dots, { scale: 1, duration: 0.4, stagger: { each: 0.018, from: "random" }, ease: "back.out(3)" }, 0.9)
+      .to(mapEls.labels, { opacity: 1, duration: 0.4, stagger: 0.02 }, 1.3);
+    const mLoop = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 0.8 });
     QUERIES.forEach((q, i) => {
-      const t0 = Q0 + i * QS;
+      const t0 = i * 1.15;
       const town = mapEls.town(q[1]);
       const dot = $(".lt-dot", town), ring = $(".lt-ring", town);
-      mtl.to(mapEls.bubs[i], { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.2)" }, t0)
+      mLoop.call(setQ, [i], t0)
+        .to(mapEls.bubs[i], { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.2)" }, t0)
         .to(dot, { fill: "#FF4F12", scale: 1.6, duration: 0.25 }, t0)
-        .to(ring, { opacity: 1, duration: 0.2 }, t0);
-      if (i < QUERIES.length - 2) mtl.to(mapEls.bubs[i], { opacity: 0, scale: 0.7, duration: 0.3 }, t0 + QS * 2.2);
+        .to(ring, { opacity: 1, duration: 0.2 }, t0)
+        .to(mapEls.bubs[i], { opacity: 0, scale: 0.7, duration: 0.3 }, t0 + 2.5);
     });
-    mtl.to({}, { duration: 0.5 });
     setQ(0);
+    let mapStarted = false;
+    const mapIO = "IntersectionObserver" in window ? new IntersectionObserver(es => {
+      const vis = es.some(e => e.isIntersecting);
+      if (vis && !mapStarted) { mapStarted = true; mIntro.play(); mLoop.delay(1.9).play(); }
+      else if (vis) mLoop.resume();
+      else mLoop.pause();
+    }, { threshold: 0.3 }) : null;
+    if (mapIO) mapIO.observe($("#mapPin")); else { mIntro.progress(1); mLoop.play(); }
   }
 
+  await tick();
   /* ---------- Istorija ---------- */
   const qText = $("#qText"), qYou = $("#qYou"), qYouIn = $("#qYouIn"), scrSite = $("#scrSite"), tap = $("#tap"), call = $("#scrCall");
   const sks = $$(".q-sk", storyPhone);
@@ -598,11 +587,8 @@ var CONFIG = {
     dots.forEach((d, k) => d.classList.toggle("on", k === i));
   };
   const stl = gsap.timeline({
-    defaults: { ease: "power2.out" },
-    scrollTrigger: {
-      trigger: "#storyPin", start: "top top", end: () => "+=" + innerHeight * 1.6, pin: true, scrub: 0.5, anticipatePin: 1,
-      onUpdate: s => { const t = s.progress * stl.duration(); setStep(t >= stl.labels.call ? 2 : t >= stl.labels.find - 0.2 ? 1 : 0); }
-    }
+    paused: true, repeat: -1, repeatDelay: 2.4, defaults: { ease: "power2.out" },
+    onUpdate: () => { const t = stl.time(); setStep(t >= stl.labels.call ? 2 : t >= stl.labels.find - 0.2 ? 1 : 0); }
   });
   stl.to(typing, { n: query.length, duration: 2, ease: "none", onUpdate: () => (qText.textContent = query.slice(0, Math.round(typing.n))) })
     .to(sks, { opacity: 1, y: 0, duration: 0.8, stagger: 0.2 })
@@ -622,21 +608,31 @@ var CONFIG = {
     .to({}, { duration: 0.9 });
   stl.fromTo(storyPhone, { rotationY: -16, rotationX: 6 }, { rotationY: 12, rotationX: -4, duration: stl.duration(), ease: "none" }, 0);
   setStep(0);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) stl.resume(); else stl.pause(); }, { threshold: 0.35 }).observe($("#storyPin"));
+  } else stl.play();
+  /* Paspaudus žingsnį, telefonas peršoka į tą vietą */
+  const stepAt = [0, "find", "call"];
+  steps.forEach((st, i) => {
+    const h = $("h3", st);
+    if (!$(".step-go", h)) h.innerHTML = `<button class="step-go" type="button">${h.textContent}</button>`;
+    const go = () => { stl.seek(stepAt[i]); stl.resume(); setStep(i); };
+    st.addEventListener("click", go);
+  });
 
+  await tick();
   /* ---------- Palyginimas: užuomina ---------- */
-  ScrollTrigger.create({
-    trigger: "#cmp", start: "top 70%", once: true,
-    onEnter: () => {
+  onView($("#cmp"), () => {
       if (cmpTouched) return;
       cmpHint = gsap.timeline({ onUpdate: () => setCmp(cmpState.p) })
         .to(cmpState, { p: 14, duration: 1.2, ease: "power3.inOut" })
         .to(cmpState, { p: 86, duration: 1.6, ease: "power3.inOut" })
         .to(cmpState, { p: 50, duration: 1.1, ease: "power3.inOut" });
-    }
-  });
-  gsap.from("#cmp", { y: 80, rotationX: 10, transformPerspective: 1400, transformOrigin: "50% 0%", opacity: 0, duration: 1.4, ease: "expo.out", scrollTrigger: { trigger: "#cmp", start: "top 88%", once: true } });
-  gsap.from(".cmp-note", { scale: 0.5, opacity: 0, duration: 0.6, stagger: 0.12, ease: "back.out(2)", scrollTrigger: { trigger: "#cmp", start: "top 55%", once: true } });
+  }, 30);
+  reveal("#cmp", { y: 80, rotationX: 10, transformPerspective: 1400, transformOrigin: "50% 0%", opacity: 0, duration: 1.4, ease: "expo.out" }, "#cmp", 12);
+  reveal(".cmp-note", { scale: 0.5, opacity: 0, duration: 0.6, stagger: 0.12, ease: "back.out(2)" }, "#cmp", 45);
 
+  await tick();
   /* ---------- Pavyzdžiai: karuselė be puslapio prisegimo ---------- */
   const mm = gsap.matchMedia();
   {
@@ -684,30 +680,34 @@ var CONFIG = {
       if (moved) { const i = nearest(); trackWrap.classList.remove("dragging"); goTo(i); }
     });
     trackWrap.addEventListener("click", e => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
-    gsap.from(cards.slice(0, 3), { x: 140, opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: trackWrap, start: "top 85%", once: true } });
+    reveal(cards.slice(0, 3), { x: 140, opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.1 }, trackWrap, 15);
   }
 
+  await tick();
   /* ---------- Kas įeina ---------- */
-  gsap.from("#bento .tile", { y: 100, rotationX: -18, transformPerspective: 1000, transformOrigin: "50% 0%", opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.09, scrollTrigger: { trigger: "#bento", start: "top 82%", once: true } });
+  reveal("#bento .tile", { y: 100, rotationX: -18, transformPerspective: 1000, transformOrigin: "50% 0%", opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.09 }, "#bento", 18);
   if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("paused", !e.isIntersecting)), { threshold: 0 });
+    const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("play", e.isIntersecting)), { threshold: 0 });
     $$("#bento .tile").forEach(t => io.observe(t));
   }
 
+  await tick();
   /* ---------- Kainos ---------- */
-  gsap.from("#plans .plan", { y: 80, opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: "#plans", start: "top 85%", once: true } });
+  reveal("#plans .plan", { y: 80, opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.1 }, "#plans", 15);
   $$(".amt b").forEach(b => {
     const end = parseInt(b.textContent, 10);
     const o = { v: 0 };
     b.textContent = "0";
-    gsap.to(o, { v: end, duration: 1.8, ease: "power3.out", onUpdate: () => (b.textContent = Math.round(o.v)), scrollTrigger: { trigger: "#plans", start: "top 80%", once: true } });
+    onView($("#plans"), () => gsap.to(o, { v: end, duration: 1.8, ease: "power3.out", onUpdate: () => (b.textContent = Math.round(o.v)) }), 20);
   });
-  gsap.from(".price-foot > div", { y: 20, opacity: 0, duration: 1, stagger: 0.08, ease: "expo.out", scrollTrigger: { trigger: ".price-foot", start: "top 92%", once: true } });
-  gsap.from("#calc", { y: 80, scale: 0.96, opacity: 0, duration: 1.3, ease: "expo.out", scrollTrigger: { trigger: "#calc", start: "top 88%", once: true, onEnter: () => { calcState.year = 0; calcState.days = 0; calc(true); } } });
+  reveal(".price-foot > div", { y: 20, opacity: 0, duration: 1, stagger: 0.08, ease: "expo.out" }, ".price-foot", 8);
+  reveal("#calc", { y: 80, scale: 0.96, opacity: 0, duration: 1.3, ease: "expo.out" }, "#calc", 12);
+  onView($("#calc"), () => { calcState.year = 0; calcState.days = 0; calc(true); }, 12);
 
+  await tick();
   /* ---------- Eiga ---------- */
   const tlSteps = $$("#tl .tl-step");
-  gsap.from(tlSteps, { y: 40, opacity: 0, duration: 1.2, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: "#tl", start: "top 85%", once: true } });
+  reveal(tlSteps, { y: 40, opacity: 0, duration: 1.2, ease: "expo.out", stagger: 0.1 }, "#tl", 15);
   mm.add({ desk: "(min-width: 901px)", mob: "(max-width: 900px)" }, ctx => {
     const desk = ctx.conditions.desk;
     const tl = $("#tl");
@@ -724,13 +724,15 @@ var CONFIG = {
     gsap.fromTo("#tlLine", from, to);
   });
 
+  await tick();
   /* ---------- DUK ---------- */
-  gsap.from(".qa", { y: 24, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: "#qas", start: "top 85%", once: true } });
+  reveal(".qa", { y: 24, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.06 }, "#qas", 15);
 
+  await tick();
   /* ---------- Kontaktai ---------- */
   fitAll();
   gsap.fromTo(ctaBig, { "--w": 62 }, { "--w": 125, ease: "none", scrollTrigger: { trigger: ".cta", start: "top 92%", end: "top 15%", scrub: 0.6 } });
-  gsap.from(".cta-grid > *", { y: 40, opacity: 0, duration: 1.2, stagger: 0.1, ease: "expo.out", scrollTrigger: { trigger: ".cta-grid", start: "top 88%", once: true } });
+  reveal(".cta-grid > *", { y: 40, opacity: 0, duration: 1.2, stagger: 0.1, ease: "expo.out" }, ".cta-grid", 12);
   gsap.fromTo(footWord, { yPercent: 55 }, { yPercent: 0, ease: "none", scrollTrigger: { trigger: ".foot", start: "top bottom", end: "bottom bottom", scrub: 0.5 } });
 
   /* Apatinis žodis šviečia po pele ar pirštu */
@@ -766,20 +768,20 @@ var CONFIG = {
     el.addEventListener("pointerleave", () => { xT(0); yT(0); });
   });
 
+  await tick();
   /* Tamsios sekcijos: meniu pasikeičia (kuriama po prisegamų sekcijų) */
   $$(".story, .cta").forEach(sec => ScrollTrigger.create({ trigger: sec, start: "top 38px", end: "bottom 38px", toggleClass: { targets: nav, className: "dark" } }));
 
   /* ---------- Atnaujinimas ---------- */
   ScrollTrigger.sort();
   const refreshAll = () => { fitAll(); placeTap(); if (introDone) cacheChars(); ScrollTrigger.sort(); ScrollTrigger.refresh(); };
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(refreshAll, 60));
-  addEventListener("load", () => setTimeout(refreshAll, 60));
   let rT;
   addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(() => { fitAll(); placeTap(); if (introDone) cacheChars(); }, 150); });
   addEventListener("orientationchange", () => setTimeout(refreshAll, 400));
-  placeTap();
+  await (document.fonts ? document.fonts.ready : Promise.resolve());
+  await tick();
+  refreshAll();
 
-  runPre(() => intro.play());
   } catch (err) {
     /* Jei senesnė naršyklė ko nors nepalaiko, perkrauname be animacijų */
     if (window.console) console.error(err);
