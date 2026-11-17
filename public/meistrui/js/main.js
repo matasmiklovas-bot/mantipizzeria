@@ -209,7 +209,7 @@ var CONFIG = {
 
   /* ---------- Lietuvos žemėlapis ---------- */
   const M = window.LTMAP;
-  const QUERIES = [["santechnikas", "Šiauliai"], ["kirpykla", "Panevėžys"], ["autoservisas", "Utena"], ["masažas", "Alytus"], ["elektrikas", "Telšiai"], ["plytelių klojėjas", "Marijampolė"], ["kosmetologė", "Mažeikiai"], ["stogdengys", "Rokiškis"], ["stalius", "Tauragė"], ["santechnikas", "Biržai"]];
+  const QUERIES = [["santechnikas", "Šiauliai"], ["kirpykla", "Panevėžys"], ["autoservisas", "Utena"], ["masažas", "Alytus"], ["elektrikas", "Telšiai"], ["kosmetologė", "Mažeikiai"], ["stogdengys", "Rokiškis"]];
   const qTowns = QUERIES.map(q => q[1]);
   const LABELED = ["Vilnius", "Kaunas", "Klaipėda"].concat(qTowns);
   let mapEls = null;
@@ -396,7 +396,7 @@ var CONFIG = {
   /* ===== Be animacijų (sumažintas judesys arba nepavyko įkelti bibliotekų) ===== */
   if (!motion) {
     html.classList.remove("is-pre");
-    if (mapEls) { mapEls.dots.forEach(d => (d.style.fill = "#FF4F12")); mapEls.bubs.forEach((b, i) => { b.style.transform = "translate(-50%, calc(-100% - 14px))"; b.style.display = i > 6 ? "" : "none"; }); }
+    if (mapEls) { mapEls.dots.forEach(d => (d.style.fill = "#FF4F12")); mapEls.bubs.forEach((b, i) => { b.style.transform = "translate(-50%, calc(-100% - 14px))"; b.style.display = i >= QUERIES.length - 3 ? "" : "none"; }); }
     const go = () => { ctaBig.style.setProperty("--w", 125); fitAll(); };
     (document.fonts ? document.fonts.ready : Promise.resolve()).then(go);
     addEventListener("resize", go);
@@ -409,21 +409,15 @@ var CONFIG = {
   html.classList.add("motion");
   const fine = mq("(pointer: fine)");
 
-  /* Sklandus slinkimas (tik pelei; liečiant lieka natūralus) */
-  let lenis = null;
-  if (window.Lenis) {
-    lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-    lenis.on("scroll", ScrollTrigger.update);
-    gsap.ticker.add(t => lenis.raf(t * 1000));
-    gsap.ticker.lagSmoothing(0);
-  }
+  /* Natūralus naršyklės slinkimas: be „plaukiojimo“, ratukas reaguoja iš karto */
+  const lenis = null;
   $$('a[href^="#"]').forEach(a => a.addEventListener("click", e => {
     const id = a.getAttribute("href");
     const target = id === "#top" ? 0 : $(id);
     if (target === null) return;
     e.preventDefault();
     if (lenis) lenis.scrollTo(target, { duration: 1.6 });
-    else if (target === 0) window.scrollTo(0, 0);
+    else if (target === 0) { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (x) { window.scrollTo(0, 0); } }
     else target.scrollIntoView({ behavior: "smooth" });
   }));
 
@@ -539,25 +533,6 @@ var CONFIG = {
     gsap.from($$(".wi", h), { yPercent: 118, rotation: 4, duration: 1.3, ease: "expo.out", stagger: 0.07, scrollTrigger: { trigger: h, start: "top 88%", once: true } });
   });
 
-  /* ---------- Teiginys: žodžiai įsižiebia ---------- */
-  const st = $("#stateText");
-  const splitWords = node => {
-    Array.prototype.slice.call(node.childNodes).forEach(n => {
-      if (n.nodeType === 3) {
-        const frag = document.createDocumentFragment();
-        n.textContent.split(/(\s+)/).forEach(part => {
-          if (!part) return;
-          if (/^\s+$/.test(part)) frag.appendChild(document.createTextNode(part));
-          else { const s = document.createElement("span"); s.className = "wrd"; s.textContent = part; frag.appendChild(s); }
-        });
-        n.parentNode.replaceChild(frag, n);
-      } else if (n.nodeType === 1) splitWords(n);
-    });
-  };
-  splitWords(st);
-  gsap.fromTo($$(".wrd", st), { opacity: 0.13 }, { opacity: 1, stagger: 0.06, ease: "none", scrollTrigger: { trigger: st, start: "top 78%", end: "bottom 42%", scrub: 0.4 } });
-  gsap.from(".state-foot", { y: 30, opacity: 0, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: ".state-foot", start: "top 90%", once: true } });
-
   /* ---------- Žemėlapis ---------- */
   if (mapEls) {
     const len = mapEls.edge.getTotalLength();
@@ -573,18 +548,18 @@ var CONFIG = {
       mapQ.textContent = q[0] + " " + q[1];
       gsap.fromTo(mapQ, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out", overwrite: true });
     };
-    const Q0 = 2.6, QS = 0.75;
+    const Q0 = 1.9, QS = 0.5;
     const mtl = gsap.timeline({
       scrollTrigger: {
-        trigger: "#mapPin", start: "top top", end: () => "+=" + innerHeight * 2.4, pin: true, scrub: 0.6, anticipatePin: 1,
+        trigger: "#mapPin", start: "top top", end: () => "+=" + innerHeight * 1.3, pin: true, scrub: 0.5, anticipatePin: 1,
         onUpdate: s => { const t = s.progress * mtl.duration(); setQ(Math.min(QUERIES.length - 1, Math.max(0, Math.floor((t - Q0) / QS)))); }
       }
     });
-    mtl.to(mapEls.edge, { strokeDashoffset: 0, duration: 2.2, ease: "none" }, 0)
-      .from(mapEls.nb, { opacity: 0, duration: 1 }, 0.4)
-      .from(mapEls.land, { opacity: 0, duration: 0.9 }, 1.3)
-      .from(mapEls.dots, { scale: 0, duration: 0.5, stagger: { each: 0.025, from: "random" }, ease: "back.out(3)" }, 1.3)
-      .from(mapEls.labels, { opacity: 0, duration: 0.5, stagger: 0.03 }, 1.9);
+    mtl.to(mapEls.edge, { strokeDashoffset: 0, duration: 1.5, ease: "none" }, 0)
+      .from(mapEls.nb, { opacity: 0, duration: 0.8 }, 0.2)
+      .from(mapEls.land, { opacity: 0, duration: 0.7 }, 0.9)
+      .from(mapEls.dots, { scale: 0, duration: 0.4, stagger: { each: 0.018, from: "random" }, ease: "back.out(3)" }, 0.9)
+      .from(mapEls.labels, { opacity: 0, duration: 0.4, stagger: 0.02 }, 1.3);
     QUERIES.forEach((q, i) => {
       const t0 = Q0 + i * QS;
       const town = mapEls.town(q[1]);
@@ -594,7 +569,7 @@ var CONFIG = {
         .to(ring, { opacity: 1, duration: 0.2 }, t0);
       if (i < QUERIES.length - 2) mtl.to(mapEls.bubs[i], { opacity: 0, scale: 0.7, duration: 0.3 }, t0 + QS * 2.2);
     });
-    mtl.to({}, { duration: 0.8 });
+    mtl.to({}, { duration: 0.5 });
     setQ(0);
   }
 
@@ -625,7 +600,7 @@ var CONFIG = {
   const stl = gsap.timeline({
     defaults: { ease: "power2.out" },
     scrollTrigger: {
-      trigger: "#storyPin", start: "top top", end: () => "+=" + innerHeight * 2.8, pin: true, scrub: 0.7, anticipatePin: 1,
+      trigger: "#storyPin", start: "top top", end: () => "+=" + innerHeight * 1.6, pin: true, scrub: 0.5, anticipatePin: 1,
       onUpdate: s => { const t = s.progress * stl.duration(); setStep(t >= stl.labels.call ? 2 : t >= stl.labels.find - 0.2 ? 1 : 0); }
     }
   });
@@ -662,31 +637,55 @@ var CONFIG = {
   gsap.from("#cmp", { y: 80, rotationX: 10, transformPerspective: 1400, transformOrigin: "50% 0%", opacity: 0, duration: 1.4, ease: "expo.out", scrollTrigger: { trigger: "#cmp", start: "top 88%", once: true } });
   gsap.from(".cmp-note", { scale: 0.5, opacity: 0, duration: 0.6, stagger: 0.12, ease: "back.out(2)", scrollTrigger: { trigger: "#cmp", start: "top 55%", once: true } });
 
-  /* ---------- Pavyzdžiai: horizontalus slinkimas ---------- */
+  /* ---------- Pavyzdžiai: karuselė be puslapio prisegimo ---------- */
   const mm = gsap.matchMedia();
-  mm.add("(min-width: 901px)", () => {
-    html.classList.add("motion-desk");
-    const pad = () => parseFloat(getComputedStyle(trackWrap).paddingLeft) || 0;
-    const dist = () => Math.max(0, track.scrollWidth - trackWrap.clientWidth + pad() * 2);
+  {
     const bar = $("#demosBar");
     const cards = $$(".card", track);
-    const tween = gsap.to(track, {
-      x: () => -dist(), ease: "none",
-      scrollTrigger: { trigger: "#demosPin", start: "top top", end: () => "+=" + dist(), pin: true, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1, onUpdate: s => (bar.style.transform = `scaleX(${s.progress})`) }
+    const padL = () => parseFloat(getComputedStyle(trackWrap).paddingLeft) || 0;
+    const upd = () => {
+      const max = trackWrap.scrollWidth - trackWrap.clientWidth;
+      bar.style.transform = `scaleX(${max > 0 ? Math.max(0.06, trackWrap.scrollLeft / max).toFixed(4) : 1})`;
+      const atStart = trackWrap.scrollLeft < 8, atEnd = trackWrap.scrollLeft > max - 8;
+      $("#dPrev").disabled = atStart; $("#dNext").disabled = atEnd;
+    };
+    trackWrap.addEventListener("scroll", upd, { passive: true });
+    addEventListener("resize", upd);
+    upd();
+    const nearest = () => {
+      const x = trackWrap.scrollLeft + padL();
+      let best = 0, bd = 1e9;
+      cards.forEach((c, i) => { const d = Math.abs(c.offsetLeft - x); if (d < bd) { bd = d; best = i; } });
+      return best;
+    };
+    const goTo = i => {
+      i = Math.max(0, Math.min(cards.length - 1, i));
+      const left = cards[i].offsetLeft - padL();
+      try { trackWrap.scrollTo({ left: left, behavior: "smooth" }); } catch (x) { trackWrap.scrollLeft = left; }
+    };
+    $("#dPrev").addEventListener("click", () => goTo(nearest() - 1));
+    $("#dNext").addEventListener("click", () => goTo(nearest() + 1));
+    /* Pele galima tempti į šonus */
+    let dragX = null, startL = 0, moved = false;
+    trackWrap.addEventListener("dragstart", e => e.preventDefault());
+    trackWrap.addEventListener("pointerdown", e => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      dragX = e.clientX; startL = trackWrap.scrollLeft; moved = false;
     });
-    cards.forEach(card => {
-      const ph = $(".card-ph .phone, .real-shots", card);
-      if (ph) gsap.fromTo(ph, { y: 70, rotation: 6 }, { y: -30, rotation: -4, ease: "none", scrollTrigger: { trigger: card, containerAnimation: tween, start: "left right", end: "right left", scrub: true } });
-      const big = $(".card-big", card);
-      if (big) gsap.fromTo(big, { x: 140, rotation: -10 }, { x: -140, rotation: 10, ease: "none", scrollTrigger: { trigger: card, containerAnimation: tween, start: "left right", end: "right left", scrub: true } });
-      const h = $("h3", card);
-      gsap.fromTo(h, { "--w": 62 }, { "--w": 100, ease: "none", scrollTrigger: { trigger: card, containerAnimation: tween, start: "left right", end: "center center", scrub: true } });
+    addEventListener("pointermove", e => {
+      if (dragX === null) return;
+      const dx = e.clientX - dragX;
+      if (!moved && Math.abs(dx) > 5) { moved = true; trackWrap.classList.add("dragging"); }
+      if (moved) trackWrap.scrollLeft = startL - dx;
     });
-    return () => { html.classList.remove("motion-desk"); gsap.set(track, { clearProps: "transform" }); };
-  });
-  mm.add("(max-width: 900px)", () => {
-    gsap.from($$(".card", track).slice(0, 2), { x: 120, rotation: 4, opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.12, scrollTrigger: { trigger: trackWrap, start: "top 85%", once: true } });
-  });
+    addEventListener("pointerup", () => {
+      if (dragX === null) return;
+      dragX = null;
+      if (moved) { const i = nearest(); trackWrap.classList.remove("dragging"); goTo(i); }
+    });
+    trackWrap.addEventListener("click", e => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    gsap.from(cards.slice(0, 3), { x: 140, opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: trackWrap, start: "top 85%", once: true } });
+  }
 
   /* ---------- Kas įeina ---------- */
   gsap.from("#bento .tile", { y: 100, rotationX: -18, transformPerspective: 1000, transformOrigin: "50% 0%", opacity: 0, duration: 1.3, ease: "expo.out", stagger: 0.09, scrollTrigger: { trigger: "#bento", start: "top 82%", once: true } });
