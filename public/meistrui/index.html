@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Svetainės meistrams</title>
+<meta name="description" content="Gražios ir paprastos svetainės santechnikams, kirpykloms, autoservisams ir masažuotojams. Per 5 darbo dienas, nuo 150 €.">
+<meta name="theme-color" content="#EEEDE8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=DM+Serif+Display:ital@0;1&family=Onest:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script>!function(d){var r=d.documentElement,s=!1;r.className+=" js";try{s=sessionStorage.getItem("m-safe")==="1"}catch(e){}if(s)r.className+=" safe";try{if(!s&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches)r.className+=" is-pre"}catch(e){}setTimeout(function(){r.className=r.className.replace(" is-pre","")},6000)}(document);</script>
+</head>
+<body>
+<div class="pre" id="pre" aria-hidden="true">
+  <div class="pre-in">
+    <svg class="pre-pin" viewBox="0 0 32 32"><path d="M16 2C9.4 2 4.5 7 4.5 13.3 4.5 21.6 16 30 16 30s11.5-8.4 11.5-16.7C27.5 7 22.6 2 16 2Z" fill="#EDECE7"/><circle cx="16" cy="13" r="4.6" fill="#FF4F12"/></svg>
+    <div class="pre-word"><span>M</span><span>e</span><span>i</span><span>s</span><span>t</span><span>r</span><span>u</span><span>i</span></div>
+    <div class="pre-tape"><span class="pre-mask"></span><span class="pre-cap">Matuojame jūsų svetainę</span><span class="pre-num" id="preNum">0 cm</span></div>
+  </div>
+</div>
+<div class="cur" id="cur" aria-hidden="true"><span class="cur-ring"><span class="cur-txt" id="curTxt"></span></span></div>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="logo" href="#top" aria-label="Meistrui, į pradžią">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2C9.4 2 4.5 7 4.5 13.3 4.5 21.6 16 30 16 30s11.5-8.4 11.5-16.7C27.5 7 22.6 2 16 2Z" fill="#121316"/><circle cx="16" cy="13" r="4.6" fill="#FF4F12"/></svg>
+      <span data-brand>Meistrui</span>
+    </a>
+    <nav class="nav-links" aria-label="Pagrindinis meniu">
+      <a href="#kaip">Kaip veikia</a>
+      <a href="#darbai">Pavyzdžiai</a>
+      <a href="#kainos">Kainos</a>
+      <a href="#duk">Klausimai</a>
+    </nav>
+    <a class="btn sm mag" href="#kontaktai"><span class="btn-label"><span>Pasikalbėkim</span><span aria-hidden="true">Pasikalbėkim</span></span><span class="btn-ico"><i data-ic="arrow-right"></i></span></a>
+  </div>
+  <span class="nav-prog" id="navProg"></span>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="hero-kicker" data-in><span class="live" aria-hidden="true"></span>Svetainės santechnikams, kirpykloms, autoservisams ir masažuotojams</p>
+          <h1 class="disp" id="heroTitle">
+            <span class="wd"><span class="wi">Meistrams,</span></span><br>
+            <span class="wd"><span class="wi">kuriuos</span></span>
+            <span class="wd"><span class="wi">verta</span></span><br>
+            <span class="mark"><span class="wd"><span class="wi">rasti.</span></span><svg viewBox="0 0 300 120" preserveAspectRatio="none" aria-hidden="true"><path id="heroMark" d="M46 20C120 4 252 6 286 42c22 26-14 66-118 72C76 118 12 100 8 66 4 36 64 12 156 9c48-1 88 4 110 14"/></svg></span>
+          </h1>
+          <p class="hero-sub" data-in>Padarau gražią ir paprastą svetainę jūsų darbui: paslaugos, kainos, telefonas, žemėlapis ir registracija. Tekstus ir nuotraukas sutvarkau pats.</p>
+          <div class="hero-cta" data-in>
+            <a class="btn hi mag" href="#kontaktai"><span class="btn-label"><span>Pasikalbėkim</span><span aria-hidden="true">Pasikalbėkim</span></span><span class="btn-ico"><i data-ic="arrow-right"></i></span></a>
+            <a class="btn line" href="#darbai"><span class="btn-label"><span>Žiūrėti pavyzdžius</span><span aria-hidden="true">Žiūrėti pavyzdžius</span></span></a>
+          </div>
+        </div>
+
+        <div class="stage" id="stage" aria-label="Svetainių pavyzdžiai telefonuose">
+          <div class="stage-glow" aria-hidden="true"></div>
+          <div class="stage-in" id="stageIn">
+            <div class="slot p-l"><div class="pf" data-depth="0.6"><div class="px"><div class="phone" data-site="zirkles"></div></div></div></div>
+            <div class="slot p-r"><div class="pf" data-depth="0.8"><div class="px"><div class="phone" data-site="ratas"></div></div></div></div>
+            <div class="slot p-c"><div class="pf" data-depth="1"><div class="px"><div class="phone" data-site="vamzdis"></div></div></div></div>
+            <div class="stage-tag t1" data-depth="1.4"><span class="tg-ico"><i data-ic="phone-call"></i></span><span><b>Naujas skambutis</b><span class="tg-sub">klientas rado svetainėje</span></span></div>
+            <div class="stage-tag t2" data-depth="1.2"><span class="tg-ico"><i data-ic="map-pin"></i></span><span><b>Google žemėlapiai</b><span class="tg-sub">profilis sutvarkytas</span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-stats" data-in>
+        <div class="stat"><b>5 d.</b><span>nuo pokalbio iki veikiančios svetainės</span></div>
+        <div class="stat"><b>150 €</b><span>vienkartinė kaina, be paslėptų mokesčių</span></div>
+        <div class="stat"><b>15 €/mėn.</b><span>talpinimas, domenas ir pakeitimai</span></div>
+        <div class="stat"><b>0 €</b><span>kol nepamatote ir nepatvirtinate</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JUOSTA -->
+  <div class="marq" aria-hidden="true">
+    <div class="marq-row" id="marq1"></div>
+    <div class="marq-row out" id="marq2"></div>
+  </div>
+
+  <!-- TEIGINYS -->
+  <section class="state">
+    <div class="wrap state-grid">
+      <p class="idx"><b>01</b><span>Problema</span></p>
+      <div>
+        <p class="state-text" id="stateText">Kai prakiūra vamzdis, niekas nevarto Facebook. Žmogus rašo Google <span class="hl">„santechnikas Šiauliai“</span> ir skambina pirmam, kurį randa. Jei jūsų ten nėra, tas skambutis atitenka kitam.</p>
+        <div class="state-foot">
+          <p>Dauguma meistrų mažesniuose miestuose turi tik Facebook puslapį arba nieko. Nauji klientai jų paprasčiausiai neranda.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ŽEMĖLAPIS -->
+  <section class="ltmap" id="miestai">
+    <div class="ltmap-pin" id="mapPin">
+      <div class="wrap ltmap-grid">
+        <div class="ltmap-copy">
+          <p class="idx"><b>02</b><span>Jūsų miestas</span></p>
+          <h2 class="disp rv-h">Kasdien kažkas jūsų mieste ieško meistro</h2>
+          <p class="ltmap-p">Šiauliuose, Utenoje ar Alytuje žmonės ieško taip pat, kaip Vilniuje. Mažesniame mieste užtenka vienos geros svetainės, kad išsiskirtumėte.</p>
+          <div class="ltmap-q" aria-live="off"><span class="ltmap-qi"><i data-ic="search"></i></span><span class="ltmap-qt" id="mapQ">santechnikas Šiauliai</span><span class="q-caret"></span></div>
+        </div>
+        <div class="ltmap-art">
+          <div class="ltmap-box" id="ltBox"><svg id="ltSvg" role="img" aria-label="Lietuvos žemėlapis su miestais ir paieškų pavyzdžiais"></svg><div class="ltmap-bubs" id="ltBubs"></div></div>
+          <p class="ltmap-note">Paieškų pavyzdžiai iliustraciniai</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ISTORIJA -->
+  <section class="story" id="kaip">
+    <div class="story-pin" id="storyPin">
+      <div class="wrap story-grid">
+        <div class="story-ph"><div class="phone" id="storyPhone"></div></div>
+        <div class="story-copy">
+          <p class="idx"><b>03</b><span>Kaip tai veikia</span></p>
+          <h2 class="disp rv-h">Nuo paieškos iki skambučio</h2>
+          <ol class="steps" id="steps">
+            <li class="step on"><span class="step-n">01</span><h3>Žmogus ieško</h3><p>Antradienį, 21:40, kažkam Šiauliuose prakiuro vamzdis. Jis paima telefoną ir rašo „santechnikas Šiauliai“.</p></li>
+            <li class="step"><span class="step-n">02</span><h3>Randa jus</h3><p>Svetainė ir sutvarkytas Google žemėlapių profilis parodo, kad dirbate, kiek kainuoja ir kad esate netoli.</p></li>
+            <li class="step"><span class="step-n">03</span><h3>Paskambina</h3><p>Vienas paspaudimas ant didelio mygtuko. Skambutis atitenka jums, o ne konkurentui.</p></li>
+          </ol>
+          <div class="step-dots" id="stepDots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIEŠ IR PO -->
+  <section class="cmp" id="palyginimas">
+    <div class="wrap">
+      <div class="cmp-head">
+        <div>
+          <p class="idx"><b>04</b><span>Prieš ir po</span></p>
+          <h2 class="disp rv-h">Tas pats meistras. Du skirtingi pirmi įspūdžiai.</h2>
+        </div>
+        <p>Patraukite rodyklę į šonus ir palyginkite, ką mato klientas: Facebook įrašą ar tvarkingą svetainę.</p>
+      </div>
+    </div>
+    <div class="tab-dev" id="cmp">
+      <div class="tab-scr" id="cmpScr" data-cur="Tempkite">
+        <div class="cmp-a" id="cmpA"></div>
+        <div class="cmp-b" id="cmpB"></div>
+        <span class="cmp-lbl l" id="cmpLA">Dabar: tik Facebook</span>
+        <span class="cmp-lbl r" id="cmpLB">Su svetaine</span>
+        <div class="cmp-handle" id="cmpHandle" role="slider" tabindex="0" aria-label="Palyginimo slankiklis" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span class="cmp-knob"><i data-ic="arrow-left-right"></i></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAVYZDŽIAI -->
+  <section class="demos" id="darbai">
+    <div class="demos-pin" id="demosPin">
+      <div class="wrap demos-head">
+        <div>
+          <p class="idx"><b>05</b><span>Pavyzdžiai</span></p>
+          <h2 class="disp rv-h">Kiekvienam savas veidas</h2>
+        </div>
+        <div>
+          <p>Ne vienas šablonas visiems. Spalvos, šriftai ir tekstai parenkami pagal jūsų darbą ir jūsų klientus.</p>
+          <p class="demos-note">Keturi pavyzdiniai dizainai su išgalvotais pavadinimais ir vienas tikras darbas</p>
+        </div>
+      </div>
+      <div class="track-wrap" id="trackWrap">
+        <div class="track" id="track">
+          <!-- kortelės sugeneruojamos main.js -->
+          <article class="card k-real">
+            <div class="card-copy">
+              <div class="card-top"><span class="real-badge"><i data-ic="check"></i>Tikras projektas</span><b>05 / 05</b></div>
+              <h3>Manti Pizzeria</h3>
+              <p class="c-trade">Picerija · meniu ir užsakymai internetu</p>
+              <ul>
+                <li><i data-ic="check"></i>Meniu su nuotraukomis ir kainomis</li>
+                <li><i data-ic="check"></i>Užsakymas ir mokėjimas kortele</li>
+                <li><i data-ic="check"></i>Užsakymų ekranas virtuvei</li>
+              </ul>
+              <a class="btn" href="https://www.mantipizzeria.lt" target="_blank" rel="noopener"><span class="btn-label"><span>mantipizzeria.lt</span><span aria-hidden="true">mantipizzeria.lt</span></span><span class="btn-ico"><i data-ic="arrow-up-right"></i></span></a>
+            </div>
+            <div class="real-shots">
+              <div class="shot-desk"><div class="shot-bar"><i></i><i></i><i></i><span>mantipizzeria.lt</span></div><img src="img/piz-desk.jpg" alt="Manti Pizzeria svetainės pradinis puslapis" width="1920" height="1200"></div>
+              <div class="phone" data-img="img/piz-menu.jpg"></div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="demos-bar" aria-hidden="true"><i id="demosBar"></i></div>
+    </div>
+  </section>
+
+  <!-- KAS ĮEINA -->
+  <section class="incl" id="iskaiciuota">
+    <div class="wrap">
+      <div class="incl-head">
+        <div>
+          <p class="idx"><b>06</b><span>Kas įeina</span></p>
+          <h2 class="disp rv-h">Viskas, ko reikia. Nieko nereikalingo.</h2>
+        </div>
+        <p>Vienas puslapis, kuriame klientas per kelias sekundes randa tai, ko ieško: ką darote, kiek kainuoja ir kaip jums paskambinti.</p>
+      </div>
+      <div class="bento" id="bento">
+        <article class="tile wide">
+          <div class="viz v-call"><span class="rg"></span><span class="rg"></span><span class="rg"></span><span class="pill"><i data-ic="phone"></i>Skambinti</span><span class="hand"><i data-ic="hand"></i></span></div>
+          <div><h3>Skambinimo mygtukas</h3><p>Didelis ir visada po ranka. Svarbiausias mygtukas visoje svetainėje, nes būtent jis atneša klientus.</p></div>
+        </article>
+        <article class="tile">
+          <div class="viz"><div class="v-price">
+            <div><span>Iškvietimas</span><b>25 €</b></div>
+            <div class="flip"><span>Maišytuvo keitimas</span><b><span>30 €</span><span>32 €</span><span>30 €</span></b></div>
+            <div><span>Kanalizacijos valymas</span><b>40 €</b></div>
+            <div><span>Boilerio montavimas</span><b>60 €</b></div>
+          </div></div>
+          <div><h3>Kainos</h3><p>Aiškios kainos reiškia mažiau klausimų telefonu. Pasikeitė? Pakeičiu per dieną.</p></div>
+        </article>
+        <article class="tile">
+          <div class="viz"><div class="v-map" id="vMap"><span class="v-pin-ring"></span><span class="v-pin-sh"></span><span class="v-pin"><i data-ic="map-pin"></i></span></div></div>
+          <div><h3>Žemėlapis</h3><p>Kur jus rasti ir kaip atvažiuoti. Vienu paspaudimu atsidaro navigacija.</p></div>
+        </article>
+        <article class="tile dark">
+          <div class="viz"><div class="v-book">
+            <div class="v-days"><span>Pr<b>23</b></span><span class="on">An<b>24</b></span><span>Tr<b>25</b></span><span>Kt<b>26</b></span><span>Pn<b>27</b></span></div>
+            <div class="v-slots"><span class="x">9:00</span><span>10:30</span><span class="x">12:00</span><span class="pick">13:30</span><span>15:00</span><span>16:30</span></div>
+            <div class="v-toast"><i><i data-ic="check"></i></i><span>Užregistruota: antradienis, 13:30<small>Laiškas jau jūsų pašte</small></span></div>
+          </div></div>
+          <div><h3>Registracija</h3><p>Klientas pasirenka laiką pats, kol jūs dirbate. Jums ateina laiškas.</p></div>
+        </article>
+        <article class="tile hi">
+          <div class="viz"><div class="v-gbp">
+            <div class="v-gbp-img"></div>
+            <b>Vamzdis</b>
+            <div class="row"><span>4,9</span><span class="v-stars" id="vStars"></span><span>· Santechnikas</span></div>
+            <div class="row"><span class="open">Atidaryta</span><span>· uždaroma 21:00</span></div>
+            <div class="acts"><span>Skambinti</span><span>Maršrutas</span><span>Svetainė</span></div>
+          </div></div>
+          <div><h3>Google žemėlapių profilis</h3><p>Sutvarkau jūsų kortelę: nuotraukos, darbo laikas, telefonas ir nuoroda į svetainę.</p></div>
+        </article>
+        <article class="tile full">
+          <div class="viz"><div class="v-resp"><div class="v-dev"><i class="h"></i><i class="a"></i><i></i><i></i><i style="width:70%"></i></div></div></div>
+          <div><h3>Telefonui ir kompiuteriui</h3><p>Dauguma jūsų klientų ieško telefone, todėl svetainė pirmiausia kuriama telefonui. Kompiuteryje ji atrodo taip pat gerai.</p></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- KAINOS -->
+  <section class="price" id="kainos">
+    <div class="wrap">
+      <div class="price-head">
+        <div>
+          <p class="idx"><b>07</b><span>Kainos</span></p>
+          <h2 class="disp rv-h">Kaina žinoma iš anksto</h2>
+        </div>
+        <p>Jokių „priklauso nuo“. Mokate tada, kai pamatote svetainę ir ji jums tinka.</p>
+      </div>
+      <div class="plans" id="plans">
+        <div class="plan">
+          <div class="plan-top"><h3>Vizitinė</h3></div>
+          <p class="plan-desc">Vienas puslapis, kurio užtenka daugumai meistrų.</p>
+          <div class="amt"><b>150</b><span>€</span></div>
+          <ul>
+            <li><i data-ic="check"></i>Paslaugos ir kainos</li>
+            <li><i data-ic="check"></i>Didelis skambinimo mygtukas</li>
+            <li><i data-ic="check"></i>Žemėlapis ir darbo laikas</li>
+            <li><i data-ic="check"></i>Tekstus parašau aš</li>
+            <li><i data-ic="check"></i>Paruošta per 5 darbo dienas</li>
+          </ul>
+          <div class="plan-gap"></div>
+          <a class="btn line" href="#kontaktai"><span class="btn-label"><span>Pasirinkti</span><span aria-hidden="true">Pasirinkti</span></span></a>
+        </div>
+        <div class="plan feat">
+          <div class="plan-top"><h3>Su registracija</h3><span class="plan-tag">Renkasi dažniausiai</span></div>
+          <p class="plan-desc">Klientai užsiregistruoja patys, o jūs gaunate laišką.</p>
+          <div class="amt"><b>250</b><span>€</span></div>
+          <ul>
+            <li><i data-ic="check"></i>Viskas, kas yra „Vizitinėje“</li>
+            <li><i data-ic="check"></i>Registracijos forma</li>
+            <li><i data-ic="check"></i>Darbų nuotraukų galerija</li>
+            <li><i data-ic="check"></i>Google žemėlapių profilio sutvarkymas</li>
+            <li><i data-ic="check"></i>Nufotografuoju darbus vietoje</li>
+          </ul>
+          <div class="plan-gap"></div>
+          <a class="btn hi mag" href="#kontaktai"><span class="btn-label"><span>Pasirinkti</span><span aria-hidden="true">Pasirinkti</span></span><span class="btn-ico"><i data-ic="arrow-right"></i></span></a>
+        </div>
+        <div class="plan">
+          <div class="plan-top"><h3>Priežiūra</h3></div>
+          <p class="plan-desc">Kad svetainė veiktų, o jums nereikėtų apie ją galvoti.</p>
+          <div class="amt"><b>15</b><span>€/mėn.</span></div>
+          <ul>
+            <li><i data-ic="check"></i>Talpinimas ir .lt domenas</li>
+            <li><i data-ic="check"></i>Saugus ryšys (https)</li>
+            <li><i data-ic="check"></i>Kainų ir darbo laiko keitimai</li>
+            <li><i data-ic="check"></i>Atsakau per 1 darbo dieną</li>
+            <li><i data-ic="check"></i>Galima nutraukti bet kada</li>
+          </ul>
+          <div class="plan-gap"></div>
+          <a class="btn line" href="#kontaktai"><span class="btn-label"><span>Klausti daugiau</span><span aria-hidden="true">Klausti daugiau</span></span></a>
+        </div>
+      </div>
+      <div class="price-foot">
+        <div><i data-ic="shield-check"></i><span>Mokate tik tada, kai svetainė jums patinka.</span></div>
+        <div><i data-ic="globe"></i><span>Domenas registruojamas jūsų vardu. Svetainė priklauso jums.</span></div>
+        <div><i data-ic="receipt"></i><span>Sudėtingesni darbai, pvz., užsakymai internetu, kainuoja pagal susitarimą.</span></div>
+      </div>
+      <div class="calc" id="calc">
+        <div class="calc-copy">
+          <h3>Ar apsimoka?</h3>
+          <p>Įveskite savo skaičius. Skaičiuoklė parodys, per kiek laiko atsipirks svetainė „Su registracija“ kartu su priežiūra.</p>
+        </div>
+        <div class="calc-ctrl">
+          <div><label for="cClients"><span>Nauji klientai per mėnesį iš svetainės</span><output id="oClients" for="cClients">3</output></label><input type="range" id="cClients" min="1" max="20" step="1" value="3"></div>
+          <div><label for="cPrice"><span>Vidutinė vieno darbo kaina</span><output id="oPrice" for="cPrice">60 €</output></label><input type="range" id="cPrice" min="10" max="300" step="5" value="60"></div>
+        </div>
+        <div class="calc-out">
+          <div><small>Papildomos pajamos per metus, atėmus priežiūrą</small><b id="rYear">1 980 €</b></div>
+          <div><small>Svetainė atsipirks per</small><b id="rDays">46 d.</b></div>
+        </div>
+        <p class="calc-note">Skaičiuojama tik pagal jūsų įvestus skaičius. Tai ne pažadas, o paprasta aritmetika.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EIGA -->
+  <section class="proc" id="eiga">
+    <div class="wrap">
+      <div class="proc-head">
+        <div>
+          <p class="idx"><b>08</b><span>Eiga</span></p>
+          <h2 class="disp rv-h">Penkios darbo dienos</h2>
+        </div>
+        <p>Jūsų laiko reikia maždaug pusvalandžio. Visa kita padarau aš.</p>
+      </div>
+      <div class="tl" id="tl">
+        <div class="tl-line"><i id="tlLine"></i></div>
+        <div class="tl-step"><span class="tl-dot"></span><p class="tl-day">1<small>pirma diena</small></p><h3>Pokalbis</h3><p>15 minučių telefonu arba užsuku pas jus. Aptariame paslaugas, kainas ir ko norite.</p><span class="tl-who">Jūs ir aš</span></div>
+        <div class="tl-step"><span class="tl-dot"></span><p class="tl-day">2<small>antra diena</small></p><h3>Medžiaga</h3><p>Atsiunčiate kelias nuotraukas ir kainas. Jei neturite, nufotografuoju ir surašau pats.</p><span class="tl-who">Jūs arba aš</span></div>
+        <div class="tl-step"><span class="tl-dot"></span><p class="tl-day">3–4<small>dienos</small></p><h3>Kūrimas ir peržiūra</h3><p>Parodau svetainę jūsų telefone ir pataisau viską, kas nepatinka.</p><span class="tl-who me">Aš</span></div>
+        <div class="tl-step"><span class="tl-dot"></span><p class="tl-day">5<small>penkta diena</small></p><h3>Paleidimas</h3><p>Svetainė internete, nuoroda Google žemėlapiuose ir Facebook. Tik tada mokate.</p><span class="tl-who me">Aš</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DUK -->
+  <section class="faq" id="duk">
+    <div class="wrap faq-grid">
+      <div class="faq-side">
+        <p class="idx"><b>09</b><span>Klausimai</span></p>
+        <h2 class="disp rv-h">Ką meistrai klausia dažniausiai</h2>
+        <p>Neradote savo klausimo? Paskambinkite, atsakysiu per kelias minutes.</p>
+      </div>
+      <div class="qas" id="qas">
+        <div class="qa open">
+          <button class="qa-q" type="button" aria-expanded="true" id="q1" aria-controls="a1">Man užtenka Facebook. Kam dar svetainė?<span class="qa-pm"><i data-ic="plus"></i></span></button>
+          <div class="qa-a" id="a1" role="region" aria-labelledby="q1"><div><p>Facebook gerai tiems, kurie jus jau žino. Žmogus, kuris Google rašo „santechnikas Šiauliai“, jūsų Facebook puslapio dažniausiai nepamato. Jis skambina tam, kurį randa pirmą.</p><p>Svetainė Facebook nepakeičia. Ji padaro taip, kad jus rastų ir tie, kurie jūsų dar nepažįsta.</p></div></div>
+        </div>
+        <div class="qa">
+          <button class="qa-q" type="button" aria-expanded="false" id="q2" aria-controls="a2">Ar man reikės pačiam ką nors daryti?<span class="qa-pm"><i data-ic="plus"></i></span></button>
+          <div class="qa-a" id="a2" role="region" aria-labelledby="q2"><div><p>Beveik nieko. Reikia 15 minučių pokalbio ir kelių nuotraukų. Jei nuotraukų neturite, atvažiuoju ir nufotografuoju. Tekstus parašau aš, jūs tik patvirtinate.</p></div></div>
+        </div>
+        <div class="qa">
+          <button class="qa-q" type="button" aria-expanded="false" id="q3" aria-controls="a3">Kas, jei pasikeis kainos ar darbo laikas?<span class="qa-pm"><i data-ic="plus"></i></span></button>
+          <div class="qa-a" id="a3" role="region" aria-labelledby="q3"><div><p>Su priežiūra tiesiog parašote žinutę, ir pakeitimą padarau per vieną darbo dieną. Be priežiūros vienas pakeitimas kainuoja 10 €.</p></div></div>
+        </div>
+        <div class="qa">
+          <button class="qa-q" type="button" aria-expanded="false" id="q4" aria-controls="a4">Ar svetainė bus mano?<span class="qa-pm"><i data-ic="plus"></i></span></button>
+          <div class="qa-a" id="a4" role="region" aria-labelledby="q4"><div><p>Taip. Domenas registruojamas jūsų vardu. Jei nustosite mokėti už priežiūrą, perduodu visus failus ir prieigas, ir svetainę galėsite laikyti kur norite.</p></div></div>
+        </div>
+        <div class="qa">
+          <button class="qa-q" type="button" aria-expanded="false" id="q5" aria-controls="a5">Ar garantuojate pirmą vietą Google paieškoje?<span class="qa-pm"><i data-ic="plus"></i></span></button>
+          <div class="qa-a" id="a5" role="region" aria-labelledby="q5"><div><p>Ne. To sąžiningai negali garantuoti niekas. Svetainė ir sutvarkytas Google žemėlapių profilis labai padidina tikimybę, kad jus ras vietinėje paieškoje. Be jų jūsų ten nėra visai.</p></div></div>
+        </div>
+        <div class="qa">
+          <button class="qa-q" type="button" aria-expanded="false" id="q6" aria-controls="a6">Kodėl ne Wix ar studentas už 50 €?<span class="qa-pm"><i data-ic="plus"></i></span></button>
+          <div class="qa-a" id="a6" role="region" aria-labelledby="q6"><div><p>Galite rinktis ir juos. Su Wix viską darote patys ir mokate kas mėnesį. Pas mane gaunate paruoštą svetainę su tekstais, nuotraukomis ir Google profiliu per penkias dienas, o jei kas nors sugenda, turite kam paskambinti.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KONTAKTAI -->
+  <section class="cta" id="kontaktai">
+    <div class="wrap">
+      <p class="idx"><b>10</b><span>Kontaktai</span></p>
+      <h2 class="disp cta-big" id="ctaBig">Pasikalbėkim<span class="dot">.</span></h2>
+      <div class="cta-grid">
+        <p class="cta-lead">Per 15 minučių pasakysiu, ar svetainė jums apsimoka. <span>Jei ne, taip ir pasakysiu. Pokalbis nieko nekainuoja.</span></p>
+        <div class="cta-card">
+          <div class="cta-line"><small>Telefonas</small><a href="tel:+37060000000" data-tel><span data-phone>+370 6XX XXXXX</span></a></div>
+          <div class="cta-line"><small>El. paštas</small><a class="sm" href="mailto:vardas@pavyzdys.lt" data-mail><span data-email>vardas@pavyzdys.lt</span></a></div>
+          <div class="cta-line"><small>Dirbu</small><span class="v sm" data-area>Šiauliuose ir aplinkiniuose miestuose</span></div>
+          <div class="cta-acts">
+            <a class="btn hi mag" href="tel:+37060000000" data-tel><span class="btn-label"><span>Skambinti</span><span aria-hidden="true">Skambinti</span></span><span class="btn-ico"><i data-ic="phone"></i></span></a>
+            <button class="btn light" type="button" id="copyBtn"><span class="btn-label"><span>Kopijuoti numerį</span><span aria-hidden="true">Kopijuoti numerį</span></span><span class="btn-ico"><i data-ic="copy"></i></span></button>
+          </div>
+          <p class="copied" id="copied" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <div class="wrap foot-in">
+        <span>© 2026 <span data-brand>Meistrui</span> · svetainės vietiniams meistrams</span>
+        <nav aria-label="Apačios meniu"><a href="#kaip">Kaip veikia</a><a href="#darbai">Pavyzdžiai</a><a href="#kainos">Kainos</a><a href="#duk">Klausimai</a><a href="#top">Į viršų ↑</a></nav>
+      </div>
+      <div class="foot-word" id="footWord" aria-hidden="true">Meistrui</div>
+    </div>
+  </section>
+</main>
+
+<script src="js/icons.js"></script>
+<script src="js/gsap.min.js"></script>
+<script src="js/ScrollTrigger.min.js"></script>
+<script src="js/lenis.compat.js"></script>
+<script src="js/ltmap.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
