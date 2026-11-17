@@ -1,10 +1,11 @@
 /* ===== Pakeiskite šiuos duomenis savo tikrais ===== */
 var CONFIG = {
   brand: "Meistrui",
-  phoneDisplay: "+370 6XX XXXXX",
-  phoneTel: "+37060000000",
-  email: "vardas@pavyzdys.lt",
-  area: "Šiauliuose ir aplinkiniuose miestuose"
+  owner: "Matas Miklovas",
+  phoneDisplay: "+370 600 70822",
+  phoneTel: "+37060070822",
+  email: "matasmiklovas@gmail.com",
+  area: "Palangoje, Klaipėdoje ir visoje Lietuvoje"
 };
 
 (function () {
@@ -20,6 +21,7 @@ var CONFIG = {
 
   /* ---------- Kontaktai ---------- */
   $$("[data-brand]").forEach(el => (el.textContent = CONFIG.brand));
+  $$("[data-owner]").forEach(el => (el.textContent = CONFIG.owner));
   $$("[data-phone]").forEach(el => (el.textContent = CONFIG.phoneDisplay));
   $$("[data-email]").forEach(el => (el.textContent = CONFIG.email));
   $$("[data-area]").forEach(el => (el.textContent = CONFIG.area));
@@ -295,14 +297,26 @@ var CONFIG = {
   let calcBreak = false;
   const renderCalc = () => {
     rYear.textContent = (calcState.year < 0 ? "−" : "") + fmtEur(Math.abs(calcState.year));
+    rYear.classList.toggle("long", rYear.textContent.length > 9);
     if (calcBreak) rDays.textContent = "neatsipirks";
     else { const d = Math.round(calcState.days); rDays.textContent = d > 90 ? Math.round(d / 30) + " mėn." : d + " d."; }
   };
+  /* Netiesinė skalė: mažas reikšmes lengva nustatyti tiksliai, o galima pasiekti 100 klientų ir 1000 € */
+  const K = 2.2;
+  const fromPos = (pos, min, max) => min + (max - min) * Math.pow(pos / 1000, K);
+  const toPos = (v, min, max) => Math.round(1000 * Math.pow((v - min) / (max - min), 1 / K));
+  const snapPrice = v => (v < 100 ? Math.round(v / 5) * 5 : v < 300 ? Math.round(v / 10) * 10 : Math.round(v / 50) * 50);
+  const getClients = () => Math.max(1, Math.min(100, Math.round(fromPos(+cC.value, 1, 100))));
+  const getPrice = () => Math.max(10, Math.min(1000, snapPrice(fromPos(+cP.value, 10, 1000))));
+  cC.value = toPos(3, 1, 100);
+  cP.value = toPos(60, 10, 1000);
   const calc = anim => {
-    const c = +cC.value, p = +cP.value;
+    const c = getClients(), p = getPrice();
     $("#oClients").textContent = c;
-    $("#oPrice").textContent = p + " €";
-    [cC, cP].forEach(i => i.style.setProperty("--p", ((i.value - i.min) / (i.max - i.min) * 100) + "%"));
+    $("#oPrice").textContent = p + "\u00a0€";
+    cC.setAttribute("aria-valuetext", c + " klientų per mėnesį");
+    cP.setAttribute("aria-valuetext", p + " eurų už darbą");
+    [cC, cP].forEach(i => i.style.setProperty("--p", (i.value / 10) + "%"));
     const monthly = c * p;
     const net = monthly - 15;
     const year = net * 12;

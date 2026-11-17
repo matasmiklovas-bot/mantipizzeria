@@ -135,7 +135,7 @@ body::after {
 .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 56px; border-top: 1px solid var(--line); }
 .stat { padding: 24px 24px 30px 0; display: grid; gap: 6px; }
 .stat + .stat { padding-left: 24px; border-left: 1px solid var(--line); }
-.stat b { font-family: var(--display); font-weight: 800; font-size: clamp(30px, 3vw, 44px); line-height: 1; letter-spacing: -.03em; font-variation-settings: "wdth" 108; font-variant-numeric: tabular-nums; }
+.stat b { white-space: nowrap; font-family: var(--display); font-weight: 800; font-size: clamp(30px, 3vw, 44px); line-height: 1; letter-spacing: -.03em; font-variation-settings: "wdth" 108; font-variant-numeric: tabular-nums; }
 .stat span { font-size: 14px; color: var(--mute); max-width: 24ch; line-height: 1.4; }
 
 @media (max-width: 960px) {
@@ -846,7 +846,7 @@ html.has-cur .cur { display: block; position: fixed; top: 0; left: 0; z-index: 2
 .calc-out { display: flex; flex-direction: column; gap: 14px; position: relative; }
 .calc-out div { padding: 18px 22px; border-radius: 18px; background: #1E2024; box-shadow: inset 0 0 0 1px var(--d-line); }
 .calc-out small { display: block; font-size: 13px; color: var(--d-mute); }
-.calc-out b { display: block; font: 800 clamp(34px, 3.4vw, 52px)/1.05 var(--display); letter-spacing: -.03em; margin-top: 6px; font-variant-numeric: tabular-nums; font-variation-settings: "wdth" 100; }
+.calc-out b { display: block; white-space: nowrap; font: 800 clamp(34px, 3.4vw, 52px)/1.05 var(--display); letter-spacing: -.03em; margin-top: 6px; font-variant-numeric: tabular-nums; font-variation-settings: "wdth" 100; }
 .calc-out div:first-child b { color: var(--hi); }
 .calc-note { grid-column: 1 / -1; font-size: 12px; color: var(--d-mute); margin-top: -18px; position: relative; }
 @media (max-width: 1000px) { .calc { grid-template-columns: 1fr; gap: 30px; padding: 28px; } .calc-note { margin-top: 0; } }
@@ -860,3 +860,27 @@ html.has-cur .cur { display: block; position: fixed; top: 0; left: 0; z-index: 2
 @keyframes siteScroll { 0%, 14% { transform: translateY(0); } 50%, 64% { transform: translateY(-46%); } 100% { transform: translateY(0); } }
 .story-ph { -webkit-perspective: 1300px; perspective: 1300px; }
 .foot-word .ch { display: inline-block; }
+
+/* ===================== Pataisymai ===================== */
+.calc-out b.long { font-size: clamp(26px, 2.5vw, 38px); }
+.calc-scale { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--d-mute); font-variant-numeric: tabular-nums; }
+.cta-me { display: flex; align-items: center; gap: 14px; padding-bottom: 20px; border-bottom: 1px solid var(--d-line); }
+.cta-av { width: 54px; height: 54px; border-radius: 50%; background: var(--hi); color: var(--ink); display: flex; align-items: center; justify-content: center; font: 800 18px/1 var(--display); letter-spacing: -.02em; flex: none; }
+.cta-me b { display: block; font: 700 22px/1.15 var(--display); letter-spacing: -.01em; font-variation-settings: "wdth" 106; }
+.cta-me small { display: block; margin-top: 4px; font-size: 14px; color: var(--d-mute); }
+.faq-tel { color: var(--ink); font-weight: 600; text-decoration: none; border-bottom: 1.5px solid var(--hi); white-space: nowrap; }
+@media (max-width: 640px) { .stat b { font-size: 28px; } }
+/* Jutikliniuose ekranuose užvedimo efektai neužstringa po palietimo */
+@media (hover: none) {
+  .btn:hover .btn-label span { transform: none; }
+  .btn:hover .btn-ico svg { transform: none; }
+  .btn:hover::before { opacity: 0; }
+  .tile:hover { transform: none; box-shadow: 0 0 0 1px var(--line); }
+  .tile.dark:hover, .tile.hi:hover { box-shadow: none; }
+  .card:hover .card-ph .phone { transform: rotate(-4deg); }
+  .card.k-real:hover .shot-desk, .card.k-real:hover .real-shots .phone { transform: none; }
+  .logo:hover { font-variation-settings: "wdth" 112; }
+  .nav-links a:hover { background: none; }
+}
+
+.cta-line span.v.sm, .cta-line a.sm { font-size: clamp(20px, 2vw, 26px); line-height: 1.25; }
