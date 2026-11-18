@@ -33,6 +33,7 @@ rm -rf "$OUT"; mkdir -p "$OUT/js" "$OUT/fonts" "$OUT/img"
 cp "$SRC/js/qr.js" "$OUT/js/qr.js"
 cp "$SRC"/fonts/*.woff2 "$OUT/fonts/"
 cp "$SRC"/img/* "$OUT/img/"
+cp "$SRC/manifest.webmanifest" "$OUT/"
 
 python3 - "$TMP/pre.html" "$TMP/style.min.css" "$OUT/index.html" <<'EOF'
 import sys, re

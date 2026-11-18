@@ -669,7 +669,7 @@ html.motion .tl-line i { transform: scaleX(0); }
 .cta-acts { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .copied { font-size: 14px; color: var(--d-mute); min-height: 1.4em; }
 .foot { border-top: 1px solid var(--d-line); }
-.foot-in { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 26px 0; font-size: 14px; color: var(--d-mute); }
+.foot-in { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding-top: 26px; padding-bottom: 26px; font-size: 14px; color: var(--d-mute); }
 .foot-in nav { display: flex; gap: 20px; flex-wrap: wrap; }
 .foot-in a { text-decoration: none; }
 .foot-in a:hover { color: var(--d-text); }
@@ -1079,3 +1079,7 @@ a, button { touch-action: manipulation; }
 .cta-share-t p { font-size: 15px; line-height: 1.45; color: var(--d-mute); margin-bottom: 14px; max-width: 30ch; }
 .cta-share-t b { color: var(--d-text); font-weight: 600; }
 @media (max-width: 700px) { .cta-qr, .cta-share-t p { display: none; } .cta-left { gap: 26px; } }
+
+/* ===== Kontaktų mygtukai pagal įrenginį: telefone ir planšetėje SMS, kompiuteryje numerio kopijavimas ===== */
+@media (hover: hover) and (pointer: fine) { .cta-acts .on-touch { display: none; } }
+@media (hover: none), (pointer: coarse) { .cta-acts .on-mouse { display: none; } }

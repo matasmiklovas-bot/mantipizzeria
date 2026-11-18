@@ -31,6 +31,7 @@ var CONFIG = {
   $$("[data-area]").forEach(el => (el.textContent = CONFIG.area));
   $$("[data-tel]").forEach(el => (el.href = "tel:" + CONFIG.phoneTel));
   $$("[data-mail]").forEach(el => (el.href = "mailto:" + CONFIG.email));
+  $$("[data-sms]").forEach(el => (el.href = "sms:" + CONFIG.phoneTel));
 
   /* ---------- Pavyzdiniai prekių ženklai ---------- */
   const BRANDS = {

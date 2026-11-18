@@ -18,6 +18,11 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Cpath%20d='M16%202C9.4%202%204.5%207%204.5%2013.3%204.5%2021.6%2016%2030%2016%2030s11.5-8.4%2011.5-16.7C27.5%207%2022.6%202%2016%202Z'%20fill='%23121316'/%3E%3Ccircle%20cx='16'%20cy='13'%20r='4.6'%20fill='%23FF4F12'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meistrui">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#EEEDE8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
@@ -393,7 +398,8 @@
           <div class="cta-line"><small>Dirbu</small><span class="v sm" data-area>Palangoje, Klaipėdoje ir visoje Lietuvoje</span></div>
           <div class="cta-acts">
             <a class="btn hi mag" href="tel:+37060070822" data-tel><span class="btn-label"><span>Skambinti</span><span aria-hidden="true">Skambinti</span></span><span class="btn-ico"><i data-ic="phone"></i></span></a>
-            <button class="btn light" type="button" id="copyBtn"><span class="btn-label"><span>Kopijuoti numerį</span><span aria-hidden="true">Kopijuoti numerį</span></span><span class="btn-ico"><i data-ic="copy"></i></span></button>
+            <a class="btn light on-touch" href="sms:+37060070822" data-sms><span class="btn-label"><span>Rašyti SMS</span><span aria-hidden="true">Rašyti SMS</span></span><span class="btn-ico"><i data-ic="message-square"></i></span></a>
+            <button class="btn light on-mouse" type="button" id="copyBtn"><span class="btn-label"><span>Kopijuoti numerį</span><span aria-hidden="true">Kopijuoti numerį</span></span><span class="btn-ico"><i data-ic="copy"></i></span></button>
           </div>
           <p class="copied" id="copied" aria-live="polite"></p>
         </div>
