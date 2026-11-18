@@ -277,6 +277,12 @@ var CONFIG = {
     if (document.readyState === "complete") regSW(); else addEventListener("load", regSW);
   }
 
+  /* iPad „guminis“ slinkimas: patraukus už puslapio apačios matomas fonas po tamsia porašte būna tamsus, o viršuje – šviesus */
+  if ("IntersectionObserver" in window) {
+    const footEnd = $(".foot");
+    if (footEnd) new IntersectionObserver(es => es.forEach(e => html.classList.toggle("at-end", e.isIntersecting)), { rootMargin: "0px 0px 300px 0px" }).observe(footEnd);
+  }
+
   /* DUK */
   $$(".qa").forEach(qa => {
     const b = $(".qa-q", qa);

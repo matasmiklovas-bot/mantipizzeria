@@ -1120,3 +1120,6 @@ a, button { touch-action: manipulation; }
 .cta-pick { display: flex; gap: 10px; align-items: baseline; font-size: 15px; line-height: 1.45; color: var(--d-text); }
 .cta-pick::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--hi); transform: translateY(-1px); }
 .cta-pick[hidden] { display: none; }
+
+/* Apačioje (porašte) dokumento fonas tamsus, kad patraukus už krašto neatsirastų šviesi juosta (žr. main.js, .at-end) */
+html.at-end { background: var(--slab); }
