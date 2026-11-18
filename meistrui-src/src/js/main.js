@@ -2,6 +2,7 @@
 var CONFIG = {
   brand: "Meistrui",
   owner: "Matas Miklovas",
+  greet: "Matai", // kreipinys SMS ir laiško pradžioje (šauksmininkas)
   phoneDisplay: "+370 600 70822",
   phoneTel: "+37060070822",
   email: "matasmiklovas@gmail.com",
@@ -31,7 +32,20 @@ var CONFIG = {
   $$("[data-area]").forEach(el => (el.textContent = CONFIG.area));
   $$("[data-tel]").forEach(el => (el.href = "tel:" + CONFIG.phoneTel));
   $$("[data-mail]").forEach(el => (el.href = "mailto:" + CONFIG.email));
-  $$("[data-sms]").forEach(el => (el.href = "sms:" + CONFIG.phoneTel));
+  /* SMS ir el. laiškas jau parašyti: meistrui nereikia galvoti, ką rašyti. Paspaudus „Pasirinkti“ įrašomas planas. */
+  const setMsg = (plan, price) => {
+    const what = plan ? `svetainė „${plan}“ (${price})` : "svetainė mano darbui";
+    const text = `Sveiki, ${CONFIG.greet}. Domina ${what}.`;
+    $$("[data-sms]").forEach(el => (el.href = "sms:" + CONFIG.phoneTel + "?&body=" + encodeURIComponent(text)));
+    $$("[data-mail]").forEach(el => (el.href = "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent(plan ? `Svetainė „${plan}“` : "Svetainė") + "&body=" + encodeURIComponent(text + "\n\n")));
+  };
+  setMsg();
+  $$("[data-plan]").forEach(btn => btn.addEventListener("click", () => {
+    const plan = btn.getAttribute("data-plan"), price = btn.getAttribute("data-price");
+    setMsg(plan, price);
+    const pick = $("#ctaPick");
+    if (pick) { const mouse = window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches; pick.textContent = `Pasirinkta: „${plan}“, ${price}. ` + (mouse ? "Laiškas jau parašytas, spauskite el. pašto adresą." : "Žinutė jau parašyta, spauskite „Rašyti SMS“."); pick.hidden = false; }
+  }));
 
   /* ---------- Pavyzdiniai prekių ženklai ---------- */
   const BRANDS = {
