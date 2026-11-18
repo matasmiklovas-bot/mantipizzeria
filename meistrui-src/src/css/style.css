@@ -585,7 +585,9 @@ html.motion-desk .track-wrap { margin-top: 36px; }
 .plan:hover::before { opacity: 1; }
 .plan.feat { background: var(--slab); color: var(--d-text); }
 .plan.feat::before { background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 79, 18, .22), transparent 60%); }
-.plan-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+/* Žymė „Renkasi dažniausiai“ virš pavadinimo: pavadinimas visada vienoje eilutėje, o trijų stulpelių vaizde visų kortelių pavadinimai ir kainos vienoje linijoje */
+.plan-top { display: flex; flex-direction: column-reverse; justify-content: flex-start; align-items: flex-start; gap: 10px; }
+@media (min-width: 961px) { .plan-top { min-height: 76px; } }
 .plan h3 { font-family: var(--display); font-weight: 700; font-size: 24px; letter-spacing: -.01em; font-variation-settings: "wdth" 108; }
 .plan-tag { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 99px; background: var(--hi); color: var(--black); white-space: nowrap; }
 .plan-desc { color: var(--mute); font-size: 15px; min-height: 3em; }
