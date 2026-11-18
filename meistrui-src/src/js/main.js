@@ -268,8 +268,15 @@ var CONFIG = {
 
   /* Ikonos */
   $$("i[data-ic]").forEach(el => (el.outerHTML = ic(el.dataset.ic)));
+  /* Antraščių žodžiai pasirodymo animacijai apgaubiami jau surenkant puslapį: įkeliant naršyklei to daryti nebereikia.
+     Be animacijų šie elementai niekuo nesiskiria nuo paprasto teksto (stiliai galioja tik su html.motion). */
+  $$(".rv-h").forEach(h => { if (!h.querySelector(".wd")) h.innerHTML = h.textContent.trim().split(/\s+/).map((w, k) => `<span class="wd"><span class="wi" style="--i:${k}">${w}</span></span>`).join(" "); });
   /* Kūrimo metu puslapis surenkamas iš anksto ir įrašomas į HTML */
   if (location.search.indexOf("prerender") > -1) return;
+  /* Prieš skaitant išdėstymą palaukiama pirmo kadro: naršyklė pirmiausia pati nupiešia puslapį ir apskaičiuoja stilius,
+     užuot tai darius JS viduje (tai būdavo viena ilga, iki pusės sekundės lėtame telefone, užduotis). Matomame lange kadras
+     ateina visada; paslėptame skirtuke nelaukiama, nes ten niekas nepiešiama. */
+  if (document.visibilityState !== "hidden") await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
 
   /* Be interneto: aplankius kartą, svetainė atsidaro ir ten, kur nėra ryšio (žr. sw.js) */
   if ("serviceWorker" in navigator && (location.protocol === "https:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
@@ -321,11 +328,12 @@ var CONFIG = {
     sc.src = "js/qr.js"; sc.async = true; sc.onload = draw;
     document.head.appendChild(sc);
   };
-  if (qrBox && getComputedStyle(qrBox).display !== "none") {
+  if (qrBox) {
+    /* Siaurame ekrane QR paslėptas (display: none), todėl stebėtojas jo niekada „nemato“; pasukus planšetę ir jam atsiradus, įkeliamas */
     if ("IntersectionObserver" in window) {
       const qio = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { qio.disconnect(); loadQr(); } }, { rootMargin: "1200px 0px" });
       qio.observe(qrBox);
-    } else loadQr();
+    } else if (window.matchMedia && matchMedia("(min-width: 701px)").matches) loadQr();
   }
 
   /* ---------- Palyginimo slankiklis ---------- */
@@ -625,10 +633,7 @@ var CONFIG = {
 
   await tick();
   /* ---------- Antraštės ---------- */
-  $$(".rv-h").forEach(h => {
-    h.innerHTML = h.textContent.trim().split(/\s+/).map(w => `<span class="wd"><span class="wi">${w}</span></span>`).join(" ");
-    reveal($$(".wi", h), { yPercent: 118, rotation: 4, duration: 1.3, ease: "expo.out", stagger: 0.07 }, h, 12);
-  });
+  $$(".rv-h").forEach(h => onView(h, () => h.classList.add("in"), 12));
 
   await tick();
   /* ---------- Žemėlapis ---------- */
