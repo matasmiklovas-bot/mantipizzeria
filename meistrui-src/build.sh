@@ -30,6 +30,7 @@ rm -rf "$OUT"; mkdir -p "$OUT/js" "$OUT/fonts" "$OUT/img"
   cat "$SRC/js/gsap.min.js"; echo ";"
   cat "$TMP/main.min.js"
 } > "$OUT/js/app.js"
+cp "$SRC/js/qr.js" "$OUT/js/qr.js"
 cp "$SRC"/fonts/*.woff2 "$OUT/fonts/"
 cp "$SRC"/img/* "$OUT/img/"
 

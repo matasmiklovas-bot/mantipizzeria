@@ -274,6 +274,32 @@ var CONFIG = {
     catch (e) { fail(); }
   });
 
+  /* Dalintis nuoroda ir QR kodas: pokalbio metu meistras atsidaro svetainę savo telefone */
+  const pageUrl = location.href.split("#")[0].split("?")[0];
+  const shareBtn = $("#shareBtn");
+  if (shareBtn) shareBtn.addEventListener("click", () => {
+    const out = $("#copied");
+    const data = { title: "Svetainės meistrams", text: "Svetainės meistrams. " + CONFIG.owner + ", " + CONFIG.phoneDisplay, url: pageUrl };
+    if (navigator.share) { navigator.share(data).catch(() => {}); return; }
+    try { navigator.clipboard.writeText(pageUrl).then(() => (out.textContent = "Nuoroda nukopijuota."), () => (out.textContent = pageUrl)); }
+    catch (e) { out.textContent = pageUrl; }
+  });
+  const qrBox = $("#ctaQr");
+  const loadQr = () => {
+    if (!qrBox || qrBox.firstElementChild) return;
+    const draw = () => window.QRCode && window.QRCode.toString(pageUrl, { type: "svg", margin: 1, errorCorrectionLevel: "M", color: { dark: "#121316", light: "#FFFFFF" } }, (err, svg) => { if (!err) qrBox.innerHTML = svg; });
+    if (window.QRCode) { draw(); return; }
+    const sc = document.createElement("script");
+    sc.src = "js/qr.js"; sc.async = true; sc.onload = draw;
+    document.head.appendChild(sc);
+  };
+  if (qrBox && getComputedStyle(qrBox).display !== "none") {
+    if ("IntersectionObserver" in window) {
+      const qio = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { qio.disconnect(); loadQr(); } }, { rootMargin: "1200px 0px" });
+      qio.observe(qrBox);
+    } else loadQr();
+  }
+
   /* ---------- Palyginimo slankiklis ---------- */
   const cmpScr = $("#cmpScr"), cmpB = $("#cmpB"), cmpH = $("#cmpHandle"), lblA = $("#cmpLA"), lblB = $("#cmpLB");
   const cmpState = { p: 50 };

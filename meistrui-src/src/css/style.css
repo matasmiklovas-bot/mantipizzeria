@@ -1070,3 +1070,12 @@ a, button { touch-action: manipulation; }
   .tab-dev { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 40px 90px rgba(0, 0, 0, .55); }
   .phone-body { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 0 0 calc(var(--pw) * .012) #1b1c20, 0 calc(var(--pw) * .12) calc(var(--pw) * .24) rgba(0, 0, 0, .55); }
 }
+
+/* QR kodas ir dalinimasis kontaktuose */
+.cta-left { display: flex; flex-direction: column; gap: 40px; }
+.cta-share { display: flex; align-items: center; gap: 22px; }
+.cta-qr { width: 136px; height: 136px; flex: none; border-radius: 18px; background: #fff; padding: 8px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .08); }
+.cta-qr svg { display: block; width: 100%; height: 100%; }
+.cta-share-t p { font-size: 15px; line-height: 1.45; color: var(--d-mute); margin-bottom: 14px; max-width: 30ch; }
+.cta-share-t b { color: var(--d-text); font-weight: 600; }
+@media (max-width: 700px) { .cta-qr, .cta-share-t p { display: none; } .cta-left { gap: 26px; } }
