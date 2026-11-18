@@ -1016,3 +1016,16 @@ main:focus { outline: none; }
 .stars5 { display: block; flex: none; stroke: none; }
 .s-rating .stars5 { width: 5.25em; height: 1.05em; fill: #FFC531; }
 .q-meta .stars5 { width: 5em; height: 1em; fill: #F4B400; }
+
+/* ===================== Apple HIG: bent 44×44 paspaudimo plotas ===================== */
+.logo { min-height: 44px; }
+.step { position: relative; }
+.step-go::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+@media (max-width: 900px) { html.motion .step:not(.on) { pointer-events: none; } }
+.cmp-handle::before { content: ""; position: absolute; top: 0; bottom: 0; left: -22px; right: -22px; }
+.calc input[type=range] { height: 44px; }
+.cta-line a { display: inline-flex; align-items: center; min-height: 44px; }
+.foot-in nav { gap: 12px; }
+.foot-in nav a { display: inline-block; padding: 12px 3px; }
+/* Eigos dienų skaičiai: bendra .tl-step p taisyklė juos buvo sumažinusi iki 15 px */
+.tl-step .tl-day { font-size: clamp(44px, 4.6vw, 72px); color: var(--ink); max-width: none; }
