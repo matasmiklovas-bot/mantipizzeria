@@ -18,3 +18,11 @@ raidžių ar simbolių (pvz., kitos kalbos), šriftus reikės apkarpyti iš nauj
 
 `og:image` faile `src/index.html` rodo pilną paveikslėlio adresą GitHub'e. Kai svetainė
 persikels į savo domeną, pakeiskite jį į `https://jūsų-domenas.lt/img/og.jpg`.
+
+## Darbas be interneto ir versijos
+
+- `src/sw.js` leidžia svetainę atidaryti ir be ryšio, jei ji buvo aplankyta bent kartą (pvz., iš iPad
+  pradžios ekrano). Puslapis visada pirma imamas iš interneto. Jei ryšio nėra arba jis lėtesnis nei 3,5 s,
+  rodoma išsaugota kopija. Failų sąrašą ir versiją į `sw.js` įrašo `build.sh`.
+- `js/app.js` ir `js/qr.js` įkeliami su versijos žyme (`?v=...`), apskaičiuota iš turinio. Todėl naršyklė
+  niekada nesujungs naujo puslapio su senu, talpykloje likusiu JS.

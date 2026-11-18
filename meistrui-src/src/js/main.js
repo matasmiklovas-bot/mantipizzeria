@@ -257,6 +257,12 @@ var CONFIG = {
   /* Kūrimo metu puslapis surenkamas iš anksto ir įrašomas į HTML */
   if (location.search.indexOf("prerender") > -1) return;
 
+  /* Be interneto: aplankius kartą, svetainė atsidaro ir ten, kur nėra ryšio (žr. sw.js) */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
+    const regSW = () => { try { navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {} };
+    if (document.readyState === "complete") regSW(); else addEventListener("load", regSW);
+  }
+
   /* DUK */
   $$(".qa").forEach(qa => {
     const b = $(".qa-q", qa);

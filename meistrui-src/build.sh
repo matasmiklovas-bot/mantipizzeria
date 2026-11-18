@@ -50,4 +50,19 @@ s = s.replace('</head>', '<script src="js/app.js?v=' + os.environ['APPV'] + '" d
 assert 'js/app.js?v=' in s and 'js/main.js' not in s
 open(sys.argv[3], 'w').write(s)
 EOF
+# Darbas be interneto: sw.js su visų failų sąrašu ir versija pagal turinį
+python3 - "$SRC/sw.js" "$OUT" "$APPV" "$QRV" <<'EOF'
+import sys, os, json, hashlib
+src, out, appv, qrv = sys.argv[1:5]
+files = ['./', 'index.html', 'manifest.webmanifest', 'js/app.js?v=' + appv, 'js/qr.js?v=' + qrv]
+for d in ('fonts', 'img'):
+    files += [d + '/' + f for f in sorted(os.listdir(os.path.join(out, d))) if f != 'og.jpg']
+h = hashlib.sha256()
+for f in ['index.html', 'js/app.js', 'js/qr.js'] + [x for x in files if x.startswith(('fonts/', 'img/'))]:
+    h.update(open(os.path.join(out, f), 'rb').read())
+sw = open(src).read().replace('__VER__', h.hexdigest()[:10]).replace('__FILES__', json.dumps(files))
+assert '__' not in sw.split('*/', 1)[1]
+open(os.path.join(out, 'sw.js'), 'w').write(sw)
+print('sw.js:', len(files), 'files')
+EOF
 echo "Surinkta į $OUT"
