@@ -16,9 +16,11 @@ var CONFIG = {
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
   const I = window.ICONS || {};
+  /* Ikonos apibrėžiamos vieną kartą (SVG sprite), o naudojamos per <use>: mažiau elementų puslapyje */
   const ic = (n, cls) =>
-    `<svg class="ic ${cls || ""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n] || ""}</svg>`;
-  const stars = () => `<span class="stars">${[0, 1, 2, 3, 4].map(() => ic("star")).join("")}</span>`;
+    `<svg class="ic ${cls || ""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+  if (!document.getElementById("ic-sprite")) document.body.insertAdjacentHTML("afterbegin", `<svg id="ic-sprite" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false"><defs>${Object.keys(I).map(n => `<symbol id="i-${n}" viewBox="0 0 24 24">${I[n]}</symbol>`).join("")}<symbol id="i-stars5" viewBox="0 0 120 24">${[0, 1, 2, 3, 4].map(k => `<g transform="translate(${k * 24} 0)">${I.star}</g>`).join("")}</symbol></defs></svg>`);
+  const stars = () => `<svg class="stars5" viewBox="0 0 120 24" aria-hidden="true"><use href="#i-stars5"/></svg>`;
   const mq = q => { try { return window.matchMedia(q).matches; } catch (e) { return false; } };
 
   /* ---------- Kontaktai ---------- */
@@ -117,7 +119,7 @@ var CONFIG = {
   const shell = (inner, boot) => `<div class="phone-body"><div class="phone-screen"><div class="island"></div>${inner}${boot ? `<div class="boot">${pinSvg}</div>` : ""}<div class="phone-shine"></div></div></div>`;
 
   const reduce = mq("(prefers-reduced-motion: reduce)");
-  const hasLibs = !!(window.gsap && window.ScrollTrigger);
+  const hasLibs = !!window.gsap;
   const motion = hasLibs && !reduce && !html.classList.contains("safe");
 
   /* Telefonai su pavyzdžiais */
@@ -227,7 +229,7 @@ var CONFIG = {
     svg.setAttribute("viewBox", `0 0 ${M.w} ${M.h}`);
     $("#ltBox").style.paddingBottom = (M.h / M.w * 100).toFixed(3) + "%";
     svg.innerHTML = `<defs><radialGradient id="ltNbG" cx="50%" cy="50%" r="62%"><stop offset="58%" stop-color="#fff"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="ltNbM" maskUnits="userSpaceOnUse" x="0" y="0" width="${M.w}" height="${M.h}"><rect width="${M.w}" height="${M.h}" fill="url(#ltNbG)"/></mask></defs><path class="lt-nb" mask="url(#ltNbM)" d="${M.nb}"/><path class="lt-land" d="${M.lt}"/><path class="lt-edge" id="ltEdge" d="${M.lt}"/>
-      <g id="ltTowns">${M.towns.map(t => `<g class="lt-town" data-n="${t[0]}" transform="translate(${t[1]} ${t[2]})"><g class="lt-ring"><circle class="lt-ring-in" r="13"/></g><circle class="lt-dot" r="5.5"/>${LABELED.indexOf(t[0]) > -1 ? `<text x="12" y="7">${t[0]}</text>` : ""}</g>`).join("")}</g>`;
+      <g id="ltTowns">${M.towns.map(t => `<g class="lt-town" data-n="${t[0]}" transform="translate(${t[1]} ${t[2]})">${qTowns.indexOf(t[0]) > -1 ? `<g class="lt-ring"><circle class="lt-ring-in" r="13"/></g>` : ""}<circle class="lt-dot" r="5.5"/>${LABELED.indexOf(t[0]) > -1 ? `<text x="12" y="7">${t[0]}</text>` : ""}</g>`).join("")}</g>`;
     $("#ltBubs").innerHTML = QUERIES.map(q => {
       const t = M.towns.filter(x => x[0] === q[1])[0];
       return `<div class="lt-bub" style="left:${(t[1] / M.w * 100).toFixed(2)}%;top:${(t[2] / M.h * 100).toFixed(2)}%"><i>${ic("search")}</i><span>${q[0]} <b>${q[1]}</b></span></div>`;
@@ -260,7 +262,7 @@ var CONFIG = {
       const open = !qa.classList.contains("open");
       qa.classList.toggle("open", open);
       b.setAttribute("aria-expanded", String(open));
-      setTimeout(() => window.ScrollTrigger && ScrollTrigger.refresh(), 600);
+      setTimeout(() => window.__fx && window.__fx(), 600);
     });
   });
 
@@ -416,8 +418,30 @@ var CONFIG = {
   }
 
   try {
-  gsap.registerPlugin(ScrollTrigger);
-  ScrollTrigger.config({ ignoreMobileResize: true, autoRefreshEvents: "visibilitychange,resize" });
+  /* ---------- Slinkimo efektai: vienas stebėtojas, skaičiuojama tik kartą per kadrą ---------- */
+  const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const fxList = [];
+  let fxQueued = false;
+  const runFx = () => { fxQueued = false; const vh = innerHeight; for (let i = 0; i < fxList.length; i++) fxList[i](vh); };
+  const queueFx = () => { if (!fxQueued) { fxQueued = true; requestAnimationFrame(runFx); } };
+  window.__fx = queueFx;
+  addEventListener("scroll", queueFx, { passive: true });
+  addEventListener("resize", queueFx);
+  /* Švelnus artėjimas prie tikslo, kad pelės ratukas nedarytų šuolių */
+  const smooth = (apply, k) => {
+    let cur = null, tgt = 0, running = false;
+    const loop = () => {
+      cur += (tgt - cur) * k;
+      if (Math.abs(tgt - cur) < 0.0015) { cur = tgt; running = false; }
+      apply(cur);
+      if (running) requestAnimationFrame(loop);
+    };
+    return v => {
+      tgt = v;
+      if (cur === null) { cur = v; apply(v); return; }
+      if (!running && cur !== tgt) { running = true; requestAnimationFrame(loop); }
+    };
+  };
   /* Pasirodymo animacijos per IntersectionObserver: jis nematuoja viso puslapio, todėl nestabdo naršyklės */
   const onView = (el, fn, bottom) => {
     if (!el) return;
@@ -491,7 +515,19 @@ var CONFIG = {
 
   await tick();
   /* Telefonų plūduriavimas, paralaksas ir 3D */
-  gsap.to(".stage .px", { y: (i, el) => -150 * parseFloat(el.parentElement.getAttribute("data-depth") || 1), ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
+  {
+    const heroEl = $(".hero");
+    const pxs = $$(".stage .px").map(el => ({ el: el, d: parseFloat(el.parentElement.getAttribute("data-depth") || 1) }));
+    let last = -1;
+    fxList.push(() => {
+      const r = heroEl.getBoundingClientRect();
+      if (r.bottom < 0 && last === 1) return;
+      const p = clamp01(-r.top / r.height);
+      if (p === last) return;
+      last = p;
+      pxs.forEach(o => (o.el.style.transform = `translate3d(0,${(-150 * o.d * p).toFixed(1)}px,0)`));
+    });
+  }
   const stageIn = $("#stageIn");
   if (fine) {
     const rx = gsap.quickTo(stageIn, "rotationX", { duration: 1.2, ease: "power3.out" });
@@ -634,7 +670,6 @@ var CONFIG = {
 
   await tick();
   /* ---------- Pavyzdžiai: karuselė be puslapio prisegimo ---------- */
-  const mm = gsap.matchMedia();
   {
     const bar = $("#demosBar");
     const cards = $$(".card", track);
@@ -708,21 +743,24 @@ var CONFIG = {
   /* ---------- Eiga ---------- */
   const tlSteps = $$("#tl .tl-step");
   reveal(tlSteps, { y: 40, opacity: 0, duration: 1.2, ease: "expo.out", stagger: 0.1 }, "#tl", 15);
-  mm.add({ desk: "(min-width: 901px)", mob: "(max-width: 900px)" }, ctx => {
-    const desk = ctx.conditions.desk;
-    const tl = $("#tl");
-    const marks = () => tlSteps.map(s => desk ? s.offsetLeft / tl.offsetWidth : s.offsetTop / tl.offsetHeight);
-    let m = marks();
-    const prop = desk ? "scaleX" : "scaleY";
-    const from = {}; from[prop] = 0;
-    const to = { ease: "none", scrollTrigger: {
-      trigger: tl, start: desk ? "top 75%" : "top 70%", end: desk ? "top 30%" : "bottom 55%", scrub: 0.5,
-      onRefresh: () => (m = marks()),
-      onUpdate: s => tlSteps.forEach((stp, i) => stp.classList.toggle("on", s.progress >= m[i] - 0.001 && s.progress > 0.002))
-    } };
-    to[prop] = 1;
-    gsap.fromTo("#tlLine", from, to);
-  });
+  {
+    const tl = $("#tl"), line = $("#tlLine");
+    const deskMq = window.matchMedia("(min-width: 901px)");
+    let desk = deskMq.matches, marks = [];
+    const calcMarks = () => { desk = deskMq.matches; marks = tlSteps.map(s => desk ? s.offsetLeft / tl.offsetWidth : s.offsetTop / tl.offsetHeight); };
+    calcMarks();
+    addEventListener("resize", calcMarks);
+    const setLine = smooth(p => {
+      line.style.transform = desk ? `scaleX(${p.toFixed(4)})` : `scaleY(${p.toFixed(4)})`;
+      tlSteps.forEach((stp, i) => stp.classList.toggle("on", p >= marks[i] - 0.001 && p > 0.002));
+    }, 0.16);
+    fxList.push(vh => {
+      const r = tl.getBoundingClientRect();
+      if (r.top > vh || r.bottom < 0) { setLine(r.top > vh ? 0 : 1); return; }
+      const p = desk ? clamp01((0.75 * vh - r.top) / (0.45 * vh)) : clamp01((0.70 * vh - r.top) / (r.height + 0.15 * vh));
+      setLine(p);
+    });
+  }
 
   await tick();
   /* ---------- DUK ---------- */
@@ -731,9 +769,23 @@ var CONFIG = {
   await tick();
   /* ---------- Kontaktai ---------- */
   fitAll();
-  gsap.fromTo(ctaBig, { "--w": 62 }, { "--w": 125, ease: "none", scrollTrigger: { trigger: ".cta", start: "top 92%", end: "top 15%", scrub: 0.6 } });
+  {
+    const ctaEl = $(".cta");
+    const setW = smooth(w => ctaBig.style.setProperty("--w", w.toFixed(2)), 0.14);
+    fxList.push(vh => {
+      const r = ctaEl.getBoundingClientRect();
+      setW(62 + 63 * clamp01((0.92 * vh - r.top) / (0.77 * vh)));
+    });
+  }
   reveal(".cta-grid > *", { y: 40, opacity: 0, duration: 1.2, stagger: 0.1, ease: "expo.out" }, ".cta-grid", 12);
-  gsap.fromTo(footWord, { yPercent: 55 }, { yPercent: 0, ease: "none", scrollTrigger: { trigger: ".foot", start: "top bottom", end: "bottom bottom", scrub: 0.5 } });
+  {
+    const footEl = $(".foot");
+    const setY = smooth(y => (footWord.style.transform = `translate3d(0,${y.toFixed(2)}%,0)`), 0.16);
+    fxList.push(vh => {
+      const r = footEl.getBoundingClientRect();
+      setY(55 * (1 - clamp01((vh - r.top) / r.height)));
+    });
+  }
 
   /* Apatinis žodis šviečia po pele ar pirštu */
   {
@@ -770,11 +822,16 @@ var CONFIG = {
 
   await tick();
   /* Tamsios sekcijos: meniu pasikeičia (kuriama po prisegamų sekcijų) */
-  $$(".story, .cta").forEach(sec => ScrollTrigger.create({ trigger: sec, start: "top 38px", end: "bottom 38px", toggleClass: { targets: nav, className: "dark" } }));
+  {
+    const darkSecs = $$(".story, .cta");
+    fxList.push(() => {
+      const on = darkSecs.some(sec => { const r = sec.getBoundingClientRect(); return r.top <= 38 && r.bottom >= 38; });
+      if (on !== nav.classList.contains("dark")) nav.classList.toggle("dark", on);
+    });
+  }
 
   /* ---------- Atnaujinimas ---------- */
-  ScrollTrigger.sort();
-  const refreshAll = () => { fitAll(); placeTap(); if (introDone) cacheChars(); ScrollTrigger.sort(); ScrollTrigger.refresh(); };
+  const refreshAll = () => { fitAll(); placeTap(); if (introDone) cacheChars(); runFx(); };
   let rT;
   addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(() => { fitAll(); placeTap(); if (introDone) cacheChars(); }, 150); });
   addEventListener("orientationchange", () => setTimeout(refreshAll, 400));

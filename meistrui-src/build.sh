@@ -28,7 +28,6 @@ rm -rf "$OUT"; mkdir -p "$OUT/js" "$OUT/fonts" "$OUT/img"
   cat "$SRC/js/icons.js"; echo
   cat "$SRC/js/ltmap.js"; echo
   cat "$SRC/js/gsap.min.js"; echo ";"
-  cat "$SRC/js/ScrollTrigger.min.js"; echo ";"
   cat "$TMP/main.min.js"
 } > "$OUT/js/app.js"
 cp "$SRC"/fonts/*.woff2 "$OUT/fonts/"
@@ -40,7 +39,7 @@ s = open(sys.argv[1]).read()
 css = open(sys.argv[2]).read().replace('../fonts/', 'fonts/')
 assert '<link rel="stylesheet" href="css/style.css">' in s
 s = s.replace('<link rel="stylesheet" href="css/style.css">', '<style>' + css + '</style>')
-s = re.sub(r'<script src="js/icons\.js"></script>\s*<script src="js/gsap\.min\.js"></script>\s*<script src="js/ScrollTrigger\.min\.js"></script>\s*(<script src="js/ltmap\.js"></script>\s*)?<script src="js/main\.js"></script>', '', s)
+s = re.sub(r'<script src="js/icons\.js"></script>\s*<script src="js/gsap\.min\.js"></script>\s*(<script src="js/ltmap\.js"></script>\s*)?<script src="js/main\.js"></script>', '', s)
 s = s.replace('</head>', '<script src="js/app.js" defer></script>\n</head>', 1)
 assert 'js/app.js" defer' in s and 'js/main.js' not in s
 open(sys.argv[3], 'w').write(s)

@@ -1011,3 +1011,8 @@ main:focus { outline: none; }
 }
 
 @media (max-width: 760px) { .card-copy { background: var(--c-bg); border-radius: 26px 26px 0 0; } }
+
+/* Penkios žvaigždutės viena ikona */
+.stars5 { display: block; flex: none; stroke: none; }
+.s-rating .stars5 { width: 5.25em; height: 1.05em; fill: #FFC531; }
+.q-meta .stars5 { width: 5em; height: 1em; fill: #F4B400; }
