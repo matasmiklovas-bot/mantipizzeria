@@ -1029,3 +1029,7 @@ main:focus { outline: none; }
 .foot-in nav a { display: inline-block; padding: 12px 3px; }
 /* Eigos dienų skaičiai: bendra .tl-step p taisyklė juos buvo sumažinusi iki 15 px */
 .tl-step .tl-day { font-size: clamp(44px, 4.6vw, 72px); color: var(--ink); max-width: none; }
+
+/* iPad / iPhone: be pilkos dėmės paspaudus */
+a, button, input, [role="slider"], .step-go { -webkit-tap-highlight-color: transparent; }
+a, button { touch-action: manipulation; }

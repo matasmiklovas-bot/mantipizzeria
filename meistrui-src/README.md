@@ -13,3 +13,8 @@ Atskira statinė svetainė, nesusijusi su picerijos programa.
 
 Šriftai `src/fonts/` apkarpyti iki svetainėje naudojamų simbolių. Jei pridėsite naujų
 raidžių ar simbolių (pvz., kitos kalbos), šriftus reikės apkarpyti iš naujo.
+
+## Nuorodos peržiūra (Messenger, Viber, Facebook)
+
+`og:image` faile `src/index.html` rodo pilną paveikslėlio adresą GitHub'e. Kai svetainė
+persikels į savo domeną, pakeiskite jį į `https://jūsų-domenas.lt/img/og.jpg`.
