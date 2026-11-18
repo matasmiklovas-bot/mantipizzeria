@@ -16,8 +16,9 @@ raidžių ar simbolių (pvz., kitos kalbos), šriftus reikės apkarpyti iš nauj
 
 ## Nuorodos peržiūra (Messenger, Viber, Facebook)
 
-`og:image` faile `src/index.html` rodo pilną paveikslėlio adresą GitHub'e. Kai svetainė
-persikels į savo domeną, pakeiskite jį į `https://jūsų-domenas.lt/img/og.jpg`.
+`og:image`, `twitter:image` ir struktūrizuotų duomenų (`application/ld+json`) `image` faile
+`src/index.html` rodo pilną paveikslėlio adresą GitHub'e. Kai svetainė persikels į savo domeną,
+pakeiskite visus tris į `https://jūsų-domenas.lt/img/og.jpg`.
 
 ## Darbas be interneto ir versijos
 
