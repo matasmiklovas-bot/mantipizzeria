@@ -1111,3 +1111,7 @@ a, button { touch-action: manipulation; }
 
 /* Skyrius už ekrano: jo animacijos sustabdytos (žr. main.js, .idle) */
 .idle *, .idle *::before, .idle *::after { animation-play-state: paused !important; }
+
+/* Plytelės žymė: kuriame plane yra ši galimybė */
+.tile-plan { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; letter-spacing: .01em; line-height: 1.3; background: rgba(237, 236, 231, .14); color: var(--d-text); }
+.tile.hi .tile-plan { background: #121316; color: #FAF9F6; }
