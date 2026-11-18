@@ -1108,3 +1108,6 @@ a, button { touch-action: manipulation; }
 
 /* Telefono numeris visada vienoje eilutėje */
 [data-phone] { white-space: nowrap; }
+
+/* Skyrius už ekrano: jo animacijos sustabdytos (žr. main.js, .idle) */
+.idle *, .idle *::before, .idle *::after { animation-play-state: paused !important; }

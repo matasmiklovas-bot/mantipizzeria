@@ -31,19 +31,23 @@ rm -rf "$OUT"; mkdir -p "$OUT/js" "$OUT/fonts" "$OUT/img"
   cat "$TMP/main.min.js"
 } > "$OUT/js/app.js"
 cp "$SRC/js/qr.js" "$OUT/js/qr.js"
+# Versijos žymė pagal turinį: naršyklė niekada nepaims seno JS kartu su nauju HTML
+QRV=$(sha256sum "$OUT/js/qr.js" | cut -c1-10)
+sed -i "s#\"js/qr.js\"#\"js/qr.js?v=$QRV\"#" "$OUT/js/app.js"
+APPV=$(sha256sum "$OUT/js/app.js" | cut -c1-10)
 cp "$SRC"/fonts/*.woff2 "$OUT/fonts/"
 cp "$SRC"/img/* "$OUT/img/"
 cp "$SRC/manifest.webmanifest" "$OUT/"
 
-python3 - "$TMP/pre.html" "$TMP/style.min.css" "$OUT/index.html" <<'EOF'
-import sys, re
+APPV="$APPV" python3 - "$TMP/pre.html" "$TMP/style.min.css" "$OUT/index.html" <<'EOF'
+import sys, re, os
 s = open(sys.argv[1]).read()
 css = open(sys.argv[2]).read().replace('../fonts/', 'fonts/')
 assert '<link rel="stylesheet" href="css/style.css">' in s
 s = s.replace('<link rel="stylesheet" href="css/style.css">', '<style>' + css + '</style>')
 s = re.sub(r'<script src="js/icons\.js"></script>\s*<script src="js/gsap\.min\.js"></script>\s*(<script src="js/ltmap\.js"></script>\s*)?<script src="js/main\.js"></script>', '', s)
-s = s.replace('</head>', '<script src="js/app.js" defer></script>\n</head>', 1)
-assert 'js/app.js" defer' in s and 'js/main.js' not in s
+s = s.replace('</head>', '<script src="js/app.js?v=' + os.environ['APPV'] + '" defer></script>\n</head>', 1)
+assert 'js/app.js?v=' in s and 'js/main.js' not in s
 open(sys.argv[3], 'w').write(s)
 EOF
 echo "Surinkta į $OUT"

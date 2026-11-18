@@ -536,10 +536,11 @@ var CONFIG = {
   if (fine) {
     let mx = -1e4, my = -1e4, live = false;
     const hero = $(".hero");
-    const pm = e => { if (e.pointerType !== "mouse") return; const tr = title.getBoundingClientRect(); mx = e.clientX - tr.left; my = e.clientY - tr.top; live = true; };
+    /* Ticker klausytojas prijungiamas tik judant pelei ir atjungiamas nurimus: kitaip GSAP ciklas sukasi 60 kartų per sekundę be perstojo */
+    const pm = e => { if (e.pointerType !== "mouse") return; const tr = title.getBoundingClientRect(); mx = e.clientX - tr.left; my = e.clientY - tr.top; if (!live) { live = true; gsap.ticker.add(heroTick); } };
     hero.addEventListener("pointermove", pm);
     ["pointerleave", "pointerup", "pointercancel"].forEach(t => hero.addEventListener(t, () => { mx = my = -1e4; }));
-    gsap.ticker.add(() => {
+    function heroTick() {
       if (!introDone || !live) return;
       let moving = false;
       for (let i = 0; i < charPos.length; i++) {
@@ -555,8 +556,8 @@ var CONFIG = {
         s.el.style.setProperty("--cw", s.cur.toFixed(2));
         s.el.style.setProperty("--cg", Math.round(800 + 100 * (s.cur - 100) / 15));
       }
-      if (!moving) live = false;
-    });
+      if (!moving) { live = false; gsap.ticker.remove(heroTick); }
+    }
   }
 
   await tick();
@@ -586,7 +587,14 @@ var CONFIG = {
       tags.forEach(t => { t.x(nx * 26 * t.d); t.y(ny * 18 * t.d); });
     });
   } else {
-    gsap.fromTo(stageIn, { rotationY: -7, rotationX: 3 }, { rotationY: 7, rotationX: -3, duration: 6, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    const tilt = gsap.fromTo(stageIn, { rotationY: -7, rotationX: 3 }, { rotationY: 7, rotationX: -3, duration: 6, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    /* Kai pradžios ekranas nematomas, siūbavimas sustoja ir GSAP ciklas užmiega: planšetė nedirba be reikalo */
+    if ("IntersectionObserver" in window) new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) tilt.resume(); else tilt.pause(); }).observe($(".hero"));
+  }
+  /* Nematomuose skyriuose begalinės CSS animacijos sustabdomos (.idle), grįžus į ekraną tęsiasi nuo tos pačios vietos */
+  if ("IntersectionObserver" in window) {
+    const idleIO = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("idle", !e.isIntersecting)), { rootMargin: "120px 0px" });
+    $$("main > section").forEach(sec => idleIO.observe(sec));
   }
 
   await tick();
@@ -740,8 +748,12 @@ var CONFIG = {
       const left = cards[i].offsetLeft - padL();
       try { trackWrap.scrollTo({ left: left, behavior: "smooth" }); } catch (x) { trackWrap.scrollLeft = left; }
     };
-    $("#dPrev").addEventListener("click", () => goTo(nearest() - 1));
-    $("#dNext").addEventListener("click", () => goTo(nearest() + 1));
+    /* Jei kortelės dar neatvažiavo į vietą (įžanga paslinkusi jas 140 px), Safari prisitraukimas prie kortelės
+       nusitaiko į paslinktą vietą ir karuselė lieka nukirpta. Todėl prieš bet kokį valdymą įžanga užbaigiama iš karto. */
+    const settle = () => gsap.getTweensOf(cards).forEach(t => { if (t.progress() < 1) t.progress(1); });
+    $("#dPrev").addEventListener("click", () => { settle(); goTo(nearest() - 1); });
+    $("#dNext").addEventListener("click", () => { settle(); goTo(nearest() + 1); });
+    ["touchstart", "pointerdown", "wheel"].forEach(t => trackWrap.addEventListener(t, settle, { passive: true }));
     /* Pele galima tempti į šonus */
     let dragX = null, startL = 0, moved = false;
     trackWrap.addEventListener("dragstart", e => e.preventDefault());
@@ -839,11 +851,11 @@ var CONFIG = {
     const foot = $(".foot");
     let fx = -1e4, fOn = false;
     const st2 = fch.map(() => ({ v: 0 }));
-    const fm = e => { fx = e.clientX; fOn = true; };
+    const fm = e => { fx = e.clientX; if (!fOn) { fOn = true; gsap.ticker.add(footTick); } };
     foot.addEventListener("pointermove", fm);
     foot.addEventListener("pointerdown", fm);
     ["pointerleave", "pointerup", "pointercancel"].forEach(t => foot.addEventListener(t, () => (fx = -1e4)));
-    gsap.ticker.add(() => {
+    function footTick() {
       if (!fOn) return;
       let moving = false;
       fch.forEach((c, i) => {
@@ -854,8 +866,8 @@ var CONFIG = {
         c.style.color = `rgba(255,79,18,${(st2[i].v * 0.95).toFixed(3)})`;
         c.style.transform = `translateY(${(-st2[i].v * 10).toFixed(2)}%)`;
       });
-      if (!moving && fx < -1e3) fOn = false;
-    });
+      if (!moving && fx < -1e3) { fOn = false; gsap.ticker.remove(footTick); }
+    }
   }
 
   /* ---------- Magnetiniai mygtukai ---------- */
