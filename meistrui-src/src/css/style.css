@@ -1123,3 +1123,11 @@ a, button { touch-action: manipulation; }
 
 /* Apačioje (porašte) dokumento fonas tamsus, kad patraukus už krašto neatsirastų šviesi juosta (žr. main.js, .at-end) */
 html.at-end { background: var(--slab); }
+
+/* iPad / iPhone „Padidinti kontrastą“ (Prieinamumas → Ekranas ir teksto dydis): ryškesnis blankus tekstas ir linijos */
+@media (prefers-contrast: more) {
+  :root { --mute: #3D3F44; --ink-2: #17181B; --hi-text: #8F2B05; --line: rgba(18, 19, 22, .34); --d-mute: #BABCC1; --d-line: rgba(237, 236, 231, .34); }
+}
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root { --mute: #C4C6CB; --ink-2: #E6E6E2; --hi-text: #FF9A70; --line: rgba(237, 236, 231, .34); }
+}
