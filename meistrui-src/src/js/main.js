@@ -429,7 +429,7 @@ var CONFIG = {
     el.style.setProperty("--w", wdth);
     const w = fi.offsetWidth;
     const avail = target || el.clientWidth;
-    if (w > 0) el.style.fontSize = Math.max(40, (100 * avail / w) * 0.985) + "px";
+    if (w > 0) el.style.fontSize = Math.max(28, (100 * avail / w) * 0.985) + "px"; // apatinė riba 28 px: siauriausiame telefone (320 px) tekstas dar telpa
     if (prev) el.style.setProperty("--w", prev);
   }
   const ctaBig = $("#ctaBig"), footWord = $("#footWord");
