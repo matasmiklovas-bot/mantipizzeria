@@ -173,7 +173,7 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: inherit; }
 .hero h1 .ch { display: inline-block; font-variation-settings: "wdth" var(--cw, 100); font-weight: var(--cg, 800); }
 .hero h1 .mark { position: relative; color: var(--ink); }
 .hero h1 .mark svg { position: absolute; left: -9%; top: -6%; width: 118%; height: 122%; overflow: visible; pointer-events: none; }
-.hero h1 .mark path { fill: none; stroke: var(--hi); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.hero h1 .mark path { fill: none; stroke: var(--hi); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
 .hero-sub { margin-top: 30px; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.5; color: var(--ink-2); max-width: 36ch; }
 .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
 
@@ -716,7 +716,8 @@ html.motion .rv-h .wi { display: inline-block; }
 .lt-ring-in { -webkit-animation: ltring 2.2s ease-out infinite; animation: ltring 2.2s ease-out infinite; transform-box: fill-box; transform-origin: 50% 50%; }
 @-webkit-keyframes ltring { from { transform: scale(.5); stroke-opacity: 1; } to { transform: scale(2.4); stroke-opacity: 0; } }
 @keyframes ltring { from { transform: scale(.5); stroke-opacity: 1; } to { transform: scale(2.4); stroke-opacity: 0; } }
-.lt-town text { font: 600 21px var(--body); fill: var(--ink-2); paint-order: stroke; stroke: var(--white); stroke-width: 5px; stroke-linejoin: round; }
+.lt-town text { font: 600 21px var(--body); fill: var(--ink-2); }
+.lt-town .lt-halo { fill: none; stroke: var(--white); stroke-width: 5px; stroke-linejoin: round; }
 .ltmap-bubs { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 .lt-bub { position: absolute; display: flex; align-items: center; gap: 8px; padding: 8px 14px 8px 8px; border-radius: 14px; background: var(--ink); color: var(--d-text); font-size: 14px; font-weight: 500; white-space: nowrap; box-shadow: 0 14px 30px rgba(18, 19, 22, .22); }
 .lt-bub::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 12px; height: 12px; margin-left: -6px; background: var(--ink); transform: rotate(45deg); border-radius: 2px; }
@@ -732,7 +733,8 @@ html.motion .rv-h .wi { display: inline-block; }
   .ltmap-q { margin-top: 18px; height: 50px; font-size: 16px; }
   .ltmap-qi { width: 36px; height: 36px; }
   .ltmap-art { max-width: 620px; width: 100%; margin: 0 auto; }
-  .lt-town text { font-size: 30px; stroke-width: 7px; }
+  .lt-town text { font-size: 30px; }
+  .lt-town .lt-halo { stroke-width: 7px; }
   .lt-bub { font-size: 12px; padding: 6px 10px 6px 6px; }
   .lt-bub i { width: 20px; height: 20px; }
 }
@@ -849,7 +851,7 @@ html.motion .rv-h .wi { display: inline-block; }
 .calc h3 { font: 800 clamp(32px, 3.2vw, 48px)/1 var(--display); letter-spacing: -.03em; font-variation-settings: "wdth" 108; }
 .calc-copy p { color: var(--d-mute); margin-top: 14px; font-size: 15px; max-width: 34ch; }
 .calc-ctrl { display: flex; flex-direction: column; gap: 30px; position: relative; }
-.calc label { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 15px; margin-bottom: 6px; }
+.calc-lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 15px; margin-bottom: 6px; }
 .calc output { font: 700 22px/1 var(--display); color: var(--hi); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .calc input[type=range] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 30px; margin: 0; padding: 0; background: transparent; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .calc input[type=range]::-webkit-slider-runnable-track { height: 8px; border-radius: 99px; border: 0;

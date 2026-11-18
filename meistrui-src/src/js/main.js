@@ -229,7 +229,7 @@ var CONFIG = {
     svg.setAttribute("viewBox", `0 0 ${M.w} ${M.h}`);
     $("#ltBox").style.paddingBottom = (M.h / M.w * 100).toFixed(3) + "%";
     svg.innerHTML = `<defs><radialGradient id="ltNbG" cx="50%" cy="50%" r="62%"><stop offset="58%" stop-color="#fff"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="ltNbM" maskUnits="userSpaceOnUse" x="0" y="0" width="${M.w}" height="${M.h}"><rect width="${M.w}" height="${M.h}" fill="url(#ltNbG)"/></mask></defs><path class="lt-nb" mask="url(#ltNbM)" d="${M.nb}"/><path class="lt-land" d="${M.lt}"/><path class="lt-edge" id="ltEdge" d="${M.lt}"/>
-      <g id="ltTowns">${M.towns.map(t => `<g class="lt-town" data-n="${t[0]}" transform="translate(${t[1]} ${t[2]})">${qTowns.indexOf(t[0]) > -1 ? `<g class="lt-ring"><circle class="lt-ring-in" r="13"/></g>` : ""}<circle class="lt-dot" r="5.5"/>${LABELED.indexOf(t[0]) > -1 ? `<text x="12" y="7">${t[0]}</text>` : ""}</g>`).join("")}</g>`;
+      <g id="ltTowns">${M.towns.map(t => `<g class="lt-town" data-n="${t[0]}" transform="translate(${t[1]} ${t[2]})">${qTowns.indexOf(t[0]) > -1 ? `<g class="lt-ring"><circle class="lt-ring-in" r="13"/></g>` : ""}<circle class="lt-dot" r="5.5"/>${LABELED.indexOf(t[0]) > -1 ? `<text class="lt-halo" x="12" y="7">${t[0]}</text><text x="12" y="7">${t[0]}</text>` : ""}</g>`).join("")}</g>`;
     $("#ltBubs").innerHTML = QUERIES.map(q => {
       const t = M.towns.filter(x => x[0] === q[1])[0];
       return `<div class="lt-bub" style="left:${(t[1] / M.w * 100).toFixed(2)}%;top:${(t[2] / M.h * 100).toFixed(2)}%"><i>${ic("search")}</i><span>${q[0]} <b>${q[1]}</b></span></div>`;
