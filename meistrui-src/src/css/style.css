@@ -1136,3 +1136,6 @@ html.at-end { background: var(--slab); }
 
 /* Be JavaScript (išjungtas naršyklėje): QR kodas, „Siųsti nuorodą“ ir „Kopijuoti numerį“ neveiktų, todėl nerodomi */
 html:not(.js) .cta-share, html:not(.js) #copyBtn { display: none; }
+
+/* Pastraipose paskutinėje eilutėje nelieka vieno žodžio (naršyklės, kurios to nepalaiko, tiesiog praleidžia) */
+p, li, .qa-a, .cta-lead { text-wrap: pretty; }
