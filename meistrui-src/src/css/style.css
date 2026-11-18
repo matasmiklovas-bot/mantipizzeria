@@ -309,7 +309,7 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: inherit; }
 .story .idx b { color: var(--d-text); }
 .story-pin { min-height: 100vh; display: flex; align-items: center; padding: 120px 0; overflow: hidden; }
 .story-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: center; }
-.story-ph { display: grid; place-items: center; position: relative; }
+.story-ph { display: grid; place-items: center; position: relative; order: -1; }
 .story-ph .phone { --pw: clamp(250px, 23vw, 320px); }
 .story-ph::before { content: ""; position: absolute; width: 560px; height: 560px; max-width: 110%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 79, 18, .2), transparent 70%); }
 .story h2 { font-size: clamp(42px, 5.4vw, 86px); margin: 22px 0 44px; }
@@ -381,13 +381,17 @@ html:not(.motion) .call { transform: translateY(100%); }
 @media (max-width: 900px) {
   .story-pin { padding: 100px 0 80px; }
   .story-grid { grid-template-columns: 1fr; gap: 40px; }
+  .story-ph { order: 1; }
   .story h2 { margin-bottom: 28px; }
-  html.motion .story-pin { padding: 76px 0 24px; align-items: stretch; }
-  html.motion .story-grid { height: 100%; gap: 18px; grid-template-rows: auto 1fr; }
+  html.motion .story-pin { min-height: 0; display: block; padding: 96px 0 72px; }
+  html.motion .story-grid { gap: 0; }
+  html.motion .story-copy { display: contents; }
+  html.motion .story .idx { order: 0; justify-self: start; }
+  html.motion .story h2 { order: 0; margin: 18px 0 30px; }
   html.motion .story-ph { order: 1; }
-  html.motion .story-ph .phone { --pw: min(232px, calc(50svh * .485)); }
-  html.motion .story-copy { order: 2; }
-  html.motion .story .idx, html.motion .story h2 { display: none; }
+  html.motion .story-ph .phone { --pw: min(232px, max(150px, calc((100vh - 270px) * .48))); }
+  html.motion .steps { order: 2; margin-top: 22px; }
+  html.motion .step-dots { order: 3; }
   html.motion .steps { display: grid; }
   html.motion .step { grid-area: 1 / 1; opacity: 0; transform: translateY(14px); transition: opacity .45s, transform .45s var(--ease); border-top: 0; padding-top: 6px; }
   html.motion .step.on { opacity: 1; transform: none; }
@@ -1083,3 +1087,17 @@ a, button { touch-action: manipulation; }
 /* ===== Kontaktų mygtukai pagal įrenginį: telefone ir planšetėje SMS, kompiuteryje numerio kopijavimas ===== */
 @media (hover: hover) and (pointer: fine) { .cta-acts .on-touch { display: none; } }
 @media (hover: none), (pointer: coarse) { .cta-acts .on-mouse { display: none; } }
+
+/* Telefono dydis istorijoje pagal matomą ekrano aukštį (svh), kad telefonas ir žingsnio tekstas tilptų kartu.
+   Senesnis Safari (iki iOS 15.4) svh nepalaiko, jam lieka vh. */
+@media (max-width: 900px) {
+  @supports (height: 1svh) {
+    html.motion .story-ph .phone { --pw: min(232px, max(150px, calc((100svh - 270px) * .48))); }
+  }
+}
+@media (min-width: 600px) and (max-width: 900px) {
+  html.motion .story-ph .phone { --pw: min(300px, max(150px, calc((100vh - 270px) * .48))); }
+  @supports (height: 1svh) {
+    html.motion .story-ph .phone { --pw: min(300px, max(150px, calc((100svh - 270px) * .48))); }
+  }
+}
