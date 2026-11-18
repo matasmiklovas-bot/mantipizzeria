@@ -359,12 +359,14 @@ var CONFIG = {
   const getPrice = () => Math.max(10, Math.min(1000, snapPrice(fromPos(+cP.value, 10, 1000))));
   cC.value = toPos(3, 1, 100);
   cP.value = toPos(60, 10, 1000);
+  /* Lietuviška skaitvardžio derinimo forma: 1 klientas, 3 klientai, 10 klientų, 21 klientas */
+  const ltNum = (n, one, few, many) => { const d = n % 10, h = n % 100; return n + " " + (d === 1 && h !== 11 ? one : d >= 2 && d <= 9 && (h < 12 || h > 19) ? few : many); };
   const calc = anim => {
     const c = getClients(), p = getPrice();
     $("#oClients").textContent = c;
     $("#oPrice").textContent = p + "\u00a0€";
-    cC.setAttribute("aria-valuetext", c + " klientų per mėnesį");
-    cP.setAttribute("aria-valuetext", p + " eurų už darbą");
+    cC.setAttribute("aria-valuetext", ltNum(c, "klientas", "klientai", "klientų") + " per mėnesį");
+    cP.setAttribute("aria-valuetext", ltNum(p, "euras", "eurai", "eurų") + " už darbą");
     [cC, cP].forEach(i => i.style.setProperty("--p", (i.value / 10) + "%"));
     const monthly = c * p;
     const net = monthly - 15;
