@@ -220,7 +220,8 @@ var CONFIG = {
 
   /* ---------- Lietuvos žemėlapis ---------- */
   const M = window.LTMAP;
-  const QUERIES = [["santechnikas", "Šiauliai"], ["kirpykla", "Panevėžys"], ["autoservisas", "Utena"], ["masažas", "Alytus"], ["elektrikas", "Telšiai"], ["kosmetologė", "Mažeikiai"], ["stogdengys", "Rokiškis"]];
+  /* Tvarka parinkta taip, kad du iš eilės rodomi burbulai žemėlapyje neužliptų vienas ant kito nė viename ekrano plotyje */
+  const QUERIES = [["santechnikas", "Šiauliai"], ["masažas", "Alytus"], ["kirpykla", "Panevėžys"], ["kosmetologė", "Mažeikiai"], ["autoservisas", "Utena"], ["elektrikas", "Telšiai"], ["stogdengys", "Rokiškis"]];
   const qTowns = QUERIES.map(q => q[1]);
   const LABELED = ["Vilnius", "Kaunas", "Klaipėda"].concat(qTowns);
   let mapEls = null;
@@ -437,7 +438,7 @@ var CONFIG = {
   /* ===== Be animacijų (sumažintas judesys arba nepavyko įkelti bibliotekų) ===== */
   if (!motion) {
     html.classList.remove("is-pre");
-    if (mapEls) { mapEls.dots.forEach(d => (d.style.fill = "#FF4F12")); mapEls.bubs.forEach((b, i) => { b.style.transform = "translate(-50%, calc(-100% - 14px))"; b.style.display = i >= QUERIES.length - 3 ? "" : "none"; }); }
+    if (mapEls) { mapEls.dots.forEach(d => (d.style.fill = "#FF4F12")); mapEls.bubs.forEach((b, i) => { b.style.transform = "translate(-50%, calc(-100% - 14px))"; b.style.display = i < 2 ? "" : "none"; }); }
     const go = () => { ctaBig.style.setProperty("--w", 125); fitAll(); };
     (document.fonts ? document.fonts.ready : Promise.resolve()).then(go);
     addEventListener("resize", go);
@@ -611,7 +612,7 @@ var CONFIG = {
         .to(mapEls.bubs[i], { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.2)" }, t0)
         .to(dot, { fill: "#FF4F12", scale: 1.6, duration: 0.25 }, t0)
         .to(ring, { opacity: 1, duration: 0.2 }, t0)
-        .to(mapEls.bubs[i], { opacity: 0, scale: 0.7, duration: 0.3 }, t0 + 2.5);
+        .to(mapEls.bubs[i], { opacity: 0, scale: 0.7, duration: 0.3 }, t0 + 1.95); // dingsta prieš pasirodant burbului per du žingsnius: vienu metu matomi ne daugiau kaip du
     });
     setQ(0);
     let mapStarted = false;
