@@ -861,14 +861,16 @@ html.motion .rv-h .wi { display: inline-block; }
 .calc-ctrl { display: flex; flex-direction: column; gap: 30px; position: relative; }
 .calc-lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 15px; margin-bottom: 6px; }
 .calc output { font: 700 22px/1 var(--display); color: var(--hi); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.calc input[type=range] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 30px; margin: 0; padding: 0; background: transparent; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.calc input[type=range] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 30px; margin: 0; padding: 0; background: transparent; cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
 .calc input[type=range]::-webkit-slider-runnable-track { height: 8px; border-radius: 99px; border: 0;
   background: linear-gradient(90deg, var(--hi) 0, var(--hi) var(--p, 50%), #34363B var(--p, 50%), #34363B 100%); }
 .calc input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -11px; border-radius: 50%; background: var(--d-text); border: 7px solid var(--hi); box-shadow: 0 4px 14px rgba(0, 0, 0, .45); }
 .calc input[type=range]::-moz-range-track { height: 8px; border-radius: 99px; background: #34363B; border: 0; }
 .calc input[type=range]::-moz-range-progress { height: 8px; border-radius: 99px; background: var(--hi); }
 .calc input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--d-text); border: 7px solid var(--hi); }
-.calc input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); }
+.calc .rng.on input[type=range]::-webkit-slider-thumb { transform: scale(1.1); }
+.calc .rng { touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.calc .rng input[type=range] { pointer-events: none; }
 .calc input[type=range]:focus { outline: none; }
 .calc input[type=range]:focus-visible { outline: 2px solid var(--hi); outline-offset: 8px; }
 .calc-out { display: flex; flex-direction: column; gap: 14px; position: relative; }

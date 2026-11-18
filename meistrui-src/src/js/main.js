@@ -377,24 +377,40 @@ var CONFIG = {
     else { calcState.year = year; calcState.days = days; renderCalc(); }
   };
   [cC, cP].forEach(i => i.addEventListener("input", () => calc(true)));
-  /* Safari ant iPad leidžia tempti tik pataikius ant rutuliuko; čia veikia bet kurioje juostos vietoje */
+  /* Safari ant iPad leidžia tempti tik pataikius ant rutuliuko; čia veikia bet kurioje juostos vietoje.
+     Lietimu: braukimas aukštyn ar žemyn slenka puslapį (touch-action: pan-y), braukimas į šoną tempia slankiklį,
+     bakstelėjimas nustato reikšmę. Taip slenkant pro skaičiuoklę reikšmės netyčia nepasikeičia. */
   [cC, cP].forEach(inp => {
-    let active = false;
+    /* Lietimą ir pelę priima apgaubiantis .rng (pats slankiklis pointer-events: none), kad naršyklės savas
+       „šokimas“ į piršto vietą netrukdytų slinkti. Klaviatūra ir VoiceOver valdo patį slankiklį kaip įprasta. */
+    const box = inp.parentElement;
+    let active = false, pending = false, x0 = 0, y0 = 0;
     const setX = e => {
       const r = inp.getBoundingClientRect();
       const t = Math.max(0, Math.min(1, (e.clientX - r.left - 15) / Math.max(1, r.width - 30)));
       const v = Math.round(t * 1000);
       if (+inp.value !== v) { inp.value = v; calc(true); }
     };
-    inp.addEventListener("pointerdown", e => {
-      if (e.pointerType === "mouse" && e.button !== 0) return;
-      e.preventDefault();
-      active = true;
-      try { inp.setPointerCapture(e.pointerId); } catch (x) {}
-      setX(e);
+    const grab = e => { active = true; pending = false; box.classList.add("on"); try { box.setPointerCapture(e.pointerId); } catch (x) {} setX(e); };
+    const drop = () => { active = pending = false; box.classList.remove("on"); };
+    box.addEventListener("pointerdown", e => {
+      if (e.pointerType === "mouse") {
+        if (e.button !== 0) return;
+        e.preventDefault(); grab(e);
+        try { inp.focus({ preventScroll: true }); } catch (x) { inp.focus(); }
+        return;
+      }
+      pending = true; active = false; x0 = e.clientX; y0 = e.clientY;
     });
-    inp.addEventListener("pointermove", e => { if (active) setX(e); });
-    ["pointerup", "pointercancel", "lostpointercapture"].forEach(t => inp.addEventListener(t, () => (active = false)));
+    box.addEventListener("pointermove", e => {
+      if (active) { setX(e); return; }
+      if (!pending) return;
+      const dx = Math.abs(e.clientX - x0), dy = Math.abs(e.clientY - y0);
+      if (dx > 6 && dx > dy) grab(e);
+      else if (dy > 6) pending = false;
+    });
+    box.addEventListener("pointerup", e => { if (pending) setX(e); drop(); });
+    ["pointercancel", "lostpointercapture"].forEach(t => box.addEventListener(t, drop));
   });
   calc(false);
 
