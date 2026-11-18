@@ -1131,3 +1131,6 @@ html.at-end { background: var(--slab); }
 @media (prefers-contrast: more) and (prefers-color-scheme: dark) {
   :root { --mute: #C4C6CB; --ink-2: #E6E6E2; --hi-text: #FF9A70; --line: rgba(237, 236, 231, .34); }
 }
+
+/* Be JavaScript (išjungtas naršyklėje): QR kodas, „Siųsti nuorodą“ ir „Kopijuoti numerį“ neveiktų, todėl nerodomi */
+html:not(.js) .cta-share, html:not(.js) #copyBtn { display: none; }
