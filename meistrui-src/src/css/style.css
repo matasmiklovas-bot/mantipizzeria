@@ -1103,3 +1103,6 @@ a, button { touch-action: manipulation; }
     html.motion .story-ph .phone { --pw: min(300px, max(150px, calc((100svh - 270px) * .48))); }
   }
 }
+
+/* Telefono numeris visada vienoje eilutėje */
+[data-phone] { white-space: nowrap; }
