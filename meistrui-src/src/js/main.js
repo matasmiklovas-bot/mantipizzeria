@@ -405,7 +405,7 @@ var CONFIG = {
     const net = monthly - 15;
     const year = net * 12;
     calcBreak = net <= 0;
-    const days = calcBreak ? 0 : Math.max(1, Math.ceil(250 / (net / 30)));
+    const days = calcBreak ? 0 : Math.max(1, Math.ceil(350 / (net / 30)));
     if (window.gsap && anim) gsap.to(calcState, { year: year, days: days, duration: 0.7, ease: "power3.out", onUpdate: renderCalc, overwrite: true });
     else { calcState.year = year; calcState.days = days; renderCalc(); }
   };

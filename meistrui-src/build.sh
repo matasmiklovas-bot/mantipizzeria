@@ -37,7 +37,7 @@ sed -i "s#\"js/qr.js\"#\"js/qr.js?v=$QRV\"#" "$OUT/js/app.js"
 APPV=$(sha256sum "$OUT/js/app.js" | cut -c1-10)
 cp "$SRC"/fonts/*.woff2 "$OUT/fonts/"
 cp "$SRC"/img/* "$OUT/img/"
-cp "$SRC/manifest.webmanifest" "$OUT/"
+cp "$SRC/manifest.webmanifest" "$SRC/404.html" "$OUT/"
 
 APPV="$APPV" python3 - "$TMP/pre.html" "$TMP/style.min.css" "$OUT/index.html" <<'EOF'
 import sys, re, os
