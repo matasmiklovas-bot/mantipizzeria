@@ -27,3 +27,14 @@ pakeiskite visus tris į `https://jūsų-domenas.lt/img/og.jpg`.
   rodoma išsaugota kopija. Failų sąrašą ir versiją į `sw.js` įrašo `build.sh`.
 - `js/app.js` ir `js/qr.js` įkeliami su versijos žyme (`?v=...`), apskaičiuota iš turinio. Todėl naršyklė
   niekada nesujungs naujo puslapio su senu, talpykloje likusiu JS.
+
+## Leidimas savame domene
+
+1. Užsiregistruokite domeną (pvz., per domreg.lt registratorių).
+2. Surinkite su domenu: `SITE_URL=https://jusu-domenas.lt ./build.sh`.
+   Tai perrašo nuorodos peržiūros paveikslėlio adresus į domeną, prideda kanoninį adresą,
+   `robots.txt` ir `sitemap.xml`. Be `SITE_URL` paveikslėlis rodomas iš GitHub šakos ir dings, jei šaka bus ištrinta.
+3. Įkelkite `../public/meistrui/` turinį į bet kurį statinių failų talpinimą (Vercel, Netlify, Cloudflare Pages)
+   kaip atskirą projektą, kurio šakninis katalogas yra šis aplankas. Serveris turi teikti HTTPS
+   (be jo neveiks darbas be interneto).
+4. Patikrinkite nuorodos peržiūrą: https://developers.facebook.com/tools/debug/

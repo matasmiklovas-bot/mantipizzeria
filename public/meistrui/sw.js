@@ -2,8 +2,8 @@
    Puslapis: pirma internetas (naujausia versija); be ryšio arba jei ryšys labai lėtas, rodoma išsaugota kopija.
    Failai (JS su versijos žyme, šriftai, paveikslėliai): iš išsaugotų, o jei jų nėra, iš interneto.
    Versiją ir failų sąrašą įrašo build.sh. */
-var CACHE = "meistrui-316e10aeb4";
-var FILES = ["./", "index.html", "manifest.webmanifest", "js/app.js?v=2dfb5d3356", "js/qr.js?v=3c1f372784", "fonts/archivo-normal-latin-ext.sub.woff2", "fonts/archivo-normal-latin.sub.woff2", "fonts/dm-serif-display-italic-latin-ext.sub.woff2", "fonts/dm-serif-display-italic-latin.sub.woff2", "fonts/dm-serif-display-normal-latin-ext.sub.woff2", "fonts/dm-serif-display-normal-latin.sub.woff2", "fonts/onest-normal-latin-ext.sub.woff2", "fonts/onest-normal-latin.sub.woff2", "img/icon-180.png", "img/icon-192.png", "img/icon-512-mask.png", "img/icon-512.png", "img/piz-desk.jpg", "img/piz-menu.jpg"];
+var CACHE = "meistrui-377b1875f7";
+var FILES = ["./", "index.html", "manifest.webmanifest", "js/app.js?v=909ab1422f", "js/qr.js?v=3c1f372784", "fonts/archivo-normal-latin-ext.sub.woff2", "fonts/archivo-normal-latin.sub.woff2", "fonts/dm-serif-display-italic-latin-ext.sub.woff2", "fonts/dm-serif-display-italic-latin.sub.woff2", "fonts/dm-serif-display-normal-latin-ext.sub.woff2", "fonts/dm-serif-display-normal-latin.sub.woff2", "fonts/onest-normal-latin-ext.sub.woff2", "fonts/onest-normal-latin.sub.woff2", "img/icon-180.png", "img/icon-192.png", "img/icon-512-mask.png", "img/icon-512.png"];
 var SLOW_MS = 3500;
 
 self.addEventListener("install", function (e) {

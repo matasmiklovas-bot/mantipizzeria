@@ -139,7 +139,6 @@ var CONFIG = {
 
   /* Telefonai su pavyzdžiais */
   $$(".phone[data-site]").forEach(p => { if (!p.firstElementChild) p.innerHTML = shell(siteHTML(p.dataset.site, true), motion && !!p.closest(".stage")); });
-  $$(".phone[data-img]").forEach(p => (p.firstElementChild ? 0 : p.innerHTML = shell(`<img src="${p.dataset.img}" alt="Manti Pizzeria meniu telefone" width="400" height="866" loading="lazy" decoding="async">`)));
 
   /* Kortelės */
   const track = $("#track");
@@ -149,7 +148,7 @@ var CONFIG = {
     return `<article class="card k-${k}">
       <span class="card-big" aria-hidden="true">${ic(b.icon)}</span>
       <div class="card-copy">
-        <div class="card-top"><span>${b.trade} · ${b.town}</span><b>0${i + 1} / 05</b></div>
+        <div class="card-top"><span>${b.trade} · ${b.town}</span><b>0${i + 1} / 0${order.length}</b></div>
         <h3>${b.name}</h3>
         <p class="c-trade">${b.line}</p>
         <ul>${b.features.map(f => `<li>${ic("check")}${f}</li>`).join("")}</ul>

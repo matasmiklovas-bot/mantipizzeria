@@ -50,6 +50,26 @@ s = s.replace('</head>', '<script src="js/app.js?v=' + os.environ['APPV'] + '" d
 assert 'js/app.js?v=' in s and 'js/main.js' not in s
 open(sys.argv[3], 'w').write(s)
 EOF
+# Leidimas savame domene: SITE_URL=https://jusu-domenas.lt ./build.sh
+# perrašo paveikslėlio adresus į domeną, prideda kanoninį adresą, robots.txt ir sitemap.xml
+if [ -n "${SITE_URL:-}" ]; then
+  SITE_URL="${SITE_URL%/}" python3 - "$OUT" <<'EOF'
+import os, sys, datetime
+out, site = sys.argv[1], os.environ['SITE_URL']
+assert site.startswith('https://'), 'SITE_URL turi prasidėti https://'
+p = os.path.join(out, 'index.html'); s = open(p).read()
+old = 'https://raw.githubusercontent.com/matasmiklovas-bot/mantipizzeria/claude/modest-davinci-r55mii/public/meistrui/'
+assert s.count(old) >= 3, 'nerasti paveikslėlio adresai'
+s = s.replace(old, site + '/')
+s = s.replace('<meta property="og:type" content="website">', '<meta property="og:type" content="website">\n<meta property="og:url" content="%s/">\n<link rel="canonical" href="%s/">' % (site, site), 1)
+s = s.replace('"@type": "ProfessionalService", ', '"@type": "ProfessionalService", "url": "%s/", ' % site, 1)
+open(p, 'w').write(s)
+open(os.path.join(out, 'robots.txt'), 'w').write('User-agent: *\nAllow: /\nSitemap: %s/sitemap.xml\n' % site)
+open(os.path.join(out, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>%s/</loc><lastmod>%s</lastmod></url></urlset>\n' % (site, datetime.date.today().isoformat()))
+print('Paruošta domenui', site)
+EOF
+fi
+
 # Darbas be interneto: sw.js su visų failų sąrašu ir versija pagal turinį
 python3 - "$SRC/sw.js" "$OUT" "$APPV" "$QRV" <<'EOF'
 import sys, os, json, hashlib

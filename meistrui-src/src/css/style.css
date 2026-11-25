@@ -442,21 +442,6 @@ html:not(.motion) .call { transform: translateY(100%); }
 .card.k-ratas li .ic { color: #fff; }
 .card.k-ramybe { --c-line: rgba(34, 48, 42, .16); --c-bg: #DCE5D5; --c-ink: #22302A; --c-mute: rgba(34, 48, 42, .66); --c-acc: #2F4A3A; }
 .card.k-ramybe h3 { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.01em; }
-.card.k-real { --c-line: rgba(30, 26, 23, .14); --c-bg: #F7F2EA; --c-ink: #1E1A17; --c-mute: rgba(30, 26, 23, .62); --c-acc: #8C2332; box-shadow: inset 0 0 0 1px var(--line); }
-.card.k-real h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -.01em; font-size: clamp(48px, 5.4vw, 88px); }
-.real-badge { display: inline-flex; align-items: center; gap: 8px; background: #8C2332; color: #fff; padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 600; }
-.real-badge .ic { width: 15px; height: 15px; }
-.card.k-real .btn { margin-top: 26px; align-self: flex-start; --bg: #8C2332; --fg: #fff; }
-.real-shots { position: relative; }
-.shot-desk { position: absolute; left: 6%; top: 15%; width: 118%; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 30px 60px rgba(30, 26, 23, .22), 0 0 0 1px rgba(30, 26, 23, .08); transition: transform .9s var(--ease); }
-.shot-bar { height: 28px; background: #EFEBE5; display: flex; align-items: center; gap: 6px; padding: 0 12px; }
-.shot-bar i { width: 9px; height: 9px; border-radius: 50%; background: #D7D1C8; }
-.shot-bar span { margin-left: 12px; height: 16px; flex: 0 1 220px; border-radius: 99px; background: #fff; font-size: 10px; color: #8a847c; display: flex; align-items: center; padding-left: 10px; }
-.shot-desk img { width: 100%; height: auto; }
-.real-shots .phone { --pw: clamp(150px, 13vw, 190px); position: absolute; left: 0; bottom: -6%; transition: transform .9s var(--ease); }
-.real-shots .phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
-.card.k-real:hover .shot-desk { transform: translate(-10px, -8px); }
-.card.k-real:hover .real-shots .phone { transform: translate(8px, -12px) rotate(-2deg); }
 .demos-bar { margin: 28px var(--gut) 0; height: 2px; background: var(--line); position: relative; display: none; }
 .demos-bar i { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: var(--ink); transform-origin: 0 50%; transform: scaleX(0); }
 html.motion-desk .demos-bar { display: block; max-width: calc(var(--max) - 2 * var(--gut)); margin-left: auto; margin-right: auto; }
@@ -471,9 +456,6 @@ html.motion-desk .track-wrap { margin-top: 36px; }
   .card-ph { padding-top: 6px; }
   .card-ph .phone { --pw: 230px; }
   .card-big { font-size: 200px; }
-  .shot-desk { top: 6%; left: 14%; width: 96%; }
-  .real-shots { min-height: 300px; }
-  .real-shots .phone { --pw: 140px; left: 6%; bottom: 4%; }
 }
 
 /* ===== Kas įeina ===== */
@@ -910,7 +892,6 @@ html.motion .rv-h.in .wi { transform: none; transition: transform 1.3s cubic-bez
   .tile:hover { transform: none; box-shadow: 0 0 0 1px var(--line); }
   .tile.dark:hover, .tile.hi:hover { box-shadow: none; }
   .card:hover .card-ph .phone { transform: rotate(-4deg); }
-  .card.k-real:hover .shot-desk, .card.k-real:hover .real-shots .phone { transform: none; }
   .logo:hover { font-variation-settings: "wdth" 112; }
   .nav-links a:hover { background: none; }
 }
@@ -1075,7 +1056,6 @@ a, button { touch-action: manipulation; }
   .tile:hover { box-shadow: 0 0 0 1px rgba(237, 236, 231, .22), 0 24px 50px rgba(0, 0, 0, .4); }
   .plans { box-shadow: 0 0 0 1px var(--line); }
   .stage-tag, .ltmap-q { box-shadow: 0 0 0 1px var(--line), 0 18px 40px rgba(0, 0, 0, .45); }
-  .card.k-real { box-shadow: none; }
   .plan.feat { box-shadow: inset 0 0 0 1.5px rgba(255, 79, 18, .55); }
   .tab-dev { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 40px 90px rgba(0, 0, 0, .55); }
   .phone-body { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 0 0 calc(var(--pw) * .012) #1b1c20, 0 calc(var(--pw) * .12) calc(var(--pw) * .24) rgba(0, 0, 0, .55); }
