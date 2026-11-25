@@ -402,10 +402,10 @@ var CONFIG = {
     cP.setAttribute("aria-valuetext", ltNum(p, "euras", "eurai", "eurų") + " už darbą");
     [cC, cP].forEach(i => i.style.setProperty("--p", (i.value / 10) + "%"));
     const monthly = c * p;
-    const net = monthly - 19;
+    const net = monthly - 12;
     const year = net * 12;
     calcBreak = net <= 0;
-    const days = calcBreak ? 0 : Math.max(1, Math.ceil(450 / (net / 30)));
+    const days = calcBreak ? 0 : Math.max(1, Math.ceil(249 / (net / 30)));
     if (window.gsap && anim) gsap.to(calcState, { year: year, days: days, duration: 0.7, ease: "power3.out", onUpdate: renderCalc, overwrite: true });
     else { calcState.year = year; calcState.days = days; renderCalc(); }
   };
