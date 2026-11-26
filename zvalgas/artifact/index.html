@@ -402,55 +402,72 @@ const NAV=[["","Skambinti","phone"],["pardavimai","Pardavimai","euro"],["kontakt
 /* Conversation guide. Each step: what you say, and what they might answer.
    {me} {name} {cat} {city} {problem} are filled in. Endings map to a call result. */
 const PROBLEM={
-  "Svetainė":"jūsų beveik nėra Google, tik Facebook ar katalogai",
-  "Svetainės atnaujinimas":"jūsų svetainė pasenusi ir telefone sunkiai naudojama",
-  "Rezervacijų sistema":"užsiregistruoti pas jus galima tik paskambinus",
-  "El. parduotuvė":"jūsų prekių negalima užsisakyti internetu",
-  "Vidinė sistema / CRM":"užklausas tvarkote rankomis",
+  "Svetainė":"jūsų nėra Google",
+  "Svetainės atnaujinimas":"jūsų svetainė telefone sunkiai veikia",
+  "Rezervacijų sistema":"pas jus užsirašyti galima tik skambinant",
+  "El. parduotuvė":"internetu pas jus nieko nenupirksi",
+  "Vidinė sistema / CRM":"užsakymus tvarkot rankom",
 };
 const PITCH={
-  "Svetainė":"Trumpai: ieškojau Google „{cat} {city}“ ir jūsų neradau, meta tik kitus. Tai skambinu pasiūlyti paprastą svetainę: kainos, nuotraukos, telefonas. Per kokias dvi savaites padarom. Nesat apie tai galvoję?",
-  "Svetainės atnaujinimas":"Trumpai: užėjau į jūsų svetainę iš telefono ir, atvirai, sunkiai ten ką nors randi. Dalis žmonių tiesiog išeina. Galėtume ją atnaujinti, kad normaliai veiktų ir telefone. Nesat galvoję?",
-  "Rezervacijų sistema":"Trumpai: dabar pas jus užsirašyti galima tik paskambinus, tiesa? Galim padaryti, kad žmonės užsirašytų patys internetu, net vakare, ir gautų priminimą. Jums mažiau skambučių darbo metu. Būtų aktualu?",
-  "El. parduotuvė":"Trumpai: matau, kad prekiaujat, bet internetu užsisakyti nėra kaip. Galim padaryti paprastą parduotuvę, kad pirktų ir tada, kai jūs nedirbat. Nesat svarstę?",
-  "Vidinė sistema / CRM":"Trumpai: kaip dabar užsakymus ir klientus susirašot, Excel, sąsiuviny? Darom paprastas sistemas, kur viskas vienoj vietoj ir niekas nepasimeta. Kaip pas jus tas dabar vyksta?",
+  "Svetainė":"Žiūrėjau Google „{cat} {city}“, jūsų ten nėra, rodo tik kitus. Galim padaryti paprastą svetainę: kainos, nuotraukos, telefonas. Nesat galvoję?",
+  "Svetainės atnaujinimas":"Žiūrėjau jūsų svetainę telefone, sunkiai ten kas randasi. Galim ją atnaujinti, kad normaliai veiktų. Nesat galvoję?",
+  "Rezervacijų sistema":"Dabar pas jus užsirašyti galima tik paskambinus, tiesa? Galim padaryti, kad žmonės užsirašytų patys internetu. Jums mažiau skambučių. Būtų aktualu?",
+  "El. parduotuvė":"Matau, kad prekiaujat, bet internetu nupirkti nieko negalima. Galim padaryti paprastą parduotuvę. Nesat galvoję?",
+  "Vidinė sistema / CRM":"Kaip dabar užsakymus susirašot, Excel, sąsiuviny? Darom paprastas sistemas, kad viskas būtų vienoj vietoj. Kaip pas jus?",
 };
 const FLOW={
-  start:{say:"Laba diena, čia {me}. Gal kalbu su {name} vadovu?",
+  start:{say:"Laba diena, čia {me}. Kalbu su {name} vadovu?",
     replies:[["Taip, klausau","pitch"],["Jo dabar nėra","gate"],["O kas skambina?","who"],["Neturiu dabar laiko","busy"]]},
-  gate:{say:"Aha, supratau. O kada jį geriau pagauti? Ir kaip jį vadinti?",
+  gate:{say:"Aišku. O kada jį geriau pagauti?",
     replies:[["Pasakė, kada skambinti","end_callback"],["Davė jo numerį","end_number"],["Nesako","gate2"]]},
-  gate2:{say:"Nieko tokio. Gal galit perduoti, kad skambino {me} dėl svetainės? Paliksiu savo numerį.",
+  gate2:{say:"Gerai. Tai gal perduokit, kad skambino {me} dėl svetainės.",
     replies:[["Gerai, perduosiu","end_callback"],["Nereikia","no"]]},
-  who:{say:"Atsiprašau, nepasakiau: aš {me}, darau svetaines mažoms įmonėms. Skambinu, nes pastebėjau, kad {problem}. Turit minutę?",
+  who:{say:"Aš {me}, darau svetaines. Pastebėjau, kad {problem}, tai ir paskambinau. Turit minutę?",
     replies:[["Na, sakykit","pitch"],["Neturiu laiko","busy"],["Neįdomu","no"]]},
-  busy:{say:"Aišku, netrukdysiu. Kada geriau paskambinti, vakare ar rytoj?",
+  busy:{say:"Supratau, netrukdysiu. Kada geriau paskambinti?",
     replies:[["Pasakė, kada","end_callback"],["Ai, sakykit dabar","pitch"],["Neskambinkit daugiau","no"]]},
   pitch:{say:"{pitch}",
     replies:[["O, įdomu","interest"],["O kiek kainuos?","price"],["Mums Facebook užtenka","fb"],["Jau turim svetainę","have"],["Brangu, pinigų nėra","money"],["Atsiųskit ką nors paštu","offer"],["Ne, nereikia","no"]]},
-  fb:{say:"Jo, Facebook gerai, jo nemeskit. Bet kai žmogus Google renka „{cat} {city}“, jūsų ten nėra, ir jis paskambina kitiems. Svetainė tiesiog atvestų dar ir tuos. O iš kur dabar daugiausia klientų ateina?",
+  fb:{say:"Jo, Facebook gerai. Bet kai žmogus Google ieško „{cat} {city}“, jūsų neranda ir skambina kitiems. Svetainė atvestų ir tuos. Iš kur dabar daugiausia klientų?",
     replies:[["Per Facebook, rekomendacijas","fb2"],["Nežinau","fb2"],["Vis tiek nereikia","no"]]},
-  fb2:{say:"Tai gerai, vadinasi, žmonės jus žino. Svetainė pagautų tuos, kurie Facebook nesėdi, o tokių nemažai. Galiu per 15 minučių parodyti, kaip tai atrodytų. Kada jums patogiau?",
+  fb2:{say:"Tai gerai, jus žino. Svetainė pagautų tuos, kurie Facebook nesėdi. Galiu per 15 minučių parodyti, kaip atrodytų. Kada patogu?",
     replies:[["Sutarėm laiką","end_meeting"],["Atsiųskit pavyzdį","offer"],["Ne, ačiū","no"]]},
-  have:{say:"A, tai gerai. O ar iš jos realiai ateina klientų? Jei norit, nemokamai pažiūrėsiu ir pasakysiu, ką verta pataisyti. Niekuo neįsipareigojat.",
+  have:{say:"A, gerai. O klientų iš jos ateina? Jei norit, nemokamai pažiūrėsiu, ką verta pataisyti.",
     replies:[["Gerai, pažiūrėkit","offer"],["Ateina, viskas gerai","no"]]},
-  price:{say:"Priklauso, ko reikia. Paprasta svetainė nuo kelių šimtų eurų. Tikslią sumą pasakysiu, kai pasikalbėsim, ko jums reikia. Gal susitinkam ar susiskambinam kokioms 15 minučių?",
+  price:{say:"Priklauso, ko reikia. Paprasta nuo kelių šimtų eurų. Tiksliai pasakysiu, kai pasikalbam. Gal susitinkam 15 minučių?",
     replies:[["Sutarėm laiką","end_meeting"],["Brangoka","money"],["Atsiųskit kainą","offer"]]},
-  money:{say:"Suprantu, pinigai visiems svarbu. Bet pagalvokit, kiek uždirbat iš vieno naujo kliento. Jei svetainė atveda bent porą per mėnesį, ji greit atsiperka. Ir galim pradėti nuo paprasčiausio.",
+  money:{say:"Suprantu. Bet jei svetainė atveda bent porą klientų per mėnesį, ji greit atsiperka. Galim pradėti nuo paprasčiausios.",
     replies:[["Gerai, pažiūrėkim","interest"],["Pagalvosiu","think"],["Vis tiek ne","no"]]},
-  interest:{say:"Tai gal susitinkam trumpai ar susiskambinam? Parodysiu, ką esam darę, ir pasakysiu kainą. Kada jums tiktų, šią ar kitą savaitę?",
+  interest:{say:"Tai gal susitinkam ar susiskambinam trumpai? Parodysiu pavyzdžių ir pasakysiu kainą. Kada jums tiktų?",
     replies:[["Sutarėm laiką","end_meeting"],["Geriau atsiųskit","offer"],["Pagalvosiu","think"]]},
-  offer:{say:"Gerai, atsiųsiu. Kad nesiųsčiau bet ko: ko jums labiausiai reikėtų? Ir koks jūsų el. paštas?",
-    replies:[["Pasakė, ko reikia, ir el. paštą","end_offer"],["„Tiesiog siųskit“","end_later"]]},
-  think:{say:"Aišku, nėra kur skubėti. Paskambinsiu po kelių dienų. Kada jums geriau?",
+  offer:{say:"Gerai, atsiųsiu. Ko labiausiai reikėtų? Ir koks jūsų paštas?",
+    replies:[["Pasakė, ko reikia, ir paštą","end_offer"],["„Tiesiog siųskit“","end_later"]]},
+  think:{say:"Aišku, neskubinu. Paskambinsiu po kelių dienų. Kada geriau?",
     replies:[["Pasakė, kada","end_callback"],["Neskambinkit","no"]]},
-  no:{say:"Gerai, supratau. Ačiū, kad išklausėt. Jei kada prireiks, numerį turit. Geros dienos!",end:"declined"},
-  end_meeting:{say:"Tai sutarėm. Dar atsiųsiu priminimą į paštą. Geros dienos!",end:"meeting"},
-  end_offer:{say:"Ačiū! Šiandien atsiųsiu, o po poros dienų paskambinsiu aptarti.",end:"offer"},
+  no:{say:"Supratau, ačiū. Jei ką, numerį turit. Geros dienos!",end:"declined"},
+  end_meeting:{say:"Tai sutarėm. Iki, geros dienos!",end:"meeting"},
+  end_offer:{say:"Ačiū! Šiandien atsiųsiu, po poros dienų paskambinsiu.",end:"offer"},
   end_later:{say:"Gerai, atsiųsiu ir po kelių dienų paskambinsiu. Geros dienos!",end:"callback"},
   end_callback:{say:"Ačiū, tada ir paskambinsiu. Geros dienos!",end:"callback"},
-  end_number:{say:"Ačiū labai, paskambinsiu. Geros dienos!",end:"callback"},
+  end_number:{say:"Ačiū, paskambinsiu. Geros dienos!",end:"callback"},
 };
+/* How a name sounds out loud: "BALTIC FOREST GROUP, UAB" -> "Baltic Forest Group". */
+const LOWER=/^(IR|IN|AND|ĮMONĖ|GROŽIO|SALONAS)$/i;
+const LEGAL=/^(UAB|MB|IĮ|AB|VŠĮ|PĮ|IVV|ŽŪB|KB|TŪB)$/i;
+function spokenName(n){
+  n=String(n||"").replace(/\([^)]*\)/g," ").split(",")[0];
+  const w=n.split(/\s+/).filter(t=>t&&!LEGAL.test(t.replace(/[.,]/g,"")));
+  const out=w.map((t,i)=>i&&LOWER.test(t)?t.toLocaleLowerCase("lt"):/\p{Ll}/u.test(t)||t.length<3||t.includes(".")?t:t.charAt(0)+t.slice(1).toLocaleLowerCase("lt")).join(" ").trim();
+  return out||String(n).trim();
+}
+/* "Paberžė, Vilniaus r." -> "Vilnius", "Klaipėdos r." -> "Klaipėda" */
+function spokenCity(c){
+  c=String(c||"").trim();if(!c)return"";
+  const parts=c.split(",").map(x=>x.trim());let t=parts[parts.length-1];
+  if(!/\sr\.?$/.test(t))return parts[0];
+  t=t.replace(/\s*r\.?$/,"");
+  return t.replace(/io$/,"is").replace(/aus$/,"us").replace(/os$/,"a").replace(/ės$/,"ė").replace(/o$/,"as");
+}
 const ENDS={
   meeting:{label:"Susitikimas sutartas",hint:"Įrašyk sumą, jei kalbėjot apie kainą.",tone:"var(--s-interested)"},
   offer:{label:"Siųsti pasiūlymą",hint:"Sandoris bus etape „Pasiūlymas išsiųstas“.",tone:"var(--s-interested)"},
@@ -729,8 +746,8 @@ function callName(){
   const f=firstName(meId);return f==="Aš"||f==="Komandos"||f==="Niekas"?"":f;
 }
 function fillLine(t,l){
-  const me=callName(),city=(l.city||"").replace(/\s*r\.$/,"");
-  const vars={me:me||"[tavo vardas]",name:l.name,cat:(l.category||"").toLowerCase()||"jūsų paslaugos",city:city?city:"",problem:PROBLEM[l.need]||PROBLEM["Svetainė"],pitch:PITCH[l.need]||PITCH["Svetainė"]};
+  const me=callName(),city=spokenCity(l.city);
+  const vars={me:me||"[tavo vardas]",name:spokenName(l.name),cat:(l.category||"").split(",")[0].trim().toLocaleLowerCase("lt")||"jūsų paslaugos",city:city?city:"",problem:PROBLEM[l.need]||PROBLEM["Svetainė"],pitch:PITCH[l.need]||PITCH["Svetainė"]};
   let out=t;for(let i=0;i<2;i++)out=out.replace(/\{(\w+)\}/g,(m,k)=>vars[k]??m);
   return esc(out.replace(/\s+“/g,"“").replace(/ {2,}/g," "));
 }
