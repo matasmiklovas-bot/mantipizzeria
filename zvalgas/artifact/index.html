@@ -6,7 +6,7 @@
 <title>Coldline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap&subset=latin-ext" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap&subset=latin-ext" rel="stylesheet">
 <style>
 /* Coldline. Colour carries meaning only: green = call / won, red = declined, blue = callback, amber = no answer. Everything else is ink on paper. */
 :root{
@@ -15,7 +15,7 @@
   --call:#0e7a43;--call-hover:#0a6236;--danger:#c2341f;--accent:var(--text);
   --s-new:#8f8f87;--s-no_answer:#b7791f;--s-declined:#c2341f;--s-thinking:#2f5fb3;--s-interested:#0e7a43;
   --d-meeting:#2f5fb3;--d-proposal:#6b46c1;--d-won:#0e7a43;--d-lost:#8f8f87;
-  --r:4px;--pop:0 1px 2px rgba(0,0,0,.06),0 8px 24px -8px rgba(0,0,0,.18);
+  --r:7px;--pop:0 1px 2px rgba(0,0,0,.06),0 8px 24px -8px rgba(0,0,0,.18);
   color-scheme:light;
 }
 :root[data-theme=dark]{
@@ -29,7 +29,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text)}
-body{font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+body{font-family:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
 button,input,select,textarea{font:inherit;color:inherit;background:none;border:0;border-radius:0}
 select option{background:var(--surface);color:var(--text)}
 button{cursor:pointer}
@@ -42,7 +42,24 @@ a{color:inherit;text-decoration:none}
 .dot{display:inline-block;width:8px;height:8px;border-radius:1px;flex-shrink:0}
 .thin{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
 .trunc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html{-webkit-tap-highlight-color:transparent}
+a,button,summary,label,select,input,textarea,[data-act]{touch-action:manipulation}
+button,a.go,.btn,.chip,.obtn,.qitem,.dcard,.nav a,.tabs a{transition:transform .08s ease,background-color .12s ease,border-color .12s ease,color .12s ease}
+button:active:not(:disabled),a.go:active,.btn:active,.chip:active,.nav a:active,.tabs a:active{transform:scale(.97)}
+.obtn:active:not(:disabled),.qitem:active,.dcard:active{transform:scale(.985)}
+.tnum{font-variant-numeric:tabular-nums}
 .kbd{display:inline-block;min-width:18px;border:1px solid var(--line-2);border-bottom-width:2px;border-radius:3px;padding:0 4px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;line-height:15px;text-align:center;color:var(--muted)}
+@media(pointer:coarse){
+  .btn,.seg button,.qtabs button,.chip,.sel,.search,.pick>button{min-height:44px}
+  .inp{height:46px}.mini{height:40px;width:72px}
+  .nav a,.sidefoot button,.sidefoot .who{height:46px}
+  .qitem{padding:14px 16px}.obtn{height:64px}
+  .menu button{padding:13px 12px}
+  .iconbtn{width:44px;height:44px}
+  .grid td{padding:13px 10px}
+  .skip button{min-height:44px;padding:0 6px}
+  .tabs a{padding:10px 0 9px}
+}
 @keyframes in{from{opacity:0}to{opacity:1}}
 .in{animation:in .18s ease-out both}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -53,15 +70,20 @@ a{color:inherit;text-decoration:none}
 .side{display:none;width:64px;flex-shrink:0;flex-direction:column;border-right:1px solid var(--line);background:var(--surface)}
 @media(min-width:768px){.side{display:flex}}
 @media(min-width:1180px){.side{width:216px}}
-.brand{display:flex;align-items:center;gap:9px;height:56px;padding:0 20px;border-bottom:1px solid var(--line);font-weight:600;font-size:15px;letter-spacing:-.01em}
-.brand .live{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;height:60px;padding:0 14px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px;letter-spacing:-.02em}
+@media(min-width:1180px){.brand{justify-content:flex-start;padding:0 18px}}
+.mark{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--call);color:#fff;flex-shrink:0}
+.brand .live{width:7px;height:7px;border-radius:50%;background:var(--line-2);flex-shrink:0;margin-left:auto}
+.brand .live{display:none}@media(min-width:1180px){.brand .live{display:block}}
 .brand .live.on{background:var(--call)}
 .brand .word{display:none}
 @media(min-width:1180px){.brand .word{display:inline}}
 .nav{display:flex;flex-direction:column;padding:10px 8px;gap:1px}
-.nav a{display:flex;align-items:center;gap:11px;height:36px;padding:0 12px;border-radius:var(--r);color:var(--text-2);font-size:13.5px}
+.nav a{display:flex;align-items:center;justify-content:center;gap:11px;height:40px;padding:0 12px;border-radius:var(--r);color:var(--text-2);font-size:14px;font-weight:500}
+@media(min-width:1180px){.nav a{justify-content:flex-start}}
 .nav a:hover{background:var(--hover);color:var(--text)}
-.nav a[aria-current=page]{background:var(--ink);color:var(--on-ink)}
+.nav a[aria-current=page]{background:var(--sunk);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+.nav a[aria-current=page] svg{color:var(--call)}
 .nav .lab,.nav .cnt{display:none}
 @media(min-width:1180px){.nav .lab{display:inline}.nav .cnt{display:inline;margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11.5px;opacity:.7}}
 .sidefoot{margin-top:auto;border-top:1px solid var(--line);padding:10px 8px;display:flex;flex-direction:column;gap:2px}
@@ -73,7 +95,7 @@ a{color:inherit;text-decoration:none}
 .tabs{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:var(--surface);padding-bottom:env(safe-area-inset-bottom)}
 @media(min-width:768px){.tabs{display:none}}
 .tabs a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;font-size:10.5px;color:var(--muted)}
-.tabs a[aria-current=page]{color:var(--text);font-weight:500}
+.tabs a[aria-current=page]{color:var(--text);font-weight:600}.tabs a[aria-current=page] svg{color:var(--call)}
 .banner{padding:9px 20px;font-size:13px;border-bottom:1px solid var(--line);background:var(--surface);color:var(--text-2)}
 .banner.err{background:var(--danger);color:#fff;border-color:var(--danger)}
 .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:80;border-radius:var(--r);background:var(--ink);color:var(--on-ink);padding:10px 14px;font-size:13px;box-shadow:var(--pop);max-width:calc(100vw - 32px)}
@@ -83,7 +105,7 @@ a{color:inherit;text-decoration:none}
 .page{max-width:1280px;margin:0 auto;padding:0 16px 72px}
 @media(min-width:768px){.page{padding:0 32px 72px}}
 .ph{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:24px}
-.ph h1{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.ph h1{font-size:20px;font-weight:700;letter-spacing:-.025em}
 .ph .meta{margin-left:10px;font-size:13px;color:var(--muted);font-weight:400}
 .lbl{display:block;font-size:12px;color:var(--muted)}
 .btn{display:inline-flex;height:34px;align-items:center;justify-content:center;gap:7px;border-radius:var(--r);padding:0 12px;font-size:13px;font-weight:500;border:1px solid var(--line-2);background:var(--surface);color:var(--text)}
@@ -108,7 +130,7 @@ textarea.inp{height:auto;padding:9px 10px;line-height:1.5;resize:vertical}
 .tagline{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-2);white-space:nowrap}
 .empty{display:grid;place-items:center;min-height:60vh;padding:64px 24px;text-align:center}
 .empty h2{font-size:18px;font-weight:600}
-.box{border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.box{border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:0 1px 2px rgba(16,16,14,.04)}
 .sect{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .sect span{font-weight:400;font-size:12px;color:var(--muted)}
 
@@ -145,11 +167,14 @@ textarea.inp{height:auto;padding:9px 10px;line-height:1.5;resize:vertical}
 .fname{margin-top:10px;font-size:28px;font-weight:600;line-height:1.15;letter-spacing:-.02em;word-break:break-word}
 @media(min-width:768px){.fname{font-size:32px}}
 .fmeta{margin-top:4px;font-size:14px;color:var(--text-2)}
-.dial{margin-top:22px;display:flex;flex-direction:column;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);overflow:hidden}
+.dial{margin-top:22px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;box-shadow:0 1px 2px rgba(16,16,14,.04),0 10px 30px -18px rgba(16,16,14,.25)}
 @media(min-width:640px){.dial{flex-direction:row;align-items:stretch}}
-.dial .nr{flex:1;padding:14px 18px}
+.dial .nr{flex:1;padding:16px 20px}
+.dial .copy{display:flex;align-items:center;justify-content:center;gap:7px;min-height:52px;padding:0 18px;border-top:1px solid var(--line);color:var(--text-2);font-size:13.5px;font-weight:500}
+.dial .copy:hover{background:var(--hover)}
+@media(min-width:640px){.dial .copy{border-top:0;border-left:1px solid var(--line)}.dial .copy span{display:none}}
 .dial .nr .num{display:block;margin-top:2px;font-size:26px;font-weight:500;letter-spacing:-.01em;white-space:nowrap}
-.dial a.go{display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 28px;background:var(--call);color:#fff;font-size:15px;font-weight:600}
+.dial a.go{display:flex;align-items:center;justify-content:center;gap:10px;min-height:60px;padding:0 30px;background:var(--call);color:#fff;font-size:16px;font-weight:600;letter-spacing:-.01em}
 .dial a.go:hover{background:var(--call-hover)}
 .links{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13.5px;color:var(--text-2)}
 .links a,.links span{display:inline-flex;align-items:center;gap:6px}
@@ -161,23 +186,27 @@ textarea.inp{height:auto;padding:9px 10px;line-height:1.5;resize:vertical}
 .brief dt{color:var(--muted);font-size:13px}
 .brief dd{color:var(--text);word-break:break-word}
 .brief .why dd{font-size:15px;line-height:1.55}
-details.plan{margin-top:20px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
-details.plan summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 14px;font-size:13.5px;font-weight:500}
+details.plan{margin-top:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+details.plan summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:0 16px;font-size:14px;font-weight:600}
 details.plan summary::-webkit-details-marker{display:none}
 details.plan[open] summary svg{transform:rotate(180deg)}
 details.plan .body{padding:0 14px 14px;font-size:14px;line-height:1.6;color:var(--text-2)}
 details.plan .say{border-left:2px solid var(--text);padding:2px 0 2px 12px;color:var(--text);margin:6px 0 16px}
 details.plan dl{display:grid;gap:10px}
 details.plan dt{font-weight:500;color:var(--text)}
-.outcome{margin-top:24px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface)}
-.outcome header{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:500}
+.outcome{margin-top:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:0 1px 2px rgba(16,16,14,.04)}
+.outcome header{display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 16px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
+.live-call{display:inline-flex;align-items:center;gap:7px;color:var(--call);font-weight:500;font-size:13px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--call);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
 .outcome .pad{padding:14px}
 textarea.note{width:100%;resize:vertical;border:1px solid var(--line-2);border-radius:var(--r);background:var(--sunk);padding:10px 12px;font-size:16px;line-height:1.5;color:var(--text)}
 @media(min-width:1024px){textarea.note{font-size:14px}}
 textarea.note:focus{border-color:var(--text);outline:none;background:var(--surface)}
-.obtns{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden}
+.obtns{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(min-width:640px){.obtns{grid-template-columns:repeat(4,1fr)}}
-.obtn{display:flex;align-items:center;justify-content:space-between;gap:8px;height:52px;padding:0 14px;font-size:14px;font-weight:500;border-left:1px solid var(--line-2);border-top:1px solid var(--line-2);margin:-1px 0 0 -1px;background:var(--surface)}
+.obtn{display:flex;align-items:center;justify-content:space-between;gap:8px;height:58px;padding:0 16px;font-size:15px;font-weight:600;border:1px solid var(--line);border-radius:10px;background:var(--sunk)}
+.obtn:hover{border-color:var(--line-2)}
 .obtn:hover{background:var(--hover)}
 .obtn span{display:inline-flex;align-items:center;gap:9px}
 .obtn .kbd{display:none}
@@ -232,7 +261,7 @@ textarea.note:focus{border-color:var(--text);outline:none;background:var(--surfa
 .pick{position:relative;display:inline-block}
 .pick>button{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 8px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:12.5px;color:var(--text-2);white-space:nowrap}
 .pick>button:hover{border-color:var(--line-2)}
-.menu{position:absolute;right:0;z-index:30;margin-top:4px;width:220px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);padding:4px;box-shadow:var(--pop);list-style:none}
+.menu{position:absolute;right:0;z-index:30;margin-top:4px;width:232px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);padding:4px;box-shadow:var(--pop);list-style:none}
 .menu button{display:flex;width:100%;align-items:center;gap:10px;border-radius:3px;padding:8px 10px;text-align:left;font-size:13px;color:var(--text-2)}
 .menu button:hover{background:var(--hover);color:var(--text)}
 .mini{height:28px;width:64px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);padding:0 8px;font-size:13px;text-align:right;color:var(--text)}
@@ -246,10 +275,10 @@ form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .req{width:100%;min-height:180px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--sunk);padding:10px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.6;resize:vertical;color:var(--text)}
 
 /* metrics */
-.kpis{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden}
+.kpis{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(16,16,14,.04);background:var(--surface);overflow:hidden}
 @media(min-width:900px){.kpis{grid-template-columns:repeat(4,1fr)}}
 .kpi{padding:16px 18px;border-left:1px solid var(--line);border-top:1px solid var(--line);margin:-1px 0 0 -1px}
-.kpi .v{display:block;margin-top:8px;font-family:"IBM Plex Mono",monospace;font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1}
+.kpi .v{display:block;margin-top:8px;font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
 .kpi small{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
 .cols{display:grid;gap:16px;margin-top:16px}
 @media(min-width:960px){.cols{grid-template-columns:1fr 1fr}}
@@ -265,7 +294,7 @@ form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 @media(min-width:1000px){.board{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .col h3{display:flex;align-items:center;justify-content:space-between;gap:8px;height:34px;font-size:13px;font-weight:600;border-bottom:2px solid var(--text);margin-bottom:8px}
 .col h3 span{font-weight:400;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
-.dcard{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:11px 12px;margin-bottom:8px}
+.dcard{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px rgba(16,16,14,.04);background:var(--surface);padding:11px 12px;margin-bottom:8px}
 .dcard:hover{border-color:var(--line-2)}
 .dcard .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .dcard .top b{font-weight:500;font-size:13.5px}
@@ -286,7 +315,7 @@ form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 <body>
 <div class="app">
   <aside class="side" aria-label="Meniu">
-    <div class="brand"><span class="live" id="live"></span><span class="word">Coldline</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12a7 7 0 0 1 7-7"/><path d="M5 12a7 7 0 0 0 7 7"/><path d="M12 9a3 3 0 0 0 0 6"/><path d="M17 8v8M20 10v4"/></svg></span><span class="word">Coldline</span><span class="live" id="live"></span></div>
     <nav class="nav" id="nav"></nav>
     <div class="sidefoot" id="sidefoot"></div>
   </aside>
@@ -294,6 +323,10 @@ form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
   <nav class="tabs" id="tabs" aria-label="Meniu"></nav>
 </div>
 <div id="toast"></div>
+<script>
+/*! morphdom 2.7.4 | MIT License | (c) Patrick Steele-Idem */
+(function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?module.exports=factory():typeof define==="function"&&define.amd?define(factory):(global=global||self,global.morphdom=factory())})(this,function(){"use strict";var DOCUMENT_FRAGMENT_NODE=11;function morphAttrs(fromNode,toNode){var toNodeAttrs=toNode.attributes;var attr;var attrName;var attrNamespaceURI;var attrValue;var fromValue;if(toNode.nodeType===DOCUMENT_FRAGMENT_NODE||fromNode.nodeType===DOCUMENT_FRAGMENT_NODE){return}for(var i=toNodeAttrs.length-1;i>=0;i--){attr=toNodeAttrs[i];attrName=attr.name;attrNamespaceURI=attr.namespaceURI;attrValue=attr.value;if(attrNamespaceURI){attrName=attr.localName||attrName;fromValue=fromNode.getAttributeNS(attrNamespaceURI,attrName);if(fromValue!==attrValue){if(attr.prefix==="xmlns"){attrName=attr.name}fromNode.setAttributeNS(attrNamespaceURI,attrName,attrValue)}}else{fromValue=fromNode.getAttribute(attrName);if(fromValue!==attrValue){fromNode.setAttribute(attrName,attrValue)}}}var fromNodeAttrs=fromNode.attributes;for(var d=fromNodeAttrs.length-1;d>=0;d--){attr=fromNodeAttrs[d];attrName=attr.name;attrNamespaceURI=attr.namespaceURI;if(attrNamespaceURI){attrName=attr.localName||attrName;if(!toNode.hasAttributeNS(attrNamespaceURI,attrName)){fromNode.removeAttributeNS(attrNamespaceURI,attrName)}}else{if(!toNode.hasAttribute(attrName)){fromNode.removeAttribute(attrName)}}}}var range;var NS_XHTML="http://www.w3.org/1999/xhtml";var doc=typeof document==="undefined"?undefined:document;var HAS_TEMPLATE_SUPPORT=!!doc&&"content"in doc.createElement("template");var HAS_RANGE_SUPPORT=!!doc&&doc.createRange&&"createContextualFragment"in doc.createRange();function createFragmentFromTemplate(str){var template=doc.createElement("template");template.innerHTML=str;return template.content.childNodes[0]}function createFragmentFromRange(str){if(!range){range=doc.createRange();range.selectNode(doc.body)}var fragment=range.createContextualFragment(str);return fragment.childNodes[0]}function createFragmentFromWrap(str){var fragment=doc.createElement("body");fragment.innerHTML=str;return fragment.childNodes[0]}function toElement(str){str=str.trim();if(HAS_TEMPLATE_SUPPORT){return createFragmentFromTemplate(str)}else if(HAS_RANGE_SUPPORT){return createFragmentFromRange(str)}return createFragmentFromWrap(str)}function compareNodeNames(fromEl,toEl){var fromNodeName=fromEl.nodeName;var toNodeName=toEl.nodeName;var fromCodeStart,toCodeStart;if(fromNodeName===toNodeName){return true}fromCodeStart=fromNodeName.charCodeAt(0);toCodeStart=toNodeName.charCodeAt(0);if(fromCodeStart<=90&&toCodeStart>=97){return fromNodeName===toNodeName.toUpperCase()}else if(toCodeStart<=90&&fromCodeStart>=97){return toNodeName===fromNodeName.toUpperCase()}else{return false}}function createElementNS(name,namespaceURI){return!namespaceURI||namespaceURI===NS_XHTML?doc.createElement(name):doc.createElementNS(namespaceURI,name)}function moveChildren(fromEl,toEl){var curChild=fromEl.firstChild;while(curChild){var nextChild=curChild.nextSibling;toEl.appendChild(curChild);curChild=nextChild}return toEl}function syncBooleanAttrProp(fromEl,toEl,name){if(fromEl[name]!==toEl[name]){fromEl[name]=toEl[name];if(fromEl[name]){fromEl.setAttribute(name,"")}else{fromEl.removeAttribute(name)}}}var specialElHandlers={OPTION:function(fromEl,toEl){var parentNode=fromEl.parentNode;if(parentNode){var parentName=parentNode.nodeName.toUpperCase();if(parentName==="OPTGROUP"){parentNode=parentNode.parentNode;parentName=parentNode&&parentNode.nodeName.toUpperCase()}if(parentName==="SELECT"&&!parentNode.hasAttribute("multiple")){if(fromEl.hasAttribute("selected")&&!toEl.selected){fromEl.setAttribute("selected","selected");fromEl.removeAttribute("selected")}parentNode.selectedIndex=-1}}syncBooleanAttrProp(fromEl,toEl,"selected")},INPUT:function(fromEl,toEl){syncBooleanAttrProp(fromEl,toEl,"checked");syncBooleanAttrProp(fromEl,toEl,"disabled");if(fromEl.value!==toEl.value){fromEl.value=toEl.value}if(!toEl.hasAttribute("value")){fromEl.removeAttribute("value")}},TEXTAREA:function(fromEl,toEl){var newValue=toEl.value;if(fromEl.value!==newValue){fromEl.value=newValue}var firstChild=fromEl.firstChild;if(firstChild){var oldValue=firstChild.nodeValue;if(oldValue==newValue||!newValue&&oldValue==fromEl.placeholder){return}firstChild.nodeValue=newValue}},SELECT:function(fromEl,toEl){if(!toEl.hasAttribute("multiple")){var selectedIndex=-1;var i=0;var curChild=fromEl.firstChild;var optgroup;var nodeName;while(curChild){nodeName=curChild.nodeName&&curChild.nodeName.toUpperCase();if(nodeName==="OPTGROUP"){optgroup=curChild;curChild=optgroup.firstChild}else{if(nodeName==="OPTION"){if(curChild.hasAttribute("selected")){selectedIndex=i;break}i++}curChild=curChild.nextSibling;if(!curChild&&optgroup){curChild=optgroup.nextSibling;optgroup=null}}}fromEl.selectedIndex=selectedIndex}}};var ELEMENT_NODE=1;var DOCUMENT_FRAGMENT_NODE$1=11;var TEXT_NODE=3;var COMMENT_NODE=8;function noop(){}function defaultGetNodeKey(node){if(node){return node.getAttribute&&node.getAttribute("id")||node.id}}function morphdomFactory(morphAttrs){return function morphdom(fromNode,toNode,options){if(!options){options={}}if(typeof toNode==="string"){if(fromNode.nodeName==="#document"||fromNode.nodeName==="HTML"||fromNode.nodeName==="BODY"){var toNodeHtml=toNode;toNode=doc.createElement("html");toNode.innerHTML=toNodeHtml}else{toNode=toElement(toNode)}}else if(toNode.nodeType===DOCUMENT_FRAGMENT_NODE$1){toNode=toNode.firstElementChild}var getNodeKey=options.getNodeKey||defaultGetNodeKey;var onBeforeNodeAdded=options.onBeforeNodeAdded||noop;var onNodeAdded=options.onNodeAdded||noop;var onBeforeElUpdated=options.onBeforeElUpdated||noop;var onElUpdated=options.onElUpdated||noop;var onBeforeNodeDiscarded=options.onBeforeNodeDiscarded||noop;var onNodeDiscarded=options.onNodeDiscarded||noop;var onBeforeElChildrenUpdated=options.onBeforeElChildrenUpdated||noop;var skipFromChildren=options.skipFromChildren||noop;var addChild=options.addChild||function(parent,child){return parent.appendChild(child)};var childrenOnly=options.childrenOnly===true;var fromNodesLookup=Object.create(null);var keyedRemovalList=[];function addKeyedRemoval(key){keyedRemovalList.push(key)}function walkDiscardedChildNodes(node,skipKeyedNodes){if(node.nodeType===ELEMENT_NODE){var curChild=node.firstChild;while(curChild){var key=undefined;if(skipKeyedNodes&&(key=getNodeKey(curChild))){addKeyedRemoval(key)}else{onNodeDiscarded(curChild);if(curChild.firstChild){walkDiscardedChildNodes(curChild,skipKeyedNodes)}}curChild=curChild.nextSibling}}}function removeNode(node,parentNode,skipKeyedNodes){if(onBeforeNodeDiscarded(node)===false){return}if(parentNode){parentNode.removeChild(node)}onNodeDiscarded(node);walkDiscardedChildNodes(node,skipKeyedNodes)}function indexTree(node){if(node.nodeType===ELEMENT_NODE||node.nodeType===DOCUMENT_FRAGMENT_NODE$1){var curChild=node.firstChild;while(curChild){var key=getNodeKey(curChild);if(key){fromNodesLookup[key]=curChild}indexTree(curChild);curChild=curChild.nextSibling}}}indexTree(fromNode);function handleNodeAdded(el){onNodeAdded(el);var curChild=el.firstChild;while(curChild){var nextSibling=curChild.nextSibling;var key=getNodeKey(curChild);if(key){var unmatchedFromEl=fromNodesLookup[key];if(unmatchedFromEl&&compareNodeNames(curChild,unmatchedFromEl)){curChild.parentNode.replaceChild(unmatchedFromEl,curChild);morphEl(unmatchedFromEl,curChild)}else{handleNodeAdded(curChild)}}else{handleNodeAdded(curChild)}curChild=nextSibling}}function cleanupFromEl(fromEl,curFromNodeChild,curFromNodeKey){while(curFromNodeChild){var fromNextSibling=curFromNodeChild.nextSibling;if(curFromNodeKey=getNodeKey(curFromNodeChild)){addKeyedRemoval(curFromNodeKey)}else{removeNode(curFromNodeChild,fromEl,true)}curFromNodeChild=fromNextSibling}}function morphEl(fromEl,toEl,childrenOnly){var toElKey=getNodeKey(toEl);if(toElKey){delete fromNodesLookup[toElKey]}if(!childrenOnly){var beforeUpdateResult=onBeforeElUpdated(fromEl,toEl);if(beforeUpdateResult===false){return}else if(beforeUpdateResult instanceof HTMLElement){fromEl=beforeUpdateResult;indexTree(fromEl)}morphAttrs(fromEl,toEl);onElUpdated(fromEl);if(onBeforeElChildrenUpdated(fromEl,toEl)===false){return}}if(fromEl.nodeName!=="TEXTAREA"){morphChildren(fromEl,toEl)}else{specialElHandlers.TEXTAREA(fromEl,toEl)}}function morphChildren(fromEl,toEl){var skipFrom=skipFromChildren(fromEl,toEl);var curToNodeChild=toEl.firstChild;var curFromNodeChild=fromEl.firstChild;var curToNodeKey;var curFromNodeKey;var fromNextSibling;var toNextSibling;var matchingFromEl;outer:while(curToNodeChild){toNextSibling=curToNodeChild.nextSibling;curToNodeKey=getNodeKey(curToNodeChild);while(!skipFrom&&curFromNodeChild){fromNextSibling=curFromNodeChild.nextSibling;if(curToNodeChild.isSameNode&&curToNodeChild.isSameNode(curFromNodeChild)){curToNodeChild=toNextSibling;curFromNodeChild=fromNextSibling;continue outer}curFromNodeKey=getNodeKey(curFromNodeChild);var curFromNodeType=curFromNodeChild.nodeType;var isCompatible=undefined;if(curFromNodeType===curToNodeChild.nodeType){if(curFromNodeType===ELEMENT_NODE){if(curToNodeKey){if(curToNodeKey!==curFromNodeKey){if(matchingFromEl=fromNodesLookup[curToNodeKey]){if(fromNextSibling===matchingFromEl){isCompatible=false}else{fromEl.insertBefore(matchingFromEl,curFromNodeChild);if(curFromNodeKey){addKeyedRemoval(curFromNodeKey)}else{removeNode(curFromNodeChild,fromEl,true)}curFromNodeChild=matchingFromEl;curFromNodeKey=getNodeKey(curFromNodeChild)}}else{isCompatible=false}}}else if(curFromNodeKey){isCompatible=false}isCompatible=isCompatible!==false&&compareNodeNames(curFromNodeChild,curToNodeChild);if(isCompatible){morphEl(curFromNodeChild,curToNodeChild)}}else if(curFromNodeType===TEXT_NODE||curFromNodeType==COMMENT_NODE){isCompatible=true;if(curFromNodeChild.nodeValue!==curToNodeChild.nodeValue){curFromNodeChild.nodeValue=curToNodeChild.nodeValue}}}if(isCompatible){curToNodeChild=toNextSibling;curFromNodeChild=fromNextSibling;continue outer}if(curFromNodeKey){addKeyedRemoval(curFromNodeKey)}else{removeNode(curFromNodeChild,fromEl,true)}curFromNodeChild=fromNextSibling}if(curToNodeKey&&(matchingFromEl=fromNodesLookup[curToNodeKey])&&compareNodeNames(matchingFromEl,curToNodeChild)){if(!skipFrom){addChild(fromEl,matchingFromEl)}morphEl(matchingFromEl,curToNodeChild)}else{var onBeforeNodeAddedResult=onBeforeNodeAdded(curToNodeChild);if(onBeforeNodeAddedResult!==false){if(onBeforeNodeAddedResult){curToNodeChild=onBeforeNodeAddedResult}if(curToNodeChild.actualize){curToNodeChild=curToNodeChild.actualize(fromEl.ownerDocument||doc)}addChild(fromEl,curToNodeChild);handleNodeAdded(curToNodeChild)}}curToNodeChild=toNextSibling;curFromNodeChild=fromNextSibling}cleanupFromEl(fromEl,curFromNodeChild,curFromNodeKey);var specialElHandler=specialElHandlers[fromEl.nodeName];if(specialElHandler){specialElHandler(fromEl,toEl)}}var morphedNode=fromNode;var morphedNodeType=morphedNode.nodeType;var toNodeType=toNode.nodeType;if(!childrenOnly){if(morphedNodeType===ELEMENT_NODE){if(toNodeType===ELEMENT_NODE){if(!compareNodeNames(fromNode,toNode)){onNodeDiscarded(fromNode);morphedNode=moveChildren(fromNode,createElementNS(toNode.nodeName,toNode.namespaceURI))}}else{morphedNode=toNode}}else if(morphedNodeType===TEXT_NODE||morphedNodeType===COMMENT_NODE){if(toNodeType===morphedNodeType){if(morphedNode.nodeValue!==toNode.nodeValue){morphedNode.nodeValue=toNode.nodeValue}return morphedNode}else{morphedNode=toNode}}}if(morphedNode===toNode){onNodeDiscarded(fromNode)}else{if(toNode.isSameNode&&toNode.isSameNode(morphedNode)){return}morphEl(morphedNode,toNode,childrenOnly);if(keyedRemovalList){for(var i=0,len=keyedRemovalList.length;i<len;i++){var elToRemove=fromNodesLookup[keyedRemovalList[i]];if(elToRemove){removeNode(elToRemove,elToRemove.parentNode,false)}}}}if(!childrenOnly&&morphedNode!==fromNode&&fromNode.parentNode){if(morphedNode.actualize){morphedNode=morphedNode.actualize(fromNode.ownerDocument||doc)}fromNode.parentNode.replaceChild(morphedNode,fromNode)}return morphedNode}}var morphdom=morphdomFactory(morphAttrs);return morphdom});
+</script>
 <script>
 /* ===== constants ===== */
 const STATUSES=[
@@ -382,8 +415,9 @@ function when(t){
 }
 /* Lithuanian plural: 1 / 2–9 / 0,10–20 */
 const pl=(n,one,few,many)=>{const a=Math.abs(n)%100,b=a%10;return`${n} ${b===1&&a!==11?one:b>=2&&b<=9&&(a<10||a>19)?few:many}`};
+const fmtDur=ms=>{const t=Math.max(0,Math.round(ms/1000));return`${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`};
 const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
-let toastT;function toast(t){const el=$("toast");el.innerHTML=`<div class="toast rise">${esc(t)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>el.innerHTML="",3400)}
+let toastT;function toast(t){const el=$("toast");el.innerHTML=`<div class="toast in">${esc(t)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>el.innerHTML="",3400)}
 const LSKEY="coldline.theme";
 function theme(){try{return localStorage.getItem(LSKEY)||"light"}catch{return"light"}}
 function setTheme(t){try{localStorage.setItem(LSKEY,t)}catch{}document.documentElement.dataset.theme=t}
@@ -474,11 +508,12 @@ async function logCall(l,status,extra={}){
   const next={...l,status,callbackAt:status==="thinking"?(extra.callbackAt||null):null,attempts:(l.attempts||0)+1,lastCalledAt:now,lastCalledBy:meId||"",assignee:l.assignee||meId||"",updatedAt:now};
   delete next.fresh;delete next.note;
   const note=S.note.trim();
+  const dur=S.callFor===l.id&&S.callStart?Math.round((now-S.callStart)/1000):null;S.callStart=null;S.callFor=null;
   leads=leads.map(x=>x.id===l.id?next:x);
   S.note="";S.askWhen=false;S.dealAsk=false;S.custom="";S.sel=null;history.replaceState(null,"","#");
   render();
   if(await saveLead(next)){
-    await addAct({leadId:l.id,kind:"call",status,note});
+    await addAct({leadId:l.id,kind:"call",status,note,duration:dur});
     if(extra.deal){
       const d={id:uid(),leadId:l.id,leadName:l.name,owner:meId||"",title:extra.deal.title||l.need||"Svetainė",value:num(extra.deal.value),cost:num(extra.deal.cost),stage:extra.deal.stage||"meeting",note,createdAt:now,updatedAt:now,closedAt:extra.deal.stage==="won"?now:null};
       deals=[d,...deals];
@@ -549,9 +584,9 @@ function renderShell(){
   const r=route(),q=leads.filter(l=>l.status==="new"&&mine(l)).length;
   const openDeals=deals.filter(d=>d.stage==="meeting"||d.stage==="proposal").length;
   const count={"":q,pardavimai:openDeals,kontaktai:leads.length,komanda:people().length};
-  $("nav").innerHTML=NAV.map(([h,t,i])=>`<a href="#${h}" title="${t}" ${r===h?'aria-current="page"':""}>${icon(i,18)}<span class="lab">${t}</span>${count[h]?`<span class="cnt">${count[h]}</span>`:""}</a>`).join("");
-  $("tabs").innerHTML=NAV.map(([h,t,i])=>`<a href="#${h}" ${r===h?'aria-current="page"':""}>${icon(i,20)}${t}</a>`).join("");
-  $("sidefoot").innerHTML=`<button data-act="theme" title="Tema">${icon(theme()==="dark"?"sun":"moon",17)}<span class="lab">${theme()==="dark"?"Šviesi tema":"Tamsi tema"}</span></button>${meId?`<span class="who" title="${esc(who(meId))}">${avatar(meId,22)}<span class="lab trunc">${esc(who(meId))}</span></span>`:""}`;
+  patch($("nav"),NAV.map(([h,t,i])=>`<a href="#${h}" title="${t}" ${r===h?'aria-current="page"':""}>${icon(i,18)}<span class="lab">${t}</span>${count[h]?`<span class="cnt">${count[h]}</span>`:""}</a>`).join(""));
+  patch($("tabs"),NAV.map(([h,t,i])=>`<a href="#${h}" ${r===h?'aria-current="page"':""}>${icon(i,20)}${t}</a>`).join(""));
+  patch($("sidefoot"),`<button data-act="theme" title="Tema">${icon(theme()==="dark"?"sun":"moon",17)}<span class="lab">${theme()==="dark"?"Šviesi tema":"Tamsi tema"}</span></button>${meId?`<span class="who" title="${esc(who(meId))}">${avatar(meId,22)}<span class="lab trunc">${esc(who(meId))}</span></span>`:""}`);
   $("live").className="live"+(S.conn==="ok"?" on":"");
   $("live").title=S.conn==="ok"?"Prisijungta":"Neprisijungta";
 }
@@ -568,7 +603,7 @@ const head=(title,meta,right="")=>`<header class="ph"><h1>${title}${meta?`<span 
 /* ===== call view ===== */
 function threadHtml(l,cls){
   const items=acts.filter(a=>a.leadId===l.id).sort((a,b)=>ms(a.createdAt)-ms(b.createdAt));
-  const ev=a=>a.kind==="call"?`paskambino ${sdot(a.status)} ${stat(a.status).short}`
+  const ev=a=>a.kind==="call"?`paskambino ${sdot(a.status)} ${stat(a.status).short}${a.duration?` <span class="mono muted">· ${fmtDur(a.duration*1000)}</span>`:""}`
     :a.kind==="status"?`pakeitė statusą ${sdot(a.status)} ${stat(a.status).short}`
     :a.kind==="deal"?`sandoris ${ddot(a.status)} ${stage(a.status).label}`
     :a.kind==="created"?"pridėjo kontaktą":"";
@@ -576,7 +611,7 @@ function threadHtml(l,cls){
     <header class="thead">Istorija<span class="muted mono" style="font-weight:400;font-size:12px">${items.length||""}</span></header>
     <ol class="tlist thin" id="tlist">
       ${items.length?"":`<li class="muted" style="font-size:13px">Dar nieko neįvyko.</li>`}
-      ${items.map(a=>`<li class="titem">${avatar(a.author,24)}<div style="min-width:0"><div class="h"><b>${esc(who(a.author))}</b><time class="muted">${when(a.createdAt)}</time></div>${ev(a)?`<div class="ev">${ev(a)}</div>`:""}${a.note?`<p class="msg">${esc(a.note)}</p>`:""}</div></li>`).join("")}
+      ${items.map(a=>`<li class="titem" id="a-${esc(a.id)}">${avatar(a.author,24)}<div style="min-width:0"><div class="h"><b>${esc(who(a.author))}</b><time class="muted">${when(a.createdAt)}</time></div>${ev(a)?`<div class="ev">${ev(a)}</div>`:""}${a.note?`<p class="msg">${esc(a.note)}</p>`:""}</div></li>`).join("")}
     </ol>
     <form class="composer" data-act="note-form"><div>
       <textarea rows="1" data-key="composer" placeholder="Pastaba komandai">${esc(S.composer)}</textarea>
@@ -586,7 +621,7 @@ function threadHtml(l,cls){
 }
 function editForm(l){
   const f=[["name","Pavadinimas"],["phone","Telefonas"],["email","El. paštas"],["website","Svetainė"],["category","Sritis"],["city","Miestas"],["companyCode","Įmonės kodas"],["revenue","Pajamos"]];
-  return`<form class="in" data-act="edit-form" style="margin-top:22px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+  return`<form id="ef-${esc(l.id)}" class="in" data-act="edit-form" style="margin-top:22px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
     ${f.map(([k,t])=>`<label class="field">${t}<input class="inp" name="${k}" value="${esc(l[k]||"")}" ${k==="name"?"required":""}></label>`).join("")}
     <label class="field">Reikia<select class="inp" name="need">${NEEDS.map(n=>`<option ${n===l.need?"selected":""}>${n}</option>`).join("")}</select></label>
     <label class="field">Atsakingas<select class="inp" name="assignee">${memberOptions(l.assignee)}</select></label>
@@ -598,7 +633,7 @@ function scriptHtml(l){
   const me=firstName(meId);
   const fill=s=>esc(s).replace("{name}",`<b>${esc(l.name)}</b>`).replace("{me}",esc(me==="Aš"||me==="Komandos"?"[vardas]":me)).replace("{cat}",esc((l.category||"").toLowerCase()||"jūsų paslaugų"));
   const s=SCRIPTS[l.need]||SCRIPTS["Svetainė"];
-  return`<details class="plan"><summary>Ką sakyti<span class="muted">${icon("chev",16)}</span></summary>
+  return`<details class="plan" data-keep-open><summary>Ką sakyti<span class="muted">${icon("chev",16)}</span></summary>
     <div class="body"><span class="lbl">Pradžia</span><p class="say">${fill(s[0])}</p>
     <span class="lbl" style="margin-bottom:8px">Jei sako</span><dl>${OBJECTIONS.map(([q,a])=>`<div><dt>${esc(q)}</dt><dd>${esc(a)}</dd></div>`).join("")}</dl></div></details>`;
 }
@@ -612,7 +647,7 @@ function viewCall(){
       ${meId?`<div class="goal"><span class="muted">Šiandien</span><div class="track"><span style="width:${Math.min(100,myToday/goal*100)}%"></span></div><span class="mono">${myToday}/${goal}</span></div>`:""}
       <div class="qtabs">${[["queue","Skambinti"],["waiting","Laukia"],["won","Nori"]].map(([id,t])=>`<button data-act="tab" data-v="${id}" aria-pressed="${S.tab===id}">${t}<span class="n">${q[id].length}</span></button>`).join("")}</div></div>
     <ul class="qlist thin">${q[S.tab].length?"":`<li class="muted" style="padding:28px 14px;text-align:center;font-size:13px">Tuščia</li>`}
-      ${q[S.tab].map(p=>`<li><button class="qitem" data-act="pick" data-id="${esc(p.l.id)}" aria-current="${cur&&p.l.id===cur.l.id}">
+      ${q[S.tab].map(p=>`<li id="q-${esc(p.l.id)}"><button class="qitem" data-act="pick" data-id="${esc(p.l.id)}" aria-current="${cur&&p.l.id===cur.l.id}">
         <span class="dot" style="background:${p.tone}"></span><b class="trunc">${esc(p.l.name)}</b>
         <small class="trunc">${esc([p.l.city,p.l.category].filter(Boolean).join(" · ")||"—")}</small>
         <small class="trunc" style="color:${p.tone}">${esc(p.label)}</small></button></li>`).join("")}</ul>`;
@@ -623,7 +658,7 @@ function viewCall(){
     const l=cur.l,meta=[l.category,l.city].filter(Boolean).join(" · ");
     const days=[["Rytoj, 10:00",1],["Po 3 d.",3],["Po savaitės",7],["Po 2 sav.",14]];
     const ld=deals.filter(d=>d.leadId===l.id);
-    center=`<article class="focus in">
+    center=`<article class="focus in" id="lead-${esc(l.id)}">
       <div class="crumbs"><span style="display:inline-flex;align-items:center;gap:7px;color:${cur.tone};font-weight:500"><span class="dot" style="background:${cur.tone}"></span>${esc(cur.label)}</span>
         ${pos>=0?`<span class="mono">${pos+1}/${q.queue.length}</span>`:""}
         ${l.assignee?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(firstName(l.assignee))}</span>`:""}
@@ -631,7 +666,7 @@ function viewCall(){
       <h1 class="fname">${esc(l.name)}</h1>${meta?`<p class="fmeta">${esc(meta)}</p>`:""}
       ${S.editing?editForm(l):`
       <div class="dial"><div class="nr"><span class="lbl">Telefonas</span><span class="num">${esc(l.phone||"—")}</span></div>
-        ${l.phone?`<a class="go" href="${esc(tel(l.phone))}">${icon("phone",18)} Skambinti</a>`:""}</div>
+        ${l.phone?`<button class="copy" data-act="copy" data-v="${esc(l.phone)}" title="Kopijuoti numerį">${icon("copy",16)}<span>Kopijuoti</span></button><a class="go" data-act="dial" data-id="${esc(l.id)}" data-v="${esc(l.phone)}" href="${esc(tel(l.phone))}">${icon("phone",18)} Skambinti</a>`:""}</div>
       <div class="links">${l.email?`<a href="mailto:${esc(l.email)}" class="u">${esc(l.email)}</a>`:""}
         ${l.website&&safeUrl(l.website)?`<a class="u" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.website))}">${esc(host(l.website))}</a>`:`<span class="muted">Svetainės nėra</span>`}
         ${l.source&&safeUrl(l.source)?`<a class="u muted" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.source))}">Šaltinis: ${esc(host(l.source))}</a>`:""}</div>
@@ -645,7 +680,7 @@ function viewCall(){
       </dl>
       ${scriptHtml(l)}`}
       <section class="outcome">
-        <header>Rezultatas${desk?`<span class="muted" style="font-weight:400;font-size:12px">klavišai 1–4</span>`:""}</header>
+        <header><span>Rezultatas</span><span style="display:inline-flex;align-items:center;gap:12px">${S.callFor===l.id&&S.callStart?`<span class="live-call"><span class="pulse"></span><span id="calltimer" class="mono">${fmtDur(Date.now()-S.callStart)}</span></span>`:""}${desk?`<span class="muted" style="font-weight:400;font-size:12px">klavišai 1–4</span>`:""}</span></header>
         <div class="pad">
         <textarea class="note" rows="2" data-key="note" placeholder="Su kuo kalbėjai ir ką sutarėte (nebūtina)">${esc(S.note)}</textarea>
         ${S.askWhen?`<div class="sub in"><span class="lbl" style="margin-bottom:8px">Kada perskambinti</span><div class="chips">
@@ -653,7 +688,7 @@ function viewCall(){
           <input type="datetime-local" class="chip" data-key="custom" value="${esc(S.custom)}">
           ${S.custom?`<button class="chip" data-act="callback-custom" aria-pressed="true">Išsaugoti</button>`:""}
           <button class="chip" data-act="ask-back">Atgal</button></div></div>`
-        :S.dealAsk?`<form class="dealform sub in" data-act="deal-form">
+        :S.dealAsk?`<form id="df-${esc(l.id)}" class="dealform sub in" data-act="deal-form">
           <label class="field">Suma, €<input class="inp mono" name="value" inputmode="decimal" placeholder="1200" autofocus></label>
           <label class="field">Savikaina, €<input class="inp mono" name="cost" inputmode="decimal" placeholder="0"></label>
           <label class="field">Etapas<select class="inp" name="stage">${STAGES.filter(s=>s.id!=="lost").map(s=>`<option value="${s.id}">${s.label}</option>`).join("")}</select></label>
@@ -678,7 +713,7 @@ function dealDrawer(){
   const comm=commissionOf(d),prof=profitOf(d);
   return`<div class="drawer" data-act="drawer-bg"><div class="pane thin" data-stop-bg>
     <div class="phd"><b style="font-weight:600" class="trunc">${esc(d.leadName||"—")}</b><button class="iconbtn" data-act="drawer-close" aria-label="Uždaryti">${icon("x")}</button></div>
-    <form data-act="deal-edit" style="padding:18px;display:grid;gap:14px">
+    <form id="de-${esc(d.id)}" data-act="deal-edit" style="padding:18px;display:grid;gap:14px">
       <label class="field">Etapas<select class="inp" name="stage">${STAGES.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${s.label}</option>`).join("")}</select></label>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label class="field">Suma, €<input class="inp mono" name="value" inputmode="decimal" value="${esc(num(d.value)||"")}"></label><label class="field">Savikaina, €<input class="inp mono" name="cost" inputmode="decimal" value="${esc(num(d.cost)||"")}"></label></div>
       <label class="field">Kas parduodama<select class="inp" name="title">${NEEDS.map(n=>`<option ${n===d.title?"selected":""}>${n}</option>`).join("")}</select></label>
@@ -710,7 +745,7 @@ function viewDeals(){
       <div class="kpi"><span class="lbl">Laimima</span><span class="v">${winRate===null?"—":winRate+" %"}</span><small>iš ${pl(closed.length,"uždaryto","uždarytų","uždarytų")}</small></div></div>
     <div class="board">${STAGES.map(s=>{const items=shown(s.id);return`<section class="col">
       <h3><span style="display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;color:var(--text);font-weight:600">${ddot(s.id)}${s.label}</span><span>${items.length} · ${eur(items.reduce((a,d)=>a+num(d.value),0))}</span></h3>
-      ${items.length?items.map(d=>`<button class="dcard" data-act="deal-open" data-id="${esc(d.id)}">
+      ${items.length?items.map(d=>`<button id="dc-${esc(d.id)}" class="dcard" data-act="deal-open" data-id="${esc(d.id)}">
         <div class="top"><b class="trunc">${esc(d.leadName||"—")}</b><span class="mono">${eur(d.value)}</span></div>
         <div class="bot"><span class="trunc">${esc(d.title||"")}</span><span style="display:inline-flex;align-items:center;gap:6px;flex-shrink:0">${avatar(d.owner,16)}${when(d.updatedAt)}</span></div>
       </button>`).join(""):`<div class="none">—</div>`}
@@ -765,7 +800,7 @@ function viewContacts(){
       <select class="sel" data-key="sort"><option value="created" ${S.sort==="created"?"selected":""}>Naujausi</option><option value="called" ${S.sort==="called"?"selected":""}>Neseniai skambinta</option><option value="name" ${S.sort==="name"?"selected":""}>A–Ž</option></select></div>
     ${S.loaded&&!vis.length?`<div class="empty" style="min-height:0;padding:64px 0"><h2>${leads.length?"Nieko nerasta":"Sąrašas tuščias"}</h2></div>`:`
     <div class="tablewrap"><table class="grid"><thead><tr><th>Įmonė</th><th>Telefonas</th><th class="hide-s">Siūlyti</th><th class="hide-s">Atsakingas</th><th class="hide-s">Paskutinis</th><th>Statusas</th></tr></thead><tbody>
-    ${vis.map(l=>`<tr data-act="open" data-id="${esc(l.id)}">
+    ${vis.map(l=>`<tr id="r-${esc(l.id)}" data-act="open" data-id="${esc(l.id)}">
       <td style="max-width:320px"><div class="trunc" style="font-weight:500">${esc(l.name)}</div><div class="trunc muted" style="font-size:12.5px">${esc([l.category,l.city].filter(Boolean).join(" · ")||"—")}</div></td>
       <td class="mono" style="white-space:nowrap">${l.phone?`<a href="${esc(tel(l.phone))}" data-stop>${esc(l.phone)}</a>`:`<span class="muted">—</span>`}</td>
       <td class="hide-s t2" style="white-space:nowrap">${esc(l.need||"")}</td>
@@ -793,7 +828,7 @@ function viewTeam(){
   return`<div class="scroll thin"><div class="page">${head("Komanda",`${pl(ids.length,"žmogus","žmonės","žmonių")} · šis mėnuo`,right)}
     <div class="tablewrap box"><table class="grid" style="font-size:13px">
       <thead><tr><th style="width:28px"></th><th>Žmogus</th><th>Rolė</th><th class="r">Šiandien</th><th class="r">Skambučiai</th><th class="r">Atsiliepė</th><th class="r">Laimėta</th><th class="r">Pajamos</th><th class="r">Komisiniai</th><th class="r">Kontaktai</th>${mgr?`<th class="r">Kom. %</th><th class="r">Tikslas</th>`:""}</tr></thead>
-      <tbody>${rows.map(({id,m,s},i)=>`<tr style="cursor:default">
+      <tbody>${rows.map(({id,m,s},i)=>`<tr id="m-${esc(id)}" style="cursor:default">
         <td><span class="rank">${i+1}</span></td>
         <td><span style="display:inline-flex;align-items:center;gap:9px;white-space:nowrap">${avatar(id,24)}<span style="font-weight:500">${esc(who(id))}</span>${id===meId?`<span class="muted">tu</span>`:""}</span></td>
         <td>${mgr&&(id!==meId||isOwner)?`<select class="sel" style="height:28px" data-role="${esc(id)}"><option value="caller" ${m.role!=="manager"?"selected":""}>Skambintojas</option><option value="manager" ${m.role==="manager"?"selected":""}>Vadovas</option></select>`:`<span class="t2">${m.role==="manager"?"Vadovas":"Skambintojas"}</span>`}</td>
@@ -847,20 +882,40 @@ function viewOverview(){
 }
 
 /* ===== render ===== */
+/* Rendering: the page is rebuilt as HTML but patched into the live DOM (morphdom), so the
+   element under a finger is never replaced. Live-data renders wait while a finger is down. */
+let pointerDown=false,pending=false,frame=0;
 function render(bg){
-  const a=document.activeElement,key=a?.dataset?.key,sel=key&&"selectionStart" in a?[a.selectionStart,a.selectionEnd]:null;
-  const sc=document.querySelector(".center,.scroll"),top=sc?.scrollTop||0;
-  const pane=document.querySelector(".drawer .pane"),ptop=pane?.scrollTop||0;
+  if(bg){pending=true;if(!pointerDown&&!frame)frame=requestAnimationFrame(()=>{frame=0;if(pending&&!pointerDown)paint()});return}
+  paint();
+}
+const KEEP=new Set(["INPUT","TEXTAREA","SELECT"]);
+function morphOpts(){return{
+  onBeforeElUpdated(from,to){
+    if(from.isEqualNode(to))return false;
+    if(KEEP.has(from.tagName)){
+      if(from===document.activeElement)return false;          // keep what is being typed, and the caret
+      if(from.form&&!from.dataset.key)return false;           // uncontrolled form fields keep their value
+    }
+    if(from.tagName==="DETAILS"&&from.dataset.keepOpen!==undefined){to.open=from.open}
+    return true;
+  }}}
+function patch(el,html){
+  if(window.morphdom){const tmp=el.cloneNode(false);tmp.innerHTML=html;morphdom(el,tmp,{...morphOpts(),childrenOnly:true})}
+  else el.innerHTML=html;
+}
+function paint(){
+  pending=false;
   const tl=$("tlist"),tAtBottom=!tl||tl.scrollHeight-tl.scrollTop-tl.clientHeight<40;
-  if(bg&&document.querySelector(".drawer form")?.contains(a))return; // live data must not wipe a deal being edited
   renderShell();
   const r=route();
-  $("main").innerHTML=connBanner()+(r==="kontaktai"?viewContacts():r==="pardavimai"?viewDeals():r==="komanda"?viewTeam():r==="apzvalga"?viewOverview():viewCall());
-  const sc2=document.querySelector(".center,.scroll");if(sc2)sc2.scrollTop=top;
-  const p2=document.querySelector(".drawer .pane");if(p2)p2.scrollTop=ptop;
+  patch($("main"),connBanner()+(r==="kontaktai"?viewContacts():r==="pardavimai"?viewDeals():r==="komanda"?viewTeam():r==="apzvalga"?viewOverview():viewCall()));
   const tl2=$("tlist");if(tl2&&tAtBottom)tl2.scrollTop=tl2.scrollHeight;
-  if(key){const el=document.querySelector(`[data-key="${key}"]`);if(el){el.focus({preventScroll:true});if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1])}catch{}}}
+  if(S.focus){const el=document.querySelector(S.focus);S.focus=null;if(el)el.focus({preventScroll:false})}
 }
+addEventListener("pointerdown",()=>{pointerDown=true},true);
+const release=()=>{pointerDown=false;if(pending)setTimeout(()=>{if(!pointerDown&&pending)paint()},120)};
+addEventListener("pointerup",release,true);addEventListener("pointercancel",release,true);
 
 /* ===== events ===== */
 document.addEventListener("click",async e=>{
@@ -871,6 +926,8 @@ document.addEventListener("click",async e=>{
   const act=b.dataset.act,id=b.dataset.id;
   if(act==="drawer-bg"&&e.target.closest("[data-stop-bg]"))return;
   switch(act){
+    case"dial":S.callStart=Date.now();S.callFor=id;copyText(b.dataset.v,"Skambinama. Numeris nukopijuotas, jei reikėtų surinkti ranka.");render();break;
+    case"copy":copyText(b.dataset.v,"Numeris nukopijuotas.");break;
     case"theme":setTheme(theme()==="dark"?"light":"dark");render();break;
     case"tab":S.tab=b.dataset.v;render();break;
     case"scope":S.scope=b.dataset.v;S.sel=null;render();break;
@@ -879,7 +936,7 @@ document.addEventListener("click",async e=>{
     case"sheet-close":S.sheet=false;render();break;
     case"skip":{const c=current(queues());if(c){S.skipped.add(c.l.id);S.sel=null;S.note="";render()}break}
     case"outcome":{const c=current(queues());if(!c)break;const s=b.dataset.s;
-      if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;render()}else logCall(c.l,s);break}
+      if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;S.focus='form[data-act=deal-form] input[name=value]';render()}else logCall(c.l,s);break}
     case"callback":{const c=current(queues());if(!c)break;const d=new Date();d.setDate(d.getDate()+Number(b.dataset.d));d.setHours(10,0,0,0);logCall(c.l,"thinking",{callbackAt:d.getTime()});break}
     case"callback-custom":{const c=current(queues()),t=Date.parse(S.custom);if(c&&t)logCall(c.l,"thinking",{callbackAt:t});break}
     case"ask-back":S.askWhen=false;render();break;
@@ -935,7 +992,7 @@ document.addEventListener("keydown",e=>{
   const map={"1":"no_answer","2":"declined","3":"thinking","4":"interested"};
   const c=current(queues());if(!c||!map[e.key])return;
   e.preventDefault();const s=map[e.key];
-  if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;render()}else logCall(c.l,s);
+  if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;S.focus='form[data-act=deal-form] input[name=value]';render()}else logCall(c.l,s);
 });
 document.addEventListener("submit",async e=>{
   e.preventDefault();const f=e.target,act=f.dataset.act;
@@ -964,6 +1021,8 @@ document.addEventListener("submit",async e=>{
   }
 });
 
+async function copyText(t,msg){try{await navigator.clipboard.writeText(t);toast(msg)}catch{toast(t)}}
+setInterval(()=>{const el=document.getElementById("calltimer");if(el&&S.callStart)el.textContent=fmtDur(Date.now()-S.callStart)},1000);
 async function exportCsv(){
   const cell=v=>/[",\n;]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
   const head=["Pavadinimas","Statusas","Atsakingas","Telefonas","El. paštas","Sritis","Miestas","Pajamos","Reikia","Svetainė","Įmonės kodas","Bandymų","Paskutinis skambutis","Sandorio suma","Sandorio etapas","Šaltinis"];
