@@ -817,6 +817,23 @@ async function distribute(){
   render();toast(`Paskirstyta: ${pl(todo.length,"kontaktas","kontaktai","kontaktų")}.`);
 }
 
+/* Owner-only: remove every call, note, deal and status, keep the contacts themselves. */
+async function wipe(){
+  if(!db||!isOwner||S.wiping)return;
+  if(!confirm("Ištrinti VISUS skambučius, pastabas, sandorius ir pelną?\n\nKontaktai (pavadinimai, telefonai, el. paštai, pajamos) liks. Statusai grįš į „Neskambinta“. Atšaukti nebus galima."))return;
+  S.wiping=true;render();let n=0,fail=0;
+  const del=async col=>{let docs=[];try{docs=(await db.collection(col).get()).docs}catch{docs=(col==="deals"?deals:acts).map(x=>({id:x.id}))}
+    for(const d of docs){try{await db.collection(col).doc(d.id).delete();n++}catch{fail++}}};
+  try{
+    await del("deals");await del("activities");
+    for(const l of leads){
+      if(l.status==="new"&&!l.attempts&&!l.lastCalledAt&&!l.callbackAt&&!l.note)continue;
+      const next={...l,status:"new",attempts:0,lastCalledAt:null,lastCalledBy:"",callbackAt:null,updatedAt:Date.now()};delete next.note;
+      try{await db.collection("leads").doc(l.id).set(next);n++}catch{fail++}
+    }
+  }finally{S.wiping=false;S.sel=null;S.cv=null;S.note="";render()}
+  toast(fail?`Išvalyta, bet ${fail} įrašų nepavyko. Spausk dar kartą.`:"Išvalyta. Kontaktai liko, visi vėl „Neskambinta“.");
+}
 /* ===== data ===== */
 /* Apyvarta ir darbuotojai iš 1551.lt (2026-11). Įrašoma į DB vieną kartą, jei kontakte jų dar nėra. */
 const SEED={"l01-karlona":["9 790 € (2022 m., 1551.lt)",9790,""],"l04-silkine-banga":["44 453 € (2025 m., 1551.lt)",44453,"iki 10 darbuotojų"],"l05-zara":["25 335 € (2025 m., 1551.lt)",25335,"iki 10 darbuotojų"],"l07-chonas":["787 341 € (2025 m., 1551.lt)",787341,"11–20 darbuotojų"],"l08-kesandra":["250 308 € (2024 m., 1551.lt)",250308,"iki 10 darbuotojų"],"l10-intransport":["443 237 € (2025 m., 1551.lt)",443237,"iki 10 darbuotojų"],"l11-skamerda":["44 868 € (2019 m., 1551.lt)",44868,"iki 10 darbuotojų"],"l12-narbona":["543 316 € (2025 m., 1551.lt)",543316,"iki 10 darbuotojų"],"l14-mom-trans":["299 305 € (2025 m., 1551.lt)",299305,"iki 10 darbuotojų"],"l15-justoma":["153 460 € (2025 m., 1551.lt)",153460,"iki 10 darbuotojų"],"m01-em-statyba":["332 127 € (2025 m., 1551.lt)",332127,"iki 10 darbuotojų"],"m02-gertika":["193 374 € (2024 m., 1551.lt)",193374,"iki 10 darbuotojų"],"m03-santechrad":["6 827 € (2025 m., 1551.lt)",6827,""],"m04-varinukas":["531 313 € (2025 m., 1551.lt)",531313,"iki 10 darbuotojų"],"m05-svega":["325 769 € (2025 m., 1551.lt)",325769,"iki 10 darbuotojų"],"m06-juriveda":["202 500 € (2025 m., 1551.lt)",202500,"iki 10 darbuotojų"],"m07-milandra":["400 063 € (2025 m., 1551.lt)",400063,"11–20 darbuotojų"],"m08-utenos-apdaila":["63 655 € (2025 m., 1551.lt)",63655,""],"m09-elektros-trauka":["828 739 € (2025 m., 1551.lt)",828739,"iki 10 darbuotojų"],"m10-kilovatai":["82 870 € (2025 m., 1551.lt)",82870,"iki 10 darbuotojų"],"m11-ligrita":["153 516 € (2025 m., 1551.lt)",153516,"iki 10 darbuotojų"],"m12-skardos-meistrai":["965 104 € (2025 m., 1551.lt)",965104,"iki 10 darbuotojų"],"m13-saugiklis":["31 989 € (2025 m., 1551.lt)",31989,"iki 10 darbuotojų"],"m14-dilgrenta":["366 167 € (2025 m., 1551.lt)",366167,"iki 10 darbuotojų"],"m15-zaibo-pica":["",0,"iki 10 darbuotojų"],"m16-viip":["43 933 € (2025 m., 1551.lt)",43933,""],"m17-delfai":["247 626 € (2019 m., 1551.lt)",247626,"11–20 darbuotojų"],"m19-maluno-virtuve":["400 134 € (2023 m., 1551.lt)",400134,"iki 10 darbuotojų"],"m21-agvala":["1 490 003 € (2024 m., 1551.lt)",1490003,"31–50 darbuotojų"],"m22-ruta":["",0,"iki 10 darbuotojų"],"m24-gelze":["107 867 € (2025 m., 1551.lt)",107867,"iki 10 darbuotojų"],"m30-pavliukevic":["15 405 € (2025 m., 1551.lt)",15405,"iki 10 darbuotojų"],"m34-audgira":["236 378 € (2025 m., 1551.lt)",236378,"iki 10 darbuotojų"],"m35-gv-auto":["3 109 182 € (2025 m., 1551.lt)",3109182,"21–30 darbuotojų"],"m37-zemaitaicio":["81 539 € (2021 m., 1551.lt)",81539,"iki 10 darbuotojų"],"m38-ago-transport":["21 641 € (2016 m., 1551.lt)",21641,""],"m39-gontera":["663 068 € (2025 m., 1551.lt)",663068,"iki 10 darbuotojų"],"m42-roberto-danius":["",0,"iki 10 darbuotojų"],"m43-feropolis":["1 074 175 € (2025 m., 1551.lt)",1074175,"iki 10 darbuotojų"],"m44-metalana":["298 458 € (2022 m., 1551.lt)",298458,"iki 10 darbuotojų"],"m45-autorestadas":["10 755 € (2025 m., 1551.lt)",10755,""],"m47-mk-cechas":["26 760 € (2024 m., 1551.lt)",26760,"iki 10 darbuotojų"],"m49-arnitana":["30 299 € (2025 m., 1551.lt)",30299,"iki 10 darbuotojų"],"m50-baldu-prizme":["117 014 € (2025 m., 1551.lt)",117014,"iki 10 darbuotojų"]};
@@ -1130,7 +1147,7 @@ function viewTeam(){
   const mgr=isManager(),ids=people();
   const rows=ids.map(id=>({id,m:member(id),s:memberStats(id)})).sort((a,b)=>b.s.rev-a.s.rev||b.s.month-a.s.month);
   const unassigned=leads.filter(l=>!l.assignee&&l.status==="new").length;
-  const right=mgr?`<button class="btn ink" data-act="distribute" ${unassigned?"":"disabled"}>${icon("shuffle",15)} Paskirstyti ${pl(unassigned,"naują kontaktą","naujus kontaktus","naujų kontaktų")}</button>`:"";
+  const right=(isOwner?`<button class="btn" data-act="wipe" ${S.wiping?"disabled":""}>${icon("x",15)} ${S.wiping?"Valoma…":"Išvalyti skambučius ir pardavimus"}</button>`:"")+(mgr?`<button class="btn ink" data-act="distribute" ${unassigned?"":"disabled"}>${icon("shuffle",15)} Paskirstyti ${pl(unassigned,"naują kontaktą","naujus kontaktus","naujų kontaktų")}</button>`:"");
   return`<div class="scroll thin"><div class="page">${head("Komanda",`${pl(ids.length,"žmogus","žmonės","žmonių")} · šis mėnuo`,right)}
     <div class="tablewrap box"><table class="grid" style="font-size:13px">
       <thead><tr><th style="width:28px"></th><th>Žmogus</th><th>Rolė</th><th class="r">Šiandien</th><th class="r">Skambučiai</th><th class="r">Atsiliepė</th><th class="r">Laimėta</th><th class="r">Pajamos</th><th class="r">Komisiniai</th><th class="r">Kontaktai</th>${mgr?`<th class="r">Kom. %</th><th class="r">Tikslas</th>`:""}</tr></thead>
@@ -1281,6 +1298,7 @@ document.addEventListener("click",async e=>{
     case"drawer-bg":case"drawer-close":S.dealOpen=null;render();break;
     case"deal-open-lead":S.dealOpen=null;S.sel=id;S.scope="all";location.hash="";break;
     case"distribute":b.disabled=true;await distribute();break;
+    case"wipe":await wipe();break;
   }
 });
 let nameT=0;
