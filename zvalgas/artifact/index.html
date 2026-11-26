@@ -3,203 +3,257 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Žvalgas</title>
+<title>Ryšys</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&family=Instrument+Serif:ital@0;1&display=swap&subset=latin-ext" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap&subset=latin-ext" rel="stylesheet">
 <style>
 :root{
-  --paper:#f2f0eb;--surface:#faf9f6;--ink:#161513;--ink-2:#3b3934;--muted:#7a766d;
-  --line:#e0dcd3;--line-2:#cfcabf;--accent:#d9461b;--accent-ink:#b8380f;
-  --rail:#161513;--rail-2:#2a2824;--rail-text:#a8a398;
+  --bg:#0c0c0b;--panel:#141413;--panel-2:#1b1b19;--hover:#1f1f1c;--line:#262521;--line-2:#363530;
+  --text:#ecebe6;--text-2:#b9b6ad;--muted:#85827a;--accent:#ff5b22;--accent-2:#ff7a49;--on-accent:#fff;
+  --invert:#ecebe6;--on-invert:#0c0c0b;--shadow:0 20px 50px -20px rgba(0,0,0,.7);
+  --s-new:#8f8b82;--s-no_answer:#e0a72e;--s-declined:#e5534b;--s-thinking:#5b9bf0;--s-interested:#3fc97a;
+  --d-meeting:#5b9bf0;--d-proposal:#b48cf2;--d-won:#3fc97a;--d-lost:#6d6a63;
+  color-scheme:dark;
+}
+:root[data-theme=light]{
+  --bg:#f2f0eb;--panel:#faf9f6;--panel-2:#f5f3ee;--hover:#ece9e2;--line:#e0dcd3;--line-2:#cfcabf;
+  --text:#161513;--text-2:#3b3934;--muted:#7a766d;--accent:#d9461b;--accent-2:#b8380f;
+  --invert:#161513;--on-invert:#faf9f6;--shadow:0 20px 50px -24px rgba(22,21,19,.35);
   --s-new:#9a958b;--s-no_answer:#c08a1e;--s-declined:#b5432f;--s-thinking:#3d6aa3;--s-interested:#2e7a4e;
+  --d-meeting:#3d6aa3;--d-proposal:#7a52b3;--d-won:#2e7a4e;--d-lost:#9a958b;
+  color-scheme:light;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--paper);color:var(--ink)}
+html,body{height:100%;background:var(--bg);color:var(--text)}
 body{font-family:Geist,ui-sans-serif,system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
 button,input,select,textarea{font:inherit;color:inherit;background:none;border:0}
+select option{background:var(--panel);color:var(--text)}
 button{cursor:pointer}
+button:disabled{cursor:default;opacity:.45}
 a{color:inherit;text-decoration:none}
-::selection{background:var(--ink);color:var(--paper)}
-:focus-visible{outline:1.5px solid var(--ink);outline-offset:2px}
+::selection{background:var(--accent);color:#fff}
+:focus-visible{outline:1.5px solid var(--accent);outline-offset:2px}
 .mono{font-family:"Geist Mono",ui-monospace,monospace}
-.serif{font-family:"Instrument Serif",Georgia,serif}
+.serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
 .tnum{font-variant-numeric:tabular-nums}
-.muted{color:var(--muted)}
+.muted{color:var(--muted)}.t2{color:var(--text-2)}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .thin{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
-@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.rise{animation:rise .3s cubic-bezier(.2,.7,.2,1) both}
-@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+.trunc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.rise{animation:rise .35s cubic-bezier(.2,.7,.2,1) both}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* shell */
 .app{display:flex;height:100dvh;flex-direction:column}
 @media(min-width:768px){.app{flex-direction:row}}
-.rail{display:none;width:76px;flex-shrink:0;flex-direction:column;align-items:center;background:var(--rail);color:var(--rail-text);padding:16px 0}
+.rail{display:none;width:80px;flex-shrink:0;flex-direction:column;align-items:center;border-right:1px solid var(--line);background:var(--panel);padding:18px 0 14px}
 @media(min-width:768px){.rail{display:flex}}
-.logo{font-family:"Instrument Serif",serif;font-size:30px;line-height:1;color:var(--paper);margin-bottom:24px}
-.logo span{color:var(--accent)}
-.nav{display:flex;flex-direction:column;gap:4px}
-.nav a{position:relative;display:flex;width:64px;flex-direction:column;align-items:center;gap:4px;border-radius:12px;padding:10px 0;font-size:10.5px}
-.nav a:hover{color:var(--paper)}
-.nav a[aria-current=page]{background:var(--rail-2);color:var(--paper)}
-.nav a[aria-current=page]::before{content:"";position:absolute;left:-6px;top:12px;height:24px;width:3px;border-radius:3px;background:var(--accent)}
-.badge{position:absolute;top:4px;right:8px;border-radius:999px;background:var(--accent);padding:0 4px;font-size:9px;font-weight:500;line-height:14px;color:#fff}
-.me{margin-top:auto}
+.logo{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--accent);color:#fff;font-family:"Instrument Serif",serif;font-size:26px;line-height:1;margin-bottom:22px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{position:relative;display:flex;width:66px;flex-direction:column;align-items:center;gap:5px;border-radius:12px;padding:10px 0 9px;font-size:10.5px;color:var(--muted);transition:color .15s,background .15s}
+.nav a:hover{color:var(--text);background:var(--hover)}
+.nav a[aria-current=page]{color:var(--text);background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line)}
+.nav a[aria-current=page] svg{color:var(--accent)}
+.badge{position:absolute;top:5px;right:9px;min-width:16px;border-radius:999px;background:var(--accent);padding:0 4px;font-size:9.5px;font-weight:600;line-height:16px;color:#fff;text-align:center}
+.railfoot{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:10px}
+.iconbtn{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;color:var(--muted)}
+.iconbtn:hover{color:var(--text);background:var(--hover)}
 .main{position:relative;min-width:0;min-height:0;flex:1;overflow:hidden}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--surface);padding-bottom:env(safe-area-inset-bottom)}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:var(--panel);padding-bottom:env(safe-area-inset-bottom)}
 @media(min-width:768px){.tabs{display:none}}
-.tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;font-size:10.5px;color:var(--muted)}
-.tabs a[aria-current=page]{color:var(--ink)}
-.banner{position:absolute;inset:0 0 auto 0;z-index:40;padding:8px 16px;text-align:center;font-size:13px;color:#fff;background:var(--accent)}
-.banner.info{background:var(--ink)}
-.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);z-index:60;border-radius:10px;background:var(--ink);color:var(--paper);padding:10px 14px;font-size:13px;box-shadow:0 12px 32px -12px rgba(0,0,0,.4)}
-.avatar{display:inline-flex;flex-shrink:0;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-weight:500;overflow:hidden;background:var(--muted)}
+.tabs a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;font-size:10px;color:var(--muted)}
+.tabs a[aria-current=page]{color:var(--text)}.tabs a[aria-current=page] svg{color:var(--accent)}
+.banner{position:absolute;inset:0 0 auto 0;z-index:40;padding:9px 16px;text-align:center;font-size:13px;color:#fff;background:var(--accent)}
+.banner.info{background:var(--panel-2);color:var(--text-2);border-bottom:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:80;border-radius:12px;background:var(--invert);color:var(--on-invert);padding:11px 16px;font-size:13px;box-shadow:var(--shadow);max-width:calc(100vw - 32px)}
+.avatar{display:inline-flex;flex-shrink:0;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-weight:600;overflow:hidden;background:var(--muted)}
 .avatar img{width:100%;height:100%;object-fit:cover}
 .scroll{height:100%;overflow-y:auto}
-.page{max-width:1200px;margin:0 auto;padding:24px 20px 64px}
-@media(min-width:768px){.page{padding:32px 32px 64px}}
-h1.title{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.page{max-width:1240px;margin:0 auto;padding:24px 16px 72px}
+@media(min-width:768px){.page{padding:36px 36px 72px}}
+.ph{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+h1.title{font-size:26px;font-weight:600;letter-spacing:-.025em}
 .sub{margin-top:4px;font-size:13px;color:var(--muted)}
-.lbl{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-.btn{display:inline-flex;height:36px;align-items:center;gap:6px;border-radius:8px;padding:0 14px;font-size:13px;border:1px solid var(--line-2)}
-.btn.ink{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:500}
-.btn.accent{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:500}
-.btn:disabled{opacity:.4}
-.inp{height:42px;width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 12px;font-size:16px}
-.inp:focus{border-color:var(--ink);outline:none}
-.inp::placeholder,textarea::placeholder{color:#7a766db3}
-.card{border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.lbl{display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.btn{display:inline-flex;height:36px;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:0 14px;font-size:13px;font-weight:500;border:1px solid var(--line-2);color:var(--text);transition:background .15s,border-color .15s}
+.btn:hover{background:var(--hover)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.pri:hover{background:var(--accent-2)}
+.btn.inv{background:var(--invert);border-color:var(--invert);color:var(--on-invert)}
+.inp{height:42px;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:0 12px;font-size:16px;color:var(--text)}
+@media(min-width:1024px){.inp{font-size:14px}}
+.inp:focus{border-color:var(--accent);outline:none}
+.inp::placeholder,textarea::placeholder{color:var(--muted);opacity:.8}
+.card{border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.seg{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;border-radius:10px;background:var(--bg);padding:3px;box-shadow:inset 0 0 0 1px var(--line)}
+.seg button{display:flex;height:30px;align-items:center;justify-content:center;gap:6px;border-radius:7px;padding:0 10px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed=true]{background:var(--panel-2);color:var(--text);box-shadow:0 0 0 1px var(--line-2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:38px;border:1px solid var(--line);border-radius:999px;padding:0 15px;font-size:13.5px;color:var(--text-2);background:var(--panel)}
+.chip:hover{border-color:var(--line-2)}
+.chip[aria-pressed=true]{background:var(--invert);color:var(--on-invert);border-color:var(--invert)}
+.spill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--panel-2);padding:1px 10px;font-size:12px;color:var(--text-2);white-space:nowrap}
+.empty{display:grid;place-items:center;min-height:60vh;padding:64px 24px;text-align:center}
+.empty .big{font-family:"Instrument Serif",serif;font-style:italic;font-size:36px;color:var(--text-2)}
+.k{display:block;font-family:"Instrument Serif",serif;font-weight:400;line-height:1;letter-spacing:-.01em}
 
 /* call */
 .call{display:flex;height:100%}
-.queue{display:none;width:300px;flex-shrink:0;border-right:1px solid var(--line);background:var(--surface);flex-direction:column;min-height:0}
+.queue{display:none;width:308px;flex-shrink:0;border-right:1px solid var(--line);background:var(--panel);flex-direction:column;min-height:0}
 @media(min-width:1024px){.queue{display:flex}}
 .queue.sheet{display:flex;position:absolute;inset:0;z-index:30;width:auto}
-.qhead{padding:20px 16px 12px}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);margin-top:12px;border-radius:8px;background:var(--paper);padding:2px;box-shadow:inset 0 0 0 1px var(--line)}
-.seg button{display:flex;height:32px;align-items:center;justify-content:center;gap:6px;border-radius:6px;font-size:13px;color:var(--muted)}
-.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(22,21,19,.08)}
+.qhead{padding:20px 14px 12px}
+.goal{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px 12px}
+.goal .barw{margin-top:8px;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.goal .barw span{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .4s}
 .qlist{flex:1;min-height:0;overflow-y:auto;padding:0 8px 16px;list-style:none}
-.qitem{display:flex;width:100%;flex-direction:column;gap:2px;border-radius:12px;padding:10px 12px;text-align:left}
-.qitem:hover,.qitem[aria-current=true]{background:var(--paper)}
-.qitem[aria-current=true]{box-shadow:inset 0 0 0 1px var(--line)}
+.qitem{display:flex;width:100%;flex-direction:column;gap:3px;border-radius:12px;padding:10px 12px;text-align:left;transition:background .12s}
+.qitem:hover{background:var(--hover)}
+.qitem[aria-current=true]{background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line-2)}
 .qname{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;min-width:0}
-.qname span:last-child,.trunc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qmeta{padding-left:14px;font-size:12px;color:var(--muted)}
 .center{min-width:0;flex:1;overflow-y:auto}
-.mbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);background:rgba(242,240,235,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:10px 20px;font-size:13px}
+.mbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:10px 16px;font-size:13px}
 @media(min-width:1024px){.mbar{display:none}}
-.pillcount{border-radius:999px;background:var(--ink);color:var(--paper);padding:0 6px;font-size:11px}
-.focus{max-width:760px;margin:0 auto;padding:24px 20px 32px}
-@media(min-width:768px){.focus{padding:32px 32px}}
-.ftop{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)}
-.fname{margin-top:12px;font-size:28px;font-weight:600;line-height:1.15;letter-spacing:-.02em;word-break:break-word}
-@media(min-width:768px){.fname{font-size:34px}}
-.phone{margin-top:24px;display:flex;flex-direction:column;gap:12px;padding:12px}
+.pillcount{border-radius:999px;background:var(--invert);color:var(--on-invert);padding:0 7px;font-size:11px}
+.focus{max-width:780px;margin:0 auto;padding:24px 16px 32px}
+@media(min-width:768px){.focus{padding:34px 34px}}
+.ftop{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.fname{margin-top:12px;font-size:30px;font-weight:600;line-height:1.12;letter-spacing:-.03em;word-break:break-word}
+@media(min-width:768px){.fname{font-size:38px}}
+.phone{margin-top:22px;display:flex;flex-direction:column;gap:12px;padding:12px;background:linear-gradient(180deg,var(--panel-2),var(--panel))}
 @media(min-width:640px){.phone{flex-direction:row;align-items:center;padding-left:20px}}
-.phone .num{font-family:"Geist Mono",monospace;font-size:24px;white-space:nowrap;margin-top:2px}
-.callbtn{display:inline-flex;height:48px;align-items:center;justify-content:center;gap:8px;border-radius:12px;background:var(--accent);padding:0 20px;font-size:15px;font-weight:500;color:#fff}
-.links{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13.5px;color:var(--ink-2)}
+.phone .num{font-family:"Geist Mono",monospace;font-size:25px;white-space:nowrap;margin-top:3px;letter-spacing:-.01em}
+.callbtn{display:inline-flex;height:50px;align-items:center;justify-content:center;gap:9px;border-radius:12px;background:var(--accent);padding:0 22px;font-size:15px;font-weight:600;color:#fff;box-shadow:0 10px 30px -12px var(--accent)}
+.callbtn:hover{background:var(--accent-2)}
+.links{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13.5px;color:var(--text-2)}
 .links a,.links span{display:inline-flex;align-items:center;gap:6px}
-.u{text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:2px}
-.why{margin-top:24px;border-radius:16px;background:var(--ink);color:var(--paper);padding:16px 20px}
-.why .lbl{color:var(--rail-text);display:flex;align-items:center;gap:8px}
-.why .tag{border-radius:999px;background:var(--rail-2);padding:2px 8px;text-transform:none;letter-spacing:0;color:var(--paper)}
-.why p{margin-top:8px;font-size:15px;line-height:1.6}
-.facts{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px}
+.u{text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px}
+.why{margin-top:22px;border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:16px 18px;position:relative;overflow:hidden}
+.why::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.why p{margin-top:8px;font-size:15px;line-height:1.6;color:var(--text)}
+.tag{border-radius:999px;background:var(--panel-2);border:1px solid var(--line);padding:1px 9px;text-transform:none;letter-spacing:0;color:var(--text-2);font-size:11.5px;font-weight:500}
+.script{margin-top:12px}
+.script summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;font-size:13px;font-weight:500}
+.script summary::-webkit-details-marker{display:none}
+.script[open] summary svg{transform:rotate(180deg)}
+.script .body{padding:0 16px 16px;font-size:14px;line-height:1.65;color:var(--text-2)}
+.script .say{border-left:2px solid var(--accent);padding:2px 0 2px 12px;color:var(--text);margin:8px 0 14px}
+.script dl{display:grid;gap:10px}
+.script dt{font-weight:500;color:var(--text)}
+.facts{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px}
 @media(min-width:640px){.facts{grid-template-columns:1fr 1fr 1fr}}
-.facts dd{margin-top:4px;font-size:13.5px;color:var(--ink-2);word-break:break-word}
-.outcome{margin-top:32px;padding:16px}
-.outcome h2,.panel h2{font-size:13px;font-weight:500}
-textarea.note{margin-top:12px;width:100%;resize:vertical;border:1px solid var(--line);border-radius:12px;background:rgba(242,240,235,.6);padding:12px;font-size:16px;line-height:1.55}
-textarea.note:focus{border-color:var(--ink);outline:none}
+.facts dd{margin-top:5px;font-size:13.5px;color:var(--text-2);word-break:break-word}
+.outcome{margin-top:28px;padding:16px}
+.outcome h2,.panel h2{font-size:13.5px;font-weight:600}
+textarea.note{margin-top:12px;width:100%;resize:vertical;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:12px;font-size:16px;line-height:1.55;color:var(--text)}
+@media(min-width:1024px){textarea.note{font-size:14px}}
+textarea.note:focus{border-color:var(--accent);outline:none}
 .obtns{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(min-width:640px){.obtns{grid-template-columns:repeat(4,1fr)}}
-.obtn{display:flex;height:56px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;background:rgba(242,240,235,.4);padding:0 16px;font-size:14.5px;font-weight:500}
-.obtn span{display:inline-flex;align-items:center;gap:8px}
-.obtn kbd{display:none;font-family:"Geist Mono",monospace;font-size:11px;color:var(--muted)}
+.obtn{display:flex;height:58px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 16px;font-size:14.5px;font-weight:500;transition:border-color .15s,background .15s}
+.obtn:hover{background:var(--hover)}
+.obtn span{display:inline-flex;align-items:center;gap:9px}
+.obtn kbd{display:none;font-family:"Geist Mono",monospace;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 5px}
 @media(min-width:768px){.obtn kbd{display:inline}}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{height:40px;border:1px solid var(--line);border-radius:999px;padding:0 16px;font-size:13.5px;color:var(--ink-2)}
-.chip[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.thread{display:flex;flex-direction:column;min-height:0;background:var(--surface)}
-.thread.side{width:360px;flex-shrink:0;border-left:1px solid var(--line)}
+.dealform{margin-top:12px;display:grid;gap:10px;grid-template-columns:1fr 1fr}
+@media(min-width:640px){.dealform{grid-template-columns:1fr 1fr 1fr}}
+.dealform .full{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.thread{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+.thread.side{width:364px;flex-shrink:0;border-left:1px solid var(--line)}
 .thread.below{height:520px;border-top:1px solid var(--line)}
 .thead{display:flex;align-items:baseline;justify-content:space-between;padding:20px 20px 12px}
 .tlist{flex:1;min-height:0;overflow-y:auto;padding:0 20px 16px;list-style:none;display:flex;flex-direction:column;gap:16px}
 .titem{display:flex;gap:12px}
-.bubble{margin-top:6px;white-space:pre-wrap;border-radius:4px 12px 12px 12px;background:var(--paper);padding:8px 12px;font-size:13.5px;line-height:1.55;color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line)}
-.spill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:1px 10px;font-size:12px;color:var(--ink-2)}
+.bubble{margin-top:6px;white-space:pre-wrap;border-radius:4px 12px 12px 12px;background:var(--bg);padding:9px 12px;font-size:13.5px;line-height:1.55;color:var(--text-2);box-shadow:inset 0 0 0 1px var(--line)}
 .composer{border-top:1px solid var(--line);padding:12px}
-.composer div{display:flex;align-items:flex-end;gap:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:6px}
-.composer div:focus-within{border-color:var(--ink)}
+.composer div{display:flex;align-items:flex-end;gap:8px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:6px}
+.composer div:focus-within{border-color:var(--accent)}
 .composer textarea{flex:1;max-height:128px;min-height:36px;resize:none;padding:8px;font-size:16px}
+@media(min-width:1024px){.composer textarea{font-size:14px}}
 .composer textarea:focus{outline:none}
-.send{display:grid;place-items:center;width:36px;height:36px;flex-shrink:0;border-radius:8px;background:var(--ink);color:var(--paper)}
-.send:disabled{opacity:.3}
-.empty{display:grid;place-items:center;min-height:70%;padding:64px 24px;text-align:center}
-.empty .big{font-family:"Instrument Serif",serif;font-style:italic;font-size:34px;color:var(--ink-2)}
+.send{display:grid;place-items:center;width:36px;height:36px;flex-shrink:0;border-radius:9px;background:var(--accent);color:#fff}
 
-/* contacts */
-.filters{margin:24px -4px 0;display:flex;gap:4px;overflow-x:auto;padding-bottom:4px}
-.filters button{display:flex;flex-shrink:0;height:32px;align-items:center;gap:8px;border-radius:999px;padding:0 12px;font-size:13px;color:var(--muted)}
-.filters button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+/* lists */
+.filters{margin:22px -4px 0;display:flex;gap:4px;overflow-x:auto;padding-bottom:4px}
+.filters button{display:flex;flex-shrink:0;height:32px;align-items:center;gap:8px;border-radius:999px;padding:0 13px;font-size:13px;color:var(--muted);border:1px solid transparent}
+.filters button:hover{color:var(--text)}
+.filters button[aria-pressed=true]{background:var(--panel-2);color:var(--text);border-color:var(--line-2)}
 .filters .n{font-family:"Geist Mono",monospace;font-size:11px;opacity:.6}
-.bar{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.bar{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px}
 .bar input{flex:1 1 220px;min-width:0;height:36px;font-size:16px}
+@media(min-width:1024px){.bar input{font-size:14px}}
 .bar input:focus{outline:none}
-.rows{list-style:none;margin-top:12px}
-.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 16px;border-bottom:1px solid var(--line);border-radius:8px;padding:14px 8px;cursor:pointer}
-.row:hover{background:var(--surface)}
-@media(min-width:768px){.row{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) minmax(0,1fr) 9.5rem}}
+.sel{height:32px;border:1px solid var(--line);border-radius:999px;background:var(--panel);padding:0 12px;font-size:13px;color:var(--text-2)}
+.rows{list-style:none;margin-top:10px}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 16px;border-bottom:1px solid var(--line);border-radius:10px;padding:13px 8px;cursor:pointer;transition:background .12s}
+.row:hover{background:var(--panel)}
+@media(min-width:900px){.row{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) minmax(0,1fr) 9.5rem}}
 .row .c2{grid-column:span 2;min-width:0}
 .row .c3{display:none;min-width:0;font-size:12.5px;color:var(--muted)}
-@media(min-width:768px){.row .c2{grid-column:auto}.row .c3{display:block}.row .st{order:9}}
-.st{width:9rem;position:relative}
-.pick{display:flex;width:100%;height:32px;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:0 10px 0 12px;font-size:13px;color:var(--ink-2)}
-.menu{position:absolute;right:0;z-index:30;margin-top:6px;width:224px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:4px;box-shadow:0 12px 32px -12px rgba(22,21,19,.25);list-style:none}
-.menu button{display:flex;width:100%;align-items:center;gap:10px;border-radius:8px;padding:9px 10px;text-align:left;font-size:13px;color:var(--ink-2)}
-.menu button:hover{background:var(--paper)}
-form.add{margin-bottom:20px;display:grid;gap:10px;padding:16px}
+@media(min-width:900px){.row .c2{grid-column:auto}.row .c3{display:flex;align-items:center;gap:8px}.row .st{order:9}}
+.st{width:9.5rem;position:relative}
+.pick{display:flex;width:100%;height:32px;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;background:var(--panel);padding:0 10px 0 12px;font-size:13px;color:var(--text-2)}
+.menu{position:absolute;right:0;z-index:30;margin-top:6px;width:232px;border:1px solid var(--line-2);border-radius:12px;background:var(--panel-2);padding:4px;box-shadow:var(--shadow);list-style:none}
+.menu button{display:flex;width:100%;align-items:center;gap:10px;border-radius:8px;padding:9px 10px;text-align:left;font-size:13px;color:var(--text-2)}
+.menu button:hover{background:var(--hover);color:var(--text)}
+form.add{margin-top:16px;display:grid;gap:10px;padding:16px}
 @media(min-width:640px){form.add{grid-template-columns:1fr 1fr}}
 @media(min-width:1024px){form.add{grid-template-columns:repeat(4,1fr)}}
 form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:12px}
 @media(min-width:640px){form.add .acts{grid-column:1/-1}}
+.req{width:100%;min-height:200px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:12px;font-family:"Geist Mono",monospace;font-size:12.5px;line-height:1.6;resize:vertical;color:var(--text)}
 
-/* search */
-.sgrid{display:grid;gap:40px}
-@media(min-width:1024px){.sgrid{grid-template-columns:400px minmax(0,1fr)}}
-.req{width:100%;min-height:220px;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:12px;font-family:"Geist Mono",monospace;font-size:12.5px;line-height:1.6;resize:vertical}
+/* deals */
+.board{margin-top:22px;display:grid;gap:14px}
+@media(min-width:1000px){.board{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.colhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 4px 6px;border-bottom:2px solid var(--line)}
+.colhead b{font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.dcard{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:13px 14px;transition:border-color .15s,transform .15s}
+.dcard:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.dval{font-family:"Geist Mono",monospace;font-size:15px;font-weight:500}
+.drawer{position:absolute;inset:0;z-index:50;display:flex;justify-content:flex-end;background:rgba(0,0,0,.45)}
+.drawer .pane{width:min(440px,100%);height:100%;overflow-y:auto;background:var(--panel);border-left:1px solid var(--line);padding:22px;animation:rise .25s both}
+.field{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
 
 /* stats */
 .tiles{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(min-width:768px){.tiles{grid-template-columns:repeat(4,1fr)}}
-.tile{padding:16px}
-.tile b{display:block;margin-top:8px;font-family:"Instrument Serif",serif;font-weight:400;font-size:40px;line-height:1}
-.tile small{display:block;margin-top:8px;font-size:12px;color:var(--muted)}
-.panel{margin-top:24px;padding:20px}
-.stack{margin-top:16px;display:flex;height:12px;gap:2px;overflow:hidden;border-radius:999px}
-.legend{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;list-style:none}
-@media(min-width:640px){.legend{grid-template-columns:repeat(5,1fr)}}
-.legend li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
-.bars{position:relative;margin-top:16px;height:160px;border-bottom:1px solid var(--line);display:flex;align-items:flex-end;gap:2px}
+@media(min-width:900px){.tiles{grid-template-columns:repeat(4,1fr)}}
+.tile{padding:18px}
+.tile .k{margin-top:12px;font-size:40px}
+.tile small{display:block;margin-top:10px;font-size:12px;color:var(--muted)}
+.tile.hero{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 18%,var(--panel)),var(--panel) 60%);border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.panel{margin-top:16px;padding:20px}
+.grid2{display:grid;gap:16px;margin-top:16px}
+@media(min-width:900px){.grid2{grid-template-columns:1.2fr 1fr}}
+.grid2 .panel{margin-top:0}
+.funnel{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.frow{display:grid;grid-template-columns:120px 1fr 72px;align-items:center;gap:12px;font-size:13px}
+.ftrack{height:26px;border-radius:7px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.ftrack span{display:block;height:100%;border-radius:6px}
+.bars{position:relative;margin-top:16px;height:150px;border-bottom:1px solid var(--line);display:flex;align-items:flex-end;gap:3px}
 .bars button{flex:1;height:100%;display:flex;align-items:flex-end}
-.bars span{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--ink)}
+.bars span{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--accent)}
 table{width:100%;margin-top:12px;border-collapse:collapse;font-size:13px}
-th{padding:8px 0;text-align:left;font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-td{padding:10px 0;border-top:1px solid var(--line)}
+th{padding:8px 6px;text-align:left;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);white-space:nowrap}
+td{padding:11px 6px;border-top:1px solid var(--line);vertical-align:middle}
 .r{text-align:right}
-.two{display:grid;gap:24px}
-@media(min-width:768px){.two{grid-template-columns:1fr 1fr}}
+.tablewrap{overflow-x:auto}
+.mini{height:30px;width:72px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 8px;font-size:13px;text-align:right;color:var(--text)}
+.rank{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--panel-2);font-size:11px;font-weight:600;color:var(--muted)}
+.rank.first{background:var(--accent);color:#fff}
 </style>
 </head>
 <body>
 <div class="app">
   <nav class="rail" aria-label="Meniu">
-    <a class="logo" href="#">Ž<span>.</span></a>
+    <a class="logo" href="#" aria-label="Ryšys">R</a>
     <div class="nav" id="nav"></div>
-    <div class="me" id="me"></div>
+    <div class="railfoot" id="railfoot"></div>
   </nav>
   <main class="main" id="main"></main>
   <nav class="tabs" id="tabs" aria-label="Meniu"></nav>
@@ -207,7 +261,7 @@ td{padding:10px 0;border-top:1px solid var(--line)}
 <div id="toast"></div>
 
 <script>
-/* ---------- constants ---------- */
+/* ===== constants ===== */
 const STATUSES=[
   {id:"new",label:"Neskambinta",short:"Neskambinta"},
   {id:"no_answer",label:"Skambinta — neatsiliepė",short:"Neatsiliepė"},
@@ -215,14 +269,22 @@ const STATUSES=[
   {id:"thinking",label:"Skambinta — pagalvos",short:"Pagalvos"},
   {id:"interested",label:"Skambinta — nori",short:"Nori"},
 ];
+const STAGES=[
+  {id:"meeting",label:"Susitikimas"},
+  {id:"proposal",label:"Pasiūlymas išsiųstas"},
+  {id:"won",label:"Laimėta"},
+  {id:"lost",label:"Pralaimėta"},
+];
 const NEEDS=["Svetainė","Svetainės atnaujinimas","Rezervacijų sistema","El. parduotuvė","Vidinė sistema / CRM"];
 const REVENUE=["iki 50 tūkst. €","50–150 tūkst. €","150–500 tūkst. €","0,5–1 mln. €","1–5 mln. €","5 mln. € +"];
-const RETRY_MS=3*3600e3;
+const RETRY_MS=3*3600e3,DEF_COMMISSION=10,DEF_GOAL=60;
 const ICON={
   phone:"M6.6 3.5h2.2l1.4 3.6-1.7 1.1a10 10 0 0 0 4.3 4.3l1.1-1.7 3.6 1.4v2.2a1.8 1.8 0 0 1-1.9 1.8A13.7 13.7 0 0 1 4.8 5.4a1.8 1.8 0 0 1 1.8-1.9Z",
   list:"M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01",
   spark:"M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18",
   chart:"M4 20V10M10 20V4M16 20v-7M22 20H2",
+  euro:"M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9",
+  users:"M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM21 19v-1a4 4 0 0 0-3-3.9M15.5 3.2a3.5 3.5 0 0 1 0 6.6",
   mail:"M4 6h16v12H4zM4 7l8 6 8-6",
   globe:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18",
   send:"M4 12 20 4l-6 16-2.5-6.5L4 12Z",
@@ -232,22 +294,47 @@ const ICON={
   plus:"M12 5v14M5 12h14",
   download:"M12 4v12m-5-5 5 5 5-5M4 20h16",
   copy:"M9 9h10v10H9zM5 15V5h10",
-  arrow:"M5 12h14m-5-5 5 5-5 5",
+  sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",
+  moon:"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z",
+  chev:"m6 9 6 6 6-6",
+  shuffle:"M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5",
+  target:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z",
 };
-const NAV=[["","Skambinti","phone"],["kontaktai","Kontaktai","list"],["paieska","Paieška","spark"],["statistika","Statistika","chart"]];
+const NAV=[["","Skambinti","phone"],["pardavimai","Pardavimai","euro"],["kontaktai","Kontaktai","list"],["komanda","Komanda","users"],["apzvalga","Apžvalga","chart"]];
 
-/* ---------- helpers ---------- */
+/* Short call plan per need; {name}, {me}, {cat} are filled in. */
+const SCRIPTS={
+  "Svetainė":["Laba diena, čia {me}. Skambinu trumpai dėl {name}. Ieškojau jūsų internete ir neradau svetainės. Žmonės, kurie Google ieško „{cat}“, randa konkurentus. Darome paprastas, greitas svetaines per dvi savaites. Ar galiu atsiųsti pavyzdį el. paštu?"],
+  "Svetainės atnaujinimas":["Laba diena, čia {me}. Peržiūrėjau {name} svetainę ir pastebėjau dalykų, dėl kurių prarandate klientų (žr. „Kodėl“ aukščiau). Galiu nemokamai atsiųsti trumpą apžvalgą, ką taisyti pirmiausia. Kam geriausia ją siųsti?"],
+  "Rezervacijų sistema":["Laba diena, čia {me}. Skambinu dėl {name}. Dabar klientai registruojasi telefonu, taip? Įdiegiame internetinę registraciją: klientai užsiregistruoja patys 24/7, gauna priminimus, o jums mažiau skambučių ir neatvykusių. Ar galiu parodyti, kaip tai atrodytų?"],
+  "El. parduotuvė":["Laba diena, čia {me}. Matau, kad {name} prekiauja, bet internetu užsakyti negalima. El. parduotuvė dirba ir naktį, o mokėjimai ateina iš karto. Ar svarstėte pardavinėti internetu?"],
+  "Vidinė sistema / CRM":["Laba diena, čia {me}. Skambinu dėl {name}. Kaip dabar sekate užklausas ir klientus: Excel, el. paštas? Darome paprastas sistemas, kur viskas vienoje vietoje ir niekas nepasimeta. Ar galiu užduoti porą klausimų apie jūsų procesą?"],
+};
+const OBJECTIONS=[
+  ["„Neturime laiko“","Suprantu. Užtruks dvi minutes, arba atsiųsiu pavyzdį el. paštu ir pažiūrėsite, kai patogu. Koks adresas?"],
+  ["„Per brangu“","Kiek jums atneša vienas naujas klientas? Dažniausiai svetainė atsiperka su keliais klientais. Galiu pasiūlyti paprastesnį variantą."],
+  ["„Jau turime / užtenka Facebook“","Puiku. Ar per jį ateina užklausų iš Google? Galiu nemokamai patikrinti ir pasakyti, ką verta pagerinti."],
+  ["„Atsiųskite pasiūlymą“","Būtinai. Kad pasiūlymas būtų tikslus: ko labiausiai reikia, ir kas priima sprendimą? Susiskambinkime ketvirtadienį jį aptarti?"],
+];
+
+/* ===== helpers ===== */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const icon=(n,s=18)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
+const icon=(n,s=18)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
 const stat=id=>STATUSES.find(s=>s.id===id)||STATUSES[0];
+const stage=id=>STAGES.find(s=>s.id===id)||STAGES[0];
 const sdot=id=>`<span class="dot" style="background:var(--s-${stat(id).id})"></span>`;
+const ddot=id=>`<span class="dot" style="background:var(--d-${stage(id).id})"></span>`;
 const safeUrl=u=>{const v=/^https?:\/\//i.test(u||"")?u:"https://"+u;return /^https:\/\//i.test(v)?v:""};
 const host=u=>{try{return new URL(safeUrl(u)).hostname.replace(/^www\./,"")}catch{return u}};
 const tel=p=>"tel:"+String(p||"").replace(/[^\d+]/g,"");
 const ms=v=>typeof v==="number"?v:(v?Date.parse(v)||0:0);
+const num=v=>{const n=Number(String(v??"").replace(/\s/g,"").replace(",","."));return Number.isFinite(n)?n:0};
+const eur=n=>new Intl.NumberFormat("lt-LT",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n||0);
+const eurShort=n=>Math.abs(n)>=1e4?new Intl.NumberFormat("lt-LT",{notation:"compact",maximumFractionDigits:1}).format(n)+" €":eur(n);
 const TZ="Europe/Vilnius";
-const dayKey=t=>new Date(t).toLocaleDateString("lt-LT",{timeZone:TZ});
+const dayKey=t=>new Date(t).toLocaleDateString("sv-SE",{timeZone:TZ});
+const monthKey=t=>dayKey(t).slice(0,7);
 const hm=t=>new Date(t).toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
 function when(t){
   t=ms(t);if(!t)return"—";const d=Date.now()-t;
@@ -258,17 +345,61 @@ function when(t){
   if(dayKey(t)===dayKey(Date.now()+864e5))return`rytoj ${hm(t)}`;
   return new Date(t).toLocaleDateString("lt-LT",{timeZone:TZ,month:"long",day:"numeric"})+" "+hm(t);
 }
+/* Lithuanian plural: 1 / 2–9 / 0,10–20 */
+const pl=(n,one,few,many)=>{const a=Math.abs(n)%100,b=a%10;return`${n} ${b===1&&a!==11?one:b>=2&&b<=9&&(a<10||a>19)?few:many}`};
 const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
-let toastT;function toast(t){const el=$("toast");el.innerHTML=`<div class="toast rise">${esc(t)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>el.innerHTML="",3200)}
+let toastT;function toast(t){const el=$("toast");el.innerHTML=`<div class="toast rise">${esc(t)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>el.innerHTML="",3400)}
+const LSKEY="rysys.theme";
+function theme(){try{return localStorage.getItem(LSKEY)||"dark"}catch{return"dark"}}
+function setTheme(t){try{localStorage.setItem(LSKEY,t)}catch{}document.documentElement.dataset.theme=t}
+document.documentElement.dataset.theme=theme();
 
-/* ---------- state ---------- */
-let db=null,user=null,downloads=null,meId=null;
-let leads=[],acts=[],names={},avatars={};
-const S={conn:"wait",loaded:false,tab:"queue",sel:null,skipped:new Set(),sheet:false,filter:"all",q:"",sort:"created",adding:false,menu:null,
-  note:"",askWhen:false,custom:"",editing:false,composer:"",busy:false,hover:null,
+/* ===== state ===== */
+let db=null,user=null,downloads=null,meId=null,isOwner=false;
+let leads=[],acts=[],deals=[],team={},names={},avatars={};
+const S={conn:"wait",loaded:false,tab:"queue",scope:"mine",sel:null,skipped:new Set(),sheet:false,filter:"all",q:"",sort:"created",who:"all",adding:false,finding:false,menu:null,
+  note:"",askWhen:false,custom:"",dealAsk:false,editing:false,composer:"",busy:false,hover:null,dealOpen:null,dealFilter:"open",period:"month",
   form:{industry:"",city:"",revenue:[],needs:[],count:10},reqText:""};
 
-/* ---------- queue ---------- */
+/* ===== people & roles ===== */
+const PALETTE=["#5b9bf0","#3fc97a","#b48cf2","#e5534b","#e0a72e","#3fb8c4","#d97bb6"];
+const pcolor=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return PALETTE[h%PALETTE.length]};
+const who=id=>!id?"Niekas":id===meId?(names[id]||"Aš"):(names[id]||"Komandos narys");
+const firstName=id=>who(id).split(/\s+/)[0];
+const initials=n=>n.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0].toUpperCase()).join("")||"?";
+function avatar(id,size=28){
+  const n=who(id);
+  if(id&&avatars[id])return`<span class="avatar" style="width:${size}px;height:${size}px"><img alt="" src="${esc(avatars[id])}"></span>`;
+  return`<span class="avatar" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.38)}px;background:${id?pcolor(id):"var(--line-2)"}">${id?esc(initials(n)):"–"}</span>`;
+}
+const member=id=>team[id]||{id,role:"caller",commission:DEF_COMMISSION,goal:DEF_GOAL};
+const isManager=()=>isOwner||member(meId).role==="manager";
+function people(){
+  const ids=new Set([...Object.keys(team),...acts.map(a=>a.author),...leads.map(l=>l.assignee),...deals.map(d=>d.owner)].filter(Boolean));
+  if(meId)ids.add(meId);
+  return[...ids];
+}
+let resolving=false;
+async function resolveNames(){
+  if(!user||resolving)return;
+  const ids=people().filter(i=>!(i in names));if(!ids.length)return;
+  resolving=true;
+  try{const ps=await user.profiles(ids);for(const i of ids){names[i]=ps[i]?.name||"";avatars[i]=ps[i]?.avatarUrl||""}}catch{}
+  resolving=false;render(true);
+}
+
+/* ===== money ===== */
+const commissionOf=d=>num(d.value)*(num(member(d.owner).commission)/100);
+const profitOf=d=>num(d.value)-num(d.cost)-commissionOf(d);
+function inPeriod(t,p=S.period){
+  t=ms(t);if(!t)return false;
+  if(p==="month")return monthKey(t)===monthKey(Date.now());
+  if(p==="prev"){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-1);return monthKey(t)===monthKey(d.getTime())}
+  if(p==="year")return dayKey(t).slice(0,4)===dayKey(Date.now()).slice(0,4);
+  return true;
+}
+
+/* ===== queue ===== */
 function place(l,now=Date.now()){
   const T=v=>ms(v);
   if(l.status==="interested")return{l,tab:"won",rank:0,key:-T(l.updatedAt),label:"Nori",tone:"var(--s-interested)"};
@@ -281,9 +412,10 @@ function place(l,now=Date.now()){
     return{l,tab:"waiting",rank:1,key:last+RETRY_MS,label:"Bandyti vėl "+when(last+RETRY_MS),tone:"var(--s-no_answer)"};}
   return{l,tab:"queue",rank:1,key:-T(l.createdAt),label:"Naujas",tone:"var(--accent)"};
 }
+const mine=l=>!l.assignee||l.assignee===meId;
 function queues(){
   const q={queue:[],waiting:[],won:[]},now=Date.now();
-  for(const l of leads){const p=place(l,now);if(p)q[p.tab].push(p)}
+  for(const l of leads){if(S.scope==="mine"&&!mine(l))continue;const p=place(l,now);if(p)q[p.tab].push(p)}
   for(const k in q)q[k].sort((a,b)=>a.rank-b.rank||a.key-b.key);
   return q;
 }
@@ -291,47 +423,34 @@ function current(q){
   if(S.sel){const l=leads.find(x=>x.id===S.sel);if(l)return place(l)||{l,tab:"waiting",label:"Nenori",tone:"var(--muted)"};}
   return q.queue.find(p=>!S.skipped.has(p.l.id))||null;
 }
+const callsBy=(id,pred=()=>true)=>acts.filter(a=>a.kind==="call"&&a.author===id&&pred(a));
 
-/* ---------- people ---------- */
-const PALETTE=["#3d6aa3","#2e7a4e","#8a5a9e","#b5432f","#c08a1e","#3f7f86","#6b6b2f"];
-const pcolor=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return PALETTE[h%PALETTE.length]};
-const who=id=>id===meId?(names[id]||"Aš"):(names[id]||"Komandos narys");
-const initials=n=>n.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0].toUpperCase()).join("")||"?";
-function avatar(id,size=28){
-  const n=who(id);
-  if(avatars[id])return`<span class="avatar" style="width:${size}px;height:${size}px"><img alt="" src="${esc(avatars[id])}"></span>`;
-  return`<span class="avatar" style="width:${size}px;height:${size}px;font-size:${size*.4}px;background:${pcolor(id||n)}">${esc(initials(n))}</span>`;
+/* ===== writes ===== */
+async function put(col,id,doc){
+  if(!db){toast("Debesis nepasiekiamas: pakeitimas neišsaugotas.");return false}
+  try{await db.collection(col).doc(id).set(doc);return true}
+  catch(e){toast(e?.code==="invalid_argument"?"Neturi teisės keisti šių duomenų.":e?.code==="quota_exceeded"?"Duomenų bazė pilna.":"Nepavyko išsaugoti. Bandyk dar kartą.");return false}
 }
-let resolving=false;
-async function resolveNames(){
-  if(!user||resolving)return;
-  const ids=[...new Set([meId,...acts.map(a=>a.author),...leads.map(l=>l.lastCalledBy)].filter(Boolean))];
-  const missing=ids.filter(i=>!(i in names));if(!missing.length)return;
-  resolving=true;
-  try{const ps=await user.profiles(ids);for(const i of ids){names[i]=ps[i]?.name||"";avatars[i]=ps[i]?.avatarUrl||""}}catch{}
-  resolving=false;render();
-}
-
-/* ---------- writes ---------- */
-async function saveLead(l){
-  if(!db){toast("Debesis nepasiekiamas — pakeitimas neišsaugotas.");return false}
-  try{await db.collection("leads").doc(l.id).set(l);return true}
-  catch(e){toast(e?.code==="invalid_argument"?"Neturi teisės keisti šio sąrašo.":"Nepavyko išsaugoti. Bandyk dar kartą.");return false}
-}
-async function addAct(a){
-  if(!db)return;
-  try{await db.collection("activities").doc(uid()).set({...a,author:meId||"",createdAt:Date.now()})}catch{toast("Nepavyko įrašyti istorijos.")}
-}
-async function logCall(l,status,callbackAt){
+const saveLead=l=>put("leads",l.id,l);
+async function addAct(a){await put("activities",uid(),{...a,author:meId||"",createdAt:Date.now()})}
+async function logCall(l,status,extra={}){
   if(S.busy)return;S.busy=true;
   const now=Date.now();
-  const next={...l,status,callbackAt:status==="thinking"?(callbackAt||null):null,attempts:(l.attempts||0)+1,lastCalledAt:now,lastCalledBy:meId||"",updatedAt:now};
-  delete next.fresh;
+  const next={...l,status,callbackAt:status==="thinking"?(extra.callbackAt||null):null,attempts:(l.attempts||0)+1,lastCalledAt:now,lastCalledBy:meId||"",assignee:l.assignee||meId||"",updatedAt:now};
+  delete next.fresh;delete next.note;
   const note=S.note.trim();
   leads=leads.map(x=>x.id===l.id?next:x);
-  S.note="";S.askWhen=false;S.custom="";S.sel=null;history.replaceState(null,"","#");
+  S.note="";S.askWhen=false;S.dealAsk=false;S.custom="";S.sel=null;history.replaceState(null,"","#");
   render();
-  if(await saveLead(next))await addAct({leadId:l.id,kind:"call",status,note});
+  if(await saveLead(next)){
+    await addAct({leadId:l.id,kind:"call",status,note});
+    if(extra.deal){
+      const d={id:uid(),leadId:l.id,leadName:l.name,owner:meId||"",title:extra.deal.title||l.need||"Svetainė",value:num(extra.deal.value),cost:num(extra.deal.cost),stage:extra.deal.stage||"meeting",note,createdAt:now,updatedAt:now,closedAt:extra.deal.stage==="won"?now:null};
+      deals=[d,...deals];
+      if(await put("deals",d.id,d))await addAct({leadId:l.id,kind:"deal",status:d.stage,note:`Sandoris: ${eur(d.value)}`});
+      toast(`Sandoris sukurtas: ${eur(d.value)}`);
+    }
+  }
   S.busy=false;render();
 }
 async function setStatus(id,status){
@@ -340,161 +459,229 @@ async function setStatus(id,status){
   leads=leads.map(x=>x.id===id?next:x);render();
   if(await saveLead(next))await addAct({leadId:id,kind:"status",status,note:""});
 }
-async function sendNote(l){
-  const note=S.composer.trim();if(!note)return;S.composer="";render();
-  await addAct({leadId:l.id,kind:"note",status:null,note});
+async function assign(id,to){
+  const l=leads.find(x=>x.id===id);if(!l||l.assignee===to)return;
+  const next={...l,assignee:to,updatedAt:Date.now()};leads=leads.map(x=>x.id===id?next:x);render();
+  await saveLead(next);
+}
+async function saveDeal(d,prevStage){
+  d={...d,updatedAt:Date.now()};
+  if(d.stage==="won"&&!d.closedAt)d.closedAt=Date.now();
+  if(d.stage!=="won"&&d.stage!=="lost")d.closedAt=null;
+  if(d.stage==="lost"&&!d.closedAt)d.closedAt=Date.now();
+  deals=deals.map(x=>x.id===d.id?d:x);render();
+  if(await put("deals",d.id,d)&&prevStage!==d.stage)await addAct({leadId:d.leadId,kind:"deal",status:d.stage,note:`${stage(d.stage).label}: ${eur(d.value)}`});
+}
+async function sendNote(l){const note=S.composer.trim();if(!note)return;S.composer="";render();await addAct({leadId:l.id,kind:"note",status:null,note})}
+async function saveMember(id,patch){const m={...member(id),...patch,id};team[id]=m;render();await put("team",id,m)}
+async function distribute(){
+  const callers=people().filter(id=>member(id).role!=="manager");
+  const pool=callers.length?callers:people();
+  const todo=leads.filter(l=>!l.assignee&&l.status==="new");
+  if(!pool.length||!todo.length){toast(todo.length?"Nėra kam paskirstyti.":"Nėra nepriskirtų naujų kontaktų.");return}
+  toast(`Skirstoma ${todo.length} kontaktų tarp ${pool.length} žmonių…`);
+  let i=0;
+  for(const l of todo){const to=pool[i++%pool.length];const next={...l,assignee:to,updatedAt:Date.now()};leads=leads.map(x=>x.id===l.id?next:x);await saveLead(next)}
+  render();toast(`Paskirstyta: ${pl(todo.length,"kontaktas","kontaktai","kontaktų")}.`);
 }
 
-/* ---------- data ---------- */
+/* ===== data ===== */
 async function connect(){
   const c=window.claude&&typeof window.claude.use==="function"?window.claude:null;
   if(!c){S.conn="none";render();return}
   [db,user,downloads]=await Promise.all([c.use("db"),c.use("user"),c.use("downloads")].map(p=>p.catch(()=>null)));
-  if(user){try{meId=await user.id()}catch{}}
+  if(user){try{meId=await user.id();isOwner=await user.isOwner()}catch{}}
   if(!db){S.conn="none";render();return}
-  let got=false;
-  const timer=setTimeout(()=>{if(!got){S.conn="slow";render()}},10000);
+  let got=false;const timer=setTimeout(()=>{if(!got){S.conn="slow";render()}},10000);
+  const fail=e=>{clearTimeout(timer);S.conn=e?.code==="revoked"?"revoked":"error";S.loaded=true;render()};
   db.collection("leads").onSnapshot(snap=>{
     if(!snap.metadata.fromCache){got=true;clearTimeout(timer);S.conn="ok"}
-    leads=snap.docs.map(d=>({...d.data(),id:d.id}));S.loaded=true;render();resolveNames();
-  },e=>{clearTimeout(timer);S.conn=e.code==="revoked"?"revoked":"error";S.loaded=true;render()});
-  db.collection("activities").orderBy("createdAt","desc").limit(1000).onSnapshot(snap=>{
-    acts=snap.docs.map(d=>({...d.data(),id:d.id}));render();resolveNames();
+    leads=snap.docs.map(d=>({...d.data(),id:d.id}));S.loaded=true;render(true);resolveNames();
+  },fail);
+  db.collection("activities").orderBy("createdAt","desc").limit(1000).onSnapshot(snap=>{acts=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames()},()=>{});
+  db.collection("deals").onSnapshot(snap=>{deals=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames()},()=>{});
+  let joined=false;
+  db.collection("team").onSnapshot(snap=>{
+    team=Object.fromEntries(snap.docs.map(d=>[d.id,{...d.data(),id:d.id}]));
+    if(!joined&&meId&&!snap.metadata.fromCache){joined=true;if(!team[meId])saveMember(meId,{role:isOwner?"manager":"caller",commission:DEF_COMMISSION,goal:DEF_GOAL,joinedAt:Date.now()})}
+    render(true);resolveNames();
   },()=>{});
 }
 
-/* ---------- views ---------- */
-function route(){return(location.hash||"").replace(/^#/,"")}
-
+/* ===== shell ===== */
+const route=()=>(location.hash||"").replace(/^#/,"");
 function renderShell(){
-  const r=route(),q=leads.filter(l=>l.status==="new").length;
-  $("nav").innerHTML=NAV.map(([h,t,i])=>`<a href="#${h}" ${r===h?'aria-current="page"':""}><span style="position:relative">${icon(i,20)}</span>${t}${h===""&&q?`<span class="badge tnum">${q>99?"99+":q}</span>`:""}</a>`).join("");
-  $("tabs").innerHTML=NAV.map(([h,t,i])=>`<a href="#${h}" ${r===h?'aria-current="page"':""}>${icon(i,20)}${t}</a>`).join("");
-  $("me").innerHTML=meId?avatar(meId,32):"";
+  const r=route(),q=leads.filter(l=>l.status==="new"&&mine(l)).length;
+  const navHtml=(withBadge)=>NAV.map(([h,t,i])=>`<a href="#${h}" ${r===h?'aria-current="page"':""}>${icon(i,20)}${t}${withBadge&&h===""&&q?`<span class="badge tnum">${q>99?"99+":q}</span>`:""}</a>`).join("");
+  $("nav").innerHTML=navHtml(true);$("tabs").innerHTML=navHtml(false);
+  $("railfoot").innerHTML=`<button class="iconbtn" data-act="theme" title="Keisti temą" aria-label="Keisti temą">${icon(theme()==="dark"?"sun":"moon",18)}</button>${meId?`<span title="${esc(who(meId))}">${avatar(meId,34)}</span>`:""}`;
 }
-
 function connBanner(){
-  if(S.conn==="none")return`<div class="banner">Duomenų bazė čia nepasiekiama. Atidaryk šią nuorodą Safari naršyklėje per claude.ai (prisijungęs), ne per programėlę.</div>`;
+  if(S.conn==="none")return`<div class="banner">Duomenų bazė čia nepasiekiama. Atidaryk šią nuorodą Safari naršyklėje per claude.ai (prisijungęs).</div>`;
   if(S.conn==="slow")return`<div class="banner info">Duomenys kraunasi ilgiau nei įprastai…</div>`;
   if(S.conn==="error")return`<div class="banner">Nepavyko pasiekti duomenų. Perkrauk puslapį.</div>`;
   if(S.conn==="revoked")return`<div class="banner">Prieiga prie šio sąrašo nutraukta.</div>`;
   return"";
 }
+const memberOptions=(sel,withNone=true)=>(withNone?`<option value="">Nepriskirta</option>`:"")+people().map(id=>`<option value="${esc(id)}" ${id===sel?"selected":""}>${esc(who(id))}</option>`).join("");
 
+/* ===== call view ===== */
 function threadHtml(l,cls){
   const items=acts.filter(a=>a.leadId===l.id).sort((a,b)=>ms(a.createdAt)-ms(b.createdAt));
   const line=a=>a.kind==="call"?`<div style="margin-top:4px;font-size:13px" class="muted">paskambino <span class="spill">${sdot(a.status)}${stat(a.status).short}</span></div>`
-    :a.kind==="status"?`<div style="margin-top:4px;font-size:13px" class="muted">pakeitė statusą į <span class="spill">${sdot(a.status)}${stat(a.status).short}</span></div>`:"";
+    :a.kind==="status"?`<div style="margin-top:4px;font-size:13px" class="muted">pakeitė statusą <span class="spill">${sdot(a.status)}${stat(a.status).short}</span></div>`
+    :a.kind==="deal"?`<div style="margin-top:4px;font-size:13px" class="muted">sandoris <span class="spill">${ddot(a.status)}${stage(a.status).label}</span></div>`:"";
   return`<section class="thread ${cls}">
-    <header class="thead"><h2 style="font-size:13px;font-weight:500">Istorija</h2><span class="tnum muted" style="font-size:12px">${items.length||""}</span></header>
+    <header class="thead"><h2 style="font-size:13.5px;font-weight:600">Istorija</h2><span class="tnum muted" style="font-size:12px">${items.length||""}</span></header>
     <ol class="tlist thin" id="tlist">
-      ${items.length?"":`<li class="muted" style="padding:16px 0;font-size:13px">${l.createdBy?"":"Pridėta iš AI paieškos. "}Dar nieko neįvyko.</li>`}
-      ${items.map(a=>`<li class="titem">${avatar(a.author)}<div style="min-width:0;flex:1"><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:13px;font-weight:500">${esc(who(a.author))}</span><time class="muted" style="font-size:11.5px">${when(a.createdAt)}</time></div>${line(a)}${a.note?`<p class="bubble">${esc(a.note)}</p>`:""}</div></li>`).join("")}
+      ${items.length?"":`<li class="muted" style="padding:16px 0;font-size:13px">Dar nieko neįvyko.</li>`}
+      ${items.map(a=>`<li class="titem">${avatar(a.author)}<div style="min-width:0;flex:1"><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:13px;font-weight:600">${esc(who(a.author))}</span><time class="muted" style="font-size:11.5px">${when(a.createdAt)}</time></div>${line(a)}${a.note?`<p class="bubble">${esc(a.note)}</p>`:""}</div></li>`).join("")}
     </ol>
     <form class="composer" data-act="note-form"><div>
-      <textarea rows="1" data-key="composer" placeholder="Rašyti pastabą komandai…">${esc(S.composer)}</textarea>
+      <textarea rows="1" data-key="composer" placeholder="Pastaba komandai…">${esc(S.composer)}</textarea>
       <button class="send" type="submit" aria-label="Siųsti" ${S.composer.trim()?"":"disabled"}>${icon("send",16)}</button>
     </div></form>
   </section>`;
 }
-
 function editForm(l){
   const f=[["name","Pavadinimas"],["phone","Telefonas"],["email","El. paštas"],["website","Svetainė"],["category","Sritis"],["city","Miestas"],["companyCode","Įmonės kodas"],["revenue","Pajamos"]];
-  return`<form class="rise" data-act="edit-form" style="margin-top:24px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
-    ${f.map(([k,t])=>`<label class="muted" style="font-size:12px">${t}<input class="inp" style="margin-top:4px" name="${k}" value="${esc(l[k]||"")}" ${k==="name"?"required":""}></label>`).join("")}
-    <label class="muted" style="font-size:12px">Reikia<select class="inp" style="margin-top:4px" name="need">${NEEDS.map(n=>`<option ${n===l.need?"selected":""}>${n}</option>`).join("")}</select></label>
-    <label class="muted" style="font-size:12px;grid-column:1/-1">Kodėl jiems reikia<textarea class="inp" style="margin-top:4px;height:80px;padding:10px" name="reason">${esc(l.reason||"")}</textarea></label>
-    <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:12px"><button type="button" class="muted" data-act="edit-close">Atšaukti</button><button class="btn ink">Išsaugoti</button></div>
+  return`<form class="rise" data-act="edit-form" style="margin-top:22px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    ${f.map(([k,t])=>`<label class="field">${t}<input class="inp" name="${k}" value="${esc(l[k]||"")}" ${k==="name"?"required":""}></label>`).join("")}
+    <label class="field">Reikia<select class="inp" name="need">${NEEDS.map(n=>`<option ${n===l.need?"selected":""}>${n}</option>`).join("")}</select></label>
+    <label class="field">Atsakingas<select class="inp" name="assignee">${memberOptions(l.assignee)}</select></label>
+    <label class="field" style="grid-column:1/-1">Kodėl jiems reikia<textarea class="inp" style="height:84px;padding:10px" name="reason">${esc(l.reason||"")}</textarea></label>
+    <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px"><button type="button" class="btn" data-act="edit-close">Atšaukti</button><button class="btn pri">Išsaugoti</button></div>
   </form>`;
 }
-
+function scriptHtml(l){
+  const fill=s=>esc(s).replace("{name}",`<b>${esc(l.name)}</b>`).replace("{me}",esc(firstName(meId)==="Aš"?"[vardas]":firstName(meId))).replace("{cat}",esc((l.category||"").toLowerCase()||"jūsų paslaugų"));
+  const s=SCRIPTS[l.need]||SCRIPTS["Svetainė"];
+  return`<details class="card script"><summary><span style="display:inline-flex;align-items:center;gap:8px">${icon("target",16)} Pokalbio planas</span><span class="muted">${icon("chev",16)}</span></summary>
+    <div class="body"><span class="lbl">Pradžia</span><p class="say">${fill(s[0])}</p>
+    <span class="lbl" style="margin-bottom:8px">Jei sako…</span><dl>${OBJECTIONS.map(([q,a])=>`<div><dt>${esc(q)}</dt><dd>${esc(a)}</dd></div>`).join("")}</dl></div></details>`;
+}
 function viewCall(){
   const q=queues(),cur=current(q),wide=matchMedia("(min-width:1280px)").matches;
   const pos=cur?q.queue.findIndex(p=>p.l.id===cur.l.id):-1;
-  const list=`<div class="qhead"><h1 style="font-size:20px;font-weight:600;letter-spacing:-.01em">Skambinti</h1>
-      <div class="seg">${[["queue","Eilė"],["waiting","Laukia"],["won","Nori"]].map(([id,t])=>`<button data-act="tab" data-v="${id}" aria-pressed="${S.tab===id}">${t}<span class="mono tnum" style="font-size:11px;opacity:.7">${q[id].length}</span></button>`).join("")}</div></div>
+  const myToday=meId?callsBy(meId,a=>dayKey(ms(a.createdAt))===dayKey(Date.now())).length:0,goal=num(member(meId).goal)||DEF_GOAL;
+  const hasAssign=leads.some(l=>l.assignee&&l.assignee!==meId);
+  const list=`<div class="qhead">
+      <div style="display:flex;align-items:center;justify-content:space-between"><h1 style="font-size:20px;font-weight:600;letter-spacing:-.02em">Skambinti</h1>
+        ${hasAssign||S.scope==="all"?`<div class="seg"><button data-act="scope" data-v="mine" aria-pressed="${S.scope==="mine"}">Mano</button><button data-act="scope" data-v="all" aria-pressed="${S.scope==="all"}">Visi</button></div>`:""}</div>
+      ${meId?`<div class="goal"><div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px"><span class="muted">Šiandien</span><span class="mono tnum"><b style="color:var(--text)">${myToday}</b><span class="muted"> / ${goal}</span></span></div><div class="barw"><span style="width:${Math.min(100,myToday/goal*100)}%"></span></div></div>`:""}
+      <div class="seg" style="display:grid;margin-top:12px">${[["queue","Eilė"],["waiting","Laukia"],["won","Nori"]].map(([id,t])=>`<button data-act="tab" data-v="${id}" aria-pressed="${S.tab===id}">${t}<span class="mono tnum" style="font-size:11px;opacity:.7">${q[id].length}</span></button>`).join("")}</div></div>
     <ul class="qlist thin">${q[S.tab].length?"":`<li class="muted" style="padding:32px 12px;text-align:center;font-size:13px">Tuščia.</li>`}
       ${q[S.tab].map(p=>`<li><button class="qitem" data-act="pick" data-id="${esc(p.l.id)}" aria-current="${cur&&p.l.id===cur.l.id}">
-        <span class="qname"><span class="dot" style="width:6px;height:6px;background:${p.tone}"></span><span>${esc(p.l.name)}</span></span>
+        <span class="qname"><span class="dot" style="width:6px;height:6px;background:${p.tone}"></span><span class="trunc">${esc(p.l.name)}</span></span>
         <span class="qmeta trunc">${esc([p.l.city,p.l.category].filter(Boolean).join(" · ")||"—")}</span>
         <span class="qmeta trunc" style="color:${p.tone};font-size:11.5px">${esc(p.label)}</span></button></li>`).join("")}</ul>`;
   let center;
   if(!S.loaded&&S.conn!=="none")center=`<div class="muted" style="padding:40px;font-size:13px">Kraunama…</div>`;
-  else if(!cur)center=`<div class="empty"><div><p class="big">Eilė tuščia.</p><p class="muted" style="margin:8px auto 0;max-width:360px;font-size:14px">${leads.length?"Visiems paskambinta. Neatsiliepę ir galvojantys grįš į eilę patys.":"Dar nėra kontaktų. Paruošk paiešką arba pridėk rankiniu būdu."}</p><a href="#paieska" class="btn accent" style="margin-top:24px;height:40px">${icon("spark",16)} Ieškoti įmonių</a></div></div>`;
+  else if(!cur)center=`<div class="empty"><div><p class="big">Eilė tuščia.</p><p class="muted" style="margin:10px auto 0;max-width:380px;font-size:14px">${leads.length?"Visiems paskambinta. Neatsiliepę ir galvojantys grįš į eilę patys.":"Dar nėra kontaktų."}</p><a href="#kontaktai" data-act="find-open" class="btn pri" style="margin-top:24px;height:42px">${icon("spark",16)} Rasti naujų įmonių</a></div></div>`;
   else{
     const l=cur.l,meta=[l.category,l.city].filter(Boolean).join(" · ");
     const days=[["Rytoj 10:00",1],["Po 3 d.",3],["Po savaitės",7],["Po 2 sav.",14]];
-    center=`<article class="focus">
-      <div class="ftop"><span style="display:inline-flex;align-items:center;gap:6px;font-weight:500;color:${cur.tone}"><span class="dot" style="width:6px;height:6px;background:${cur.tone}"></span>${esc(cur.label)}</span>
+    const ld=deals.filter(d=>d.leadId===l.id);
+    center=`<article class="focus rise" key="${esc(l.id)}">
+      <div class="ftop"><span style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:${cur.tone}"><span class="dot" style="width:7px;height:7px;background:${cur.tone}"></span>${esc(cur.label)}</span>
         ${pos>=0?`<span class="tnum">${pos+1} iš ${q.queue.length}</span>`:""}
-        <button data-act="edit-toggle" style="margin-left:auto;display:inline-flex;align-items:center;gap:4px">${icon("edit",14)} ${S.editing?"Uždaryti":"Redaguoti"}</button></div>
-      <h1 class="fname">${esc(l.name)}</h1>${meta?`<p class="muted" style="margin-top:4px;font-size:14px">${esc(meta)}</p>`:""}
+        ${l.assignee?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(firstName(l.assignee))}</span>`:""}
+        <button data-act="edit-toggle" style="margin-left:auto;display:inline-flex;align-items:center;gap:5px" class="t2">${icon("edit",14)} ${S.editing?"Uždaryti":"Redaguoti"}</button></div>
+      <h1 class="fname">${esc(l.name)}</h1>${meta?`<p class="muted" style="margin-top:6px;font-size:14px">${esc(meta)}</p>`:""}
       ${S.editing?editForm(l):`
-      <div class="card phone"><div style="min-width:0;flex:1;padding:0 8px"><span class="lbl">Telefonas</span><div class="num tnum">${esc(l.phone||"—")}</div></div>
+      <div class="card phone"><div style="min-width:0;flex:1;padding:0 6px"><span class="lbl">Telefonas</span><div class="num tnum">${esc(l.phone||"—")}</div></div>
         ${l.phone?`<a class="callbtn" href="${esc(tel(l.phone))}">${icon("phone",18)} Skambinti</a>`:""}</div>
       <div class="links">${l.email?`<a href="mailto:${esc(l.email)}"><span class="muted">${icon("mail",15)}</span>${esc(l.email)}</a>`:""}
         <span><span class="muted">${icon("globe",15)}</span>${l.website&&safeUrl(l.website)?`<a class="u" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.website))}">${esc(host(l.website))}</a>`:"svetainės nėra"}</span></div>
-      ${l.reason||l.need?`<div class="why"><span class="lbl">Ką siūlyti <span class="tag">${esc(l.need||"Svetainė")}</span></span>${l.reason?`<p>${esc(l.reason)}</p>`:""}</div>`:""}
+      ${l.reason||l.need?`<div class="why"><span class="lbl" style="display:flex;align-items:center;gap:8px">Ką siūlyti <span class="tag">${esc(l.need||"Svetainė")}</span></span>${l.reason?`<p>${esc(l.reason)}</p>`:""}</div>`:""}
+      ${scriptHtml(l)}
       <dl class="facts">
-        <div><dt class="lbl">Įmonės kodas</dt><dd class="mono tnum">${esc(l.companyCode||"—")}</dd></div>
         <div><dt class="lbl">Pajamos</dt><dd>${esc(l.revenue||"nežinomos")}</dd></div>
+        <div><dt class="lbl">Įmonės kodas</dt><dd class="mono tnum">${esc(l.companyCode||"—")}</dd></div>
         <div><dt class="lbl">Bandymų</dt><dd class="tnum">${l.attempts||0}</dd></div>
-        <div><dt class="lbl">Paskutinis skambutis</dt><dd>${l.lastCalledAt?`${when(l.lastCalledAt)} · ${esc(who(l.lastCalledBy))}`:"dar neskambinta"}</dd></div>
+        <div><dt class="lbl">Paskutinis skambutis</dt><dd>${l.lastCalledAt?`${when(l.lastCalledAt)} · ${esc(firstName(l.lastCalledBy))}`:"dar neskambinta"}</dd></div>
+        ${ld.length?`<div><dt class="lbl">Sandoris</dt><dd>${ld.map(d=>`<span class="spill">${ddot(d.stage)}${eur(d.value)}</span>`).join(" ")}</dd></div>`:""}
         ${l.source&&safeUrl(l.source)?`<div><dt class="lbl">Šaltinis</dt><dd><a class="u" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.source))}">${esc(host(l.source))}</a></dd></div>`:""}
       </dl>`}
       <section class="card outcome">
         <div style="display:flex;justify-content:space-between;align-items:baseline"><h2>Kaip baigėsi skambutis?</h2><span class="muted" style="font-size:11.5px">${matchMedia("(min-width:768px)").matches?"klavišai 1–4":""}</span></div>
         <textarea class="note" rows="2" data-key="note" placeholder="Su kuo kalbėjai, ką sakė, kiek siūlei… (nebūtina)">${esc(S.note)}</textarea>
-        ${S.askWhen?`<div class="rise" style="margin-top:12px"><div style="margin-bottom:8px;font-size:12.5px;color:var(--ink-2)">Kada perskambinti?</div><div class="chips">
+        ${S.askWhen?`<div class="rise" style="margin-top:12px"><div style="margin-bottom:8px;font-size:12.5px" class="t2">Kada perskambinti?</div><div class="chips">
           ${days.map(([t,d])=>`<button class="chip" data-act="callback" data-d="${d}">${t}</button>`).join("")}
-          <input type="datetime-local" class="chip" data-key="custom" value="${esc(S.custom)}" style="background:var(--surface)">
+          <input type="datetime-local" class="chip" data-key="custom" value="${esc(S.custom)}">
           ${S.custom?`<button class="chip" data-act="callback-custom" aria-pressed="true">Gerai</button>`:""}
-          <button class="muted" data-act="ask-back" style="padding:0 8px;font-size:13px">Atgal</button></div></div>`
+          <button class="btn" data-act="ask-back" style="height:38px">Atgal</button></div></div>`
+        :S.dealAsk?`<form class="dealform rise" data-act="deal-form">
+          <label class="field">Suma klientui, €<input class="inp mono" name="value" inputmode="decimal" placeholder="1200" autofocus></label>
+          <label class="field">Savikaina, €<input class="inp mono" name="cost" inputmode="decimal" placeholder="0"></label>
+          <label class="field">Etapas<select class="inp" name="stage">${STAGES.filter(s=>s.id!=="lost").map(s=>`<option value="${s.id}">${s.label}</option>`).join("")}</select></label>
+          <label class="field" style="grid-column:1/-1">Kas parduodama<select class="inp" name="title">${NEEDS.map(n=>`<option ${n===l.need?"selected":""}>${n}</option>`).join("")}</select></label>
+          <div class="full"><button type="button" class="btn" data-act="deal-back">Atgal</button><button type="button" class="btn" data-act="deal-skip">Be sandorio</button><button class="btn pri">Išsaugoti sandorį</button></div></form>`
         :`<div class="obtns">${[["no_answer","Neatsiliepė",1],["declined","Nenori",2],["thinking","Pagalvos",3],["interested","Nori",4]].map(([s,t,k])=>`<button class="obtn" data-act="outcome" data-s="${s}" ${S.busy?"disabled":""}><span>${sdot(s)}${t}</span><kbd>${k}</kbd></button>`).join("")}</div>`}
         ${cur.tab==="queue"?`<div style="margin-top:12px;display:flex;justify-content:flex-end"><button class="muted" data-act="skip" style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px">Praleisti ${icon("skip",14)}</button></div>`:""}
       </section>
     </article>${!wide?threadHtml(l,"below"):""}`;
   }
   return`<div class="call">
-    <aside class="queue ${S.sheet?"sheet":""}">${S.sheet?`<button data-act="sheet-close" aria-label="Uždaryti" class="muted" style="position:absolute;right:12px;top:16px;padding:8px">${icon("x")}</button>`:""}${list}</aside>
-    <div class="center thin"><div class="mbar"><button data-act="sheet-open" style="display:inline-flex;align-items:center;gap:8px">${icon("list",16)} Eilė <span class="pillcount mono tnum">${q.queue.length}</span></button></div>${center}</div>
+    <aside class="queue ${S.sheet?"sheet":""}">${S.sheet?`<button data-act="sheet-close" aria-label="Uždaryti" class="iconbtn" style="position:absolute;right:10px;top:14px">${icon("x")}</button>`:""}${list}</aside>
+    <div class="center thin"><div class="mbar"><button data-act="sheet-open" style="display:inline-flex;align-items:center;gap:8px">${icon("list",16)} Eilė <span class="pillcount mono tnum">${q.queue.length}</span></button>${meId?`<span class="muted mono tnum" style="margin-left:auto;font-size:12px">šiandien ${myToday}/${goal}</span>`:""}</div>${center}</div>
     ${cur&&wide?threadHtml(cur.l,"side"):""}
   </div>`;
 }
 
-function viewContacts(){
-  const counts=Object.fromEntries(STATUSES.map(s=>[s.id,0]));leads.forEach(l=>counts[l.status]=(counts[l.status]||0)+1);
-  const n=S.q.trim().toLowerCase();
-  const vis=leads.filter(l=>(S.filter==="all"||l.status===S.filter)&&(!n||[l.name,l.category,l.city,l.phone,l.email,l.companyCode].some(v=>String(v||"").toLowerCase().includes(n))));
-  if(S.sort==="name")vis.sort((a,b)=>a.name.localeCompare(b.name,"lt"));
-  else if(S.sort==="called")vis.sort((a,b)=>ms(b.lastCalledAt)-ms(a.lastCalledAt));
-  else vis.sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));
-  const f=k=>`<input class="inp" name="${k[0]}" placeholder="${k[1]}" ${k[0]==="name"?"required":""}>`;
+/* ===== deals view ===== */
+function dealDrawer(){
+  const d=deals.find(x=>x.id===S.dealOpen);if(!d)return"";
+  const comm=commissionOf(d),prof=profitOf(d);
+  return`<div class="drawer" data-act="drawer-bg"><div class="pane thin" data-stop-bg>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div style="min-width:0"><span class="lbl">Sandoris</span><h2 style="margin-top:6px;font-size:22px;font-weight:600;letter-spacing:-.02em">${esc(d.leadName||"—")}</h2></div><button class="iconbtn" data-act="drawer-close" aria-label="Uždaryti">${icon("x")}</button></div>
+    <form data-act="deal-edit" style="margin-top:20px;display:grid;gap:14px">
+      <label class="field">Etapas<select class="inp" name="stage">${STAGES.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${s.label}</option>`).join("")}</select></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label class="field">Suma, €<input class="inp mono" name="value" inputmode="decimal" value="${esc(num(d.value)||"")}"></label><label class="field">Savikaina, €<input class="inp mono" name="cost" inputmode="decimal" value="${esc(num(d.cost)||"")}"></label></div>
+      <label class="field">Kas parduodama<select class="inp" name="title">${NEEDS.map(n=>`<option ${n===d.title?"selected":""}>${n}</option>`).join("")}</select></label>
+      <label class="field">Atsakingas<select class="inp" name="owner">${memberOptions(d.owner,false)}</select></label>
+      <label class="field">Pastaba<textarea class="inp" name="note" style="height:90px;padding:10px">${esc(d.note||"")}</textarea></label>
+      <div class="card" style="padding:14px;display:grid;gap:8px;font-size:13px;background:var(--bg)">
+        <div style="display:flex;justify-content:space-between"><span class="muted">Suma</span><span class="mono">${eur(d.value)}</span></div>
+        <div style="display:flex;justify-content:space-between"><span class="muted">Savikaina</span><span class="mono">−${eur(d.cost)}</span></div>
+        <div style="display:flex;justify-content:space-between"><span class="muted">Komisiniai ${esc(firstName(d.owner))} (${num(member(d.owner).commission)} %)</span><span class="mono">−${eur(comm)}</span></div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px;font-weight:600"><span>Pelnas</span><span class="mono" style="color:${prof>=0?"var(--d-won)":"var(--s-declined)"}">${eur(prof)}</span></div></div>
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><button type="button" class="btn" data-act="deal-open-lead" data-id="${esc(d.leadId)}">Atidaryti kontaktą</button><button class="btn pri">Išsaugoti</button></div>
+      <p class="muted" style="font-size:12px">Sukurta ${when(d.createdAt)}${d.closedAt?` · uždaryta ${when(d.closedAt)}`:""}</p>
+    </form></div></div>`;
+}
+function viewDeals(){
+  const scoped=deals.filter(d=>S.who==="all"||d.owner===S.who);
+  const open=scoped.filter(d=>d.stage==="meeting"||d.stage==="proposal");
+  const wonP=scoped.filter(d=>d.stage==="won"&&inPeriod(d.closedAt));
+  const rev=wonP.reduce((a,d)=>a+num(d.value),0),prof=wonP.reduce((a,d)=>a+profitOf(d),0),pipe=open.reduce((a,d)=>a+num(d.value),0);
+  const closed=scoped.filter(d=>d.stage==="won"||d.stage==="lost"),winRate=closed.length?Math.round(closed.filter(d=>d.stage==="won").length/closed.length*100):null;
+  const shown=s=>scoped.filter(d=>d.stage===s&&(s==="meeting"||s==="proposal"||inPeriod(d.closedAt))).sort((a,b)=>ms(b.updatedAt)-ms(a.updatedAt));
+  const per={month:"šį mėnesį",prev:"praėjusį mėnesį",year:"šiais metais",all:"per visą laiką"}[S.period];
   return`<div class="scroll thin"><div class="page">
-    <header style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
-      <div><h1 class="title">Kontaktai</h1><p class="sub"><span class="tnum">${leads.length}</span> įmonių · bendras komandos sąrašas</p></div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px"><button class="btn ink" data-act="add-toggle">${icon("plus",15)} Pridėti</button><button class="btn" data-act="csv" ${leads.length?"":"disabled"}>${icon("download",15)} CSV</button></div>
-    </header>
-    <nav class="filters">${[["all","Visi",leads.length],...STATUSES.map(s=>[s.id,s.short,counts[s.id]])].map(([id,t,c])=>`<button data-act="filter" data-v="${id}" aria-pressed="${S.filter===id}">${id==="all"?"":sdot(id)}${t}<span class="n">${c}</span></button>`).join("")}</nav>
-    <div class="bar"><input data-key="q" placeholder="Ieškoti pagal pavadinimą, telefoną, kodą…" value="${esc(S.q)}">
-      <select class="pick" style="width:auto" data-key="sort"><option value="created" ${S.sort==="created"?"selected":""}>Naujausi</option><option value="called" ${S.sort==="called"?"selected":""}>Neseniai skambinta</option><option value="name" ${S.sort==="name"?"selected":""}>Pagal pavadinimą</option></select></div>
-    ${S.adding?`<form class="card add rise" data-act="add-form" style="margin-top:16px">${[["name","Pavadinimas *"],["phone","Telefonas"],["email","El. paštas"],["website","Svetainė (jei yra)"],["category","Sritis"],["city","Miestas"],["companyCode","Įmonės kodas"]].map(f).join("")}
-      <select class="inp" name="need">${NEEDS.map(x=>`<option>${x}</option>`).join("")}</select>
-      <div class="acts"><button type="button" class="muted" data-act="add-toggle">Atšaukti</button><button class="btn ink">Pridėti</button></div></form>`:""}
-    ${S.loaded&&!vis.length?`<div class="empty" style="min-height:0;padding:80px 0"><div><p class="big" style="font-size:28px">${leads.length?"Nieko nerasta.":"Sąrašas tuščias."}</p></div></div>`:""}
-    <ul class="rows">${vis.map(l=>`<li class="row" data-act="open" data-id="${esc(l.id)}">
-      <div style="min-width:0"><div class="trunc" style="font-size:14.5px;font-weight:500">${esc(l.name)}</div><div class="trunc muted" style="font-size:12.5px">${esc([l.category,l.city,l.revenue].filter(Boolean).join(" · ")||"—")}</div></div>
-      <div class="st"><button class="pick" data-act="menu" data-id="${esc(l.id)}">${sdot(l.status)}<span class="trunc">${stat(l.status).short}</span></button>
-        ${S.menu===l.id?`<ul class="menu rise">${STATUSES.map(s=>`<li><button data-act="set" data-id="${esc(l.id)}" data-s="${s.id}">${sdot(s.id)}${s.label}</button></li>`).join("")}</ul>`:""}</div>
-      <div class="c2">${l.phone?`<a class="mono tnum" style="font-size:13px" href="${esc(tel(l.phone))}" data-stop>${esc(l.phone)}</a>`:`<span class="mono muted">—</span>`}<div class="trunc muted" style="font-size:12px">${esc(l.need||"")}</div></div>
-      <div class="c3">${l.lastCalledAt?`<div class="trunc" style="color:var(--ink-2)">${when(l.lastCalledAt)}</div><div class="trunc">${esc(who(l.lastCalledBy))} · ×${l.attempts||0}</div>`:"dar neskambinta"}</div>
-    </li>`).join("")}</ul>
-  </div></div>`;
+    <div class="ph"><div><h1 class="title">Pardavimai</h1><p class="sub">Sandoriai nuo „Nori“ iki apmokėjimo</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><select class="sel" data-key="who"><option value="all">Visa komanda</option>${people().map(id=>`<option value="${esc(id)}" ${S.who===id?"selected":""}>${esc(who(id))}</option>`).join("")}</select>
+      <div class="seg">${[["month","Mėnuo"],["prev","Praėjęs"],["year","Metai"],["all","Visi"]].map(([v,t])=>`<button data-act="period" data-v="${v}" aria-pressed="${S.period===v}">${t}</button>`).join("")}</div></div></div>
+    <div class="tiles">
+      <div class="card tile hero"><span class="lbl">Pajamos ${per}</span><span class="k tnum">${eurShort(rev)}</span><small>${pl(wonP.length,"laimėtas sandoris","laimėti sandoriai","laimėtų sandorių")}</small></div>
+      <div class="card tile"><span class="lbl">Pelnas ${per}</span><span class="k tnum" style="color:${prof>=0?"var(--text)":"var(--s-declined)"}">${eurShort(prof)}</span><small>po savikainos ir komisinių</small></div>
+      <div class="card tile"><span class="lbl">Atviri sandoriai</span><span class="k tnum">${eurShort(pipe)}</span><small>${pl(open.length,"derinamas","derinami","derinamų")}</small></div>
+      <div class="card tile"><span class="lbl">Laimima</span><span class="k tnum">${winRate===null?"—":winRate+" %"}</span><small>${pl(closed.length,"uždarytas","uždaryti","uždarytų")}</small></div></div>
+    <div class="board">${STAGES.map(s=>{const items=shown(s.id);return`<section class="col">
+      <div class="colhead"><b>${ddot(s.id)}${s.label}</b><span class="mono tnum muted" style="font-size:12px">${items.length} · ${eurShort(items.reduce((a,d)=>a+num(d.value),0))}</span></div>
+      ${items.length?items.map(d=>`<button class="dcard rise" data-act="deal-open" data-id="${esc(d.id)}">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span class="trunc" style="font-weight:600;font-size:14px">${esc(d.leadName||"—")}</span><span class="dval tnum">${eur(d.value)}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px" class="muted"><span class="trunc">${esc(d.title||"")}</span><span style="display:inline-flex;align-items:center;gap:6px;flex-shrink:0">${avatar(d.owner,18)}${when(d.updatedAt)}</span></div>
+      </button>`).join(""):`<div class="muted" style="padding:18px 6px;font-size:12.5px;border:1px dashed var(--line);border-radius:14px;text-align:center">Nėra</div>`}
+    </section>`}).join("")}</div>
+    ${!deals.length?`<p class="muted" style="margin-top:24px;font-size:13px;text-align:center">Sandoriai atsiranda, kai skambutyje pažymi „Nori“ ir įrašai sumą.</p>`:""}
+  </div>${dealDrawer()}</div>`;
 }
 
+/* ===== contacts view ===== */
 function buildRequest(){
   const F=S.form;
-  return`Žvalgas: surask ${F.count} Lietuvos įmonių ir įrašyk jas į Žvalgo sąrašą.
+  return`Ryšys: surask ${F.count} Lietuvos įmonių ir įrašyk jas į Ryšio sąrašą.
 Sritis: ${F.industry.trim()||"bet kuri, kur svetainė padidintų pardavimus"}
 Miestas: ${F.city.trim()||"visa Lietuva"}
 Metinės pajamos: ${F.revenue.join(", ")||"nesvarbu"}
@@ -502,140 +689,234 @@ Ko trūksta: ${F.needs.join(", ")||"svetainės ar sistemos"}
 Kontaktus imk tik iš šaltinių (rekvizitai.lt, 1551.lt ir pan.), nieko neišgalvok.
 Jau sąraše (${leads.length}): ${leads.map(l=>l.name).join("; ")||"nėra"}`;
 }
-function viewSearch(){
+function findPanel(){
   const F=S.form,chip=(arr,v)=>`<button class="chip" data-act="fchip" data-arr="${arr}" data-v="${esc(v)}" aria-pressed="${F[arr].includes(v)}">${esc(v)}</button>`;
-  return`<div class="scroll thin"><div class="page"><div class="sgrid">
-    <section><h1 class="title">Paieška</h1><p class="sub">Užpildyk filtrus ir nusiųsk užklausą Claude. Jis suras įmones internete ir įrašys jas tiesiai į šį sąrašą.</p>
-      <div style="margin-top:28px;display:flex;flex-direction:column;gap:24px">
-        <div><span class="lbl" style="margin-bottom:8px">Sritis</span><input class="inp" data-key="f.industry" value="${esc(F.industry)}" placeholder="kirpyklos, autoservisai, statybos…"></div>
-        <div><span class="lbl" style="margin-bottom:8px">Miestas</span><input class="inp" data-key="f.city" value="${esc(F.city)}" placeholder="Visa Lietuva"></div>
-        <div><span class="lbl" style="margin-bottom:8px">Metinės pajamos</span><div class="chips">${REVENUE.map(v=>chip("revenue",v)).join("")}</div></div>
-        <div><span class="lbl" style="margin-bottom:8px">Ko trūksta</span><div class="chips">${NEEDS.map(v=>chip("needs",v)).join("")}</div></div>
-        <div><span class="lbl" style="margin-bottom:8px">Kiekis</span><div class="chips">${[10,20,30,50].map(c=>`<button class="chip mono" data-act="fcount" data-v="${c}" aria-pressed="${F.count===c}">${c}</button>`).join("")}</div></div>
-        <button class="btn accent" data-act="req" style="height:48px;justify-content:center;font-size:15px">${icon("copy",17)} Paruošti ir nukopijuoti užklausą</button>
-      </div></section>
-    <section style="min-width:0">
-      <div class="card" style="padding:20px"><h2 style="font-size:15px;font-weight:600">Kaip tai veikia</h2>
-        <ol style="margin:12px 0 0 18px;font-size:14px;line-height:1.8;color:var(--ink-2)">
-          <li>Spausk „Paruošti ir nukopijuoti užklausą“.</li>
-          <li>Atidaryk pokalbį su Claude, kur buvo sukurtas Žvalgas, ir įklijuok.</li>
-          <li>Po kelių minučių naujos įmonės atsiras skiltyje „Skambinti“.</li></ol>
-        <p class="muted" style="margin-top:12px;font-size:12.5px;line-height:1.6">Šis puslapis pats internete ieškoti negali, tai Claude puslapių apribojimas. Išgalvotų telefonų nenorime, todėl paiešką atlieka Claude pokalbyje.</p></div>
-      ${S.reqText?`<div class="rise" style="margin-top:20px"><span class="lbl" style="margin-bottom:8px">Užklausa (pažymėk ir nukopijuok, jei nenukopijavo automatiškai)</span><textarea class="req" readonly id="reqbox">${esc(S.reqText)}</textarea></div>`:""}
-    </section></div></div></div>`;
+  return`<section class="card rise" style="margin-top:18px;padding:20px">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h2 style="font-size:16px;font-weight:600">Rasti naujų įmonių</h2><p class="muted" style="margin-top:4px;font-size:13px;max-width:620px">Šis puslapis pats internete ieškoti negali. Paruošk užklausą, įklijuok ją pokalbyje su Claude, ir jis įrašys rastas įmones čia.</p></div><button class="iconbtn" data-act="find-close" aria-label="Uždaryti">${icon("x")}</button></div>
+    <div style="margin-top:18px;display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+      <label class="field">Sritis<input class="inp" data-key="f.industry" value="${esc(F.industry)}" placeholder="kirpyklos, autoservisai, statybos…"></label>
+      <label class="field">Miestas<input class="inp" data-key="f.city" value="${esc(F.city)}" placeholder="Visa Lietuva"></label></div>
+    <div style="margin-top:18px"><span class="lbl" style="margin-bottom:8px">Metinės pajamos</span><div class="chips">${REVENUE.map(v=>chip("revenue",v)).join("")}</div></div>
+    <div style="margin-top:16px"><span class="lbl" style="margin-bottom:8px">Ko trūksta</span><div class="chips">${NEEDS.map(v=>chip("needs",v)).join("")}</div></div>
+    <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between"><div class="seg">${[10,20,30,50].map(c=>`<button data-act="fcount" data-v="${c}" aria-pressed="${F.count===c}">${c} įmonių</button>`).join("")}</div>
+      <button class="btn pri" data-act="req" style="height:42px">${icon("copy",16)} Paruošti ir nukopijuoti</button></div>
+    ${S.reqText?`<textarea class="req rise" readonly id="reqbox" style="margin-top:14px">${esc(S.reqText)}</textarea>`:""}
+  </section>`;
 }
-
-function viewStats(){
+function viewContacts(){
   const counts=Object.fromEntries(STATUSES.map(s=>[s.id,0]));leads.forEach(l=>counts[l.status]=(counts[l.status]||0)+1);
-  const called=leads.length-counts.new,reached=counts.declined+counts.thinking+counts.interested;
-  const pct=(a,b)=>b?Math.round(a/b*100)+" %":"—";
-  const calls=acts.filter(a=>a.kind==="call");
-  const today=dayKey(Date.now()),weekAgo=Date.now()-7*864e5;
-  const per=list=>{const m={};for(const a of list){const k=a.author||"?";m[k]??={id:k,calls:0,reached:0,interested:0};m[k].calls++;if(a.status!=="no_answer")m[k].reached++;if(a.status==="interested")m[k].interested++}return Object.values(m).sort((a,b)=>b.calls-a.calls)};
-  const tRows=per(calls.filter(a=>dayKey(ms(a.createdAt))===today)),wRows=per(calls.filter(a=>ms(a.createdAt)>=weekAgo));
-  const days=[...Array(14)].map((_,i)=>dayKey(Date.now()-(13-i)*864e5));
-  const byDay=days.map(d=>calls.filter(a=>dayKey(ms(a.createdAt))===d).length),max=Math.max(1,...byDay);
-  const todayCalls=byDay[13];
-  const table=(t,rows)=>`<div class="card panel" style="margin-top:0"><h2>${t}</h2>${rows.length?`<table><thead><tr><th>Kas</th><th class="r">Skambučių</th><th class="r">Pasiekta</th><th class="r">Nori</th></tr></thead><tbody>
-    ${rows.map(r=>`<tr><td><span style="display:inline-flex;align-items:center;gap:8px">${avatar(r.id,22)}${esc(who(r.id))}</span></td><td class="r mono tnum">${r.calls}</td><td class="r mono tnum">${r.reached}</td><td class="r mono tnum">${r.interested}</td></tr>`).join("")}</tbody></table>`:`<p class="muted" style="margin-top:16px;font-size:13px">Dar nėra skambučių.</p>`}</div>`;
-  const hv=S.hover;
-  return`<div class="scroll thin"><div class="page" style="max-width:1100px"><h1 class="title">Statistika</h1>
-    <div class="tiles">
-      <div class="card tile"><span class="lbl">Skambučių šiandien</span><b class="tnum">${todayCalls}</b></div>
-      <div class="card tile"><span class="lbl">Kontaktų</span><b class="tnum">${leads.length}</b><small>${counts.new} dar neskambinta</small></div>
-      <div class="card tile"><span class="lbl">Pasiekta</span><b class="tnum">${pct(reached,called)}</b><small>${reached} iš ${called} atsiliepė</small></div>
-      <div class="card tile"><span class="lbl">Nori</span><b class="tnum">${counts.interested}</b><small>${pct(counts.interested,reached)} pasiektų</small></div></div>
-    <section class="card panel"><h2>Kontaktai pagal statusą</h2>
-      <div class="stack" role="img" aria-label="Kontaktų pasiskirstymas pagal statusą">${leads.length?STATUSES.filter(s=>counts[s.id]).map(s=>`<div title="${s.short}: ${counts[s.id]}" style="flex-grow:${counts[s.id]};background:var(--s-${s.id})"></div>`).join(""):`<div style="flex:1;background:var(--line)"></div>`}</div>
-      <ul class="legend">${STATUSES.map(s=>`<li>${sdot(s.id)}${s.short}<span class="mono tnum" style="font-size:12px;color:var(--ink)">${counts[s.id]}</span></li>`).join("")}</ul></section>
-    <section class="card panel"><div style="display:flex;justify-content:space-between;align-items:baseline"><h2>Skambučiai per 14 dienų</h2><span class="muted tnum" style="font-size:12px">${hv!==null?`${esc(days[hv])}: ${byDay[hv]}`:`iš viso ${byDay.reduce((a,b)=>a+b,0)} · daugiausia ${max}`}</span></div>
-      <div class="bars">${byDay.map((c,i)=>`<button data-act="bar" data-i="${i}" aria-label="${esc(days[i])}: ${c} skambučių"><span style="height:${c/max*100}%;opacity:${hv===null||hv===i?1:.35}"></span></button>`).join("")}</div>
-      <div class="muted" style="margin-top:8px;display:flex;justify-content:space-between;font-size:11px"><span>${esc(days[0])}</span><span>šiandien</span></div></section>
-    <div class="two" style="margin-top:24px">${table("Šiandien",tRows)}${table("Per 7 dienas",wRows)}</div>
+  const n=S.q.trim().toLowerCase(),mgr=isManager();
+  const vis=leads.filter(l=>(S.filter==="all"||l.status===S.filter)&&(S.who==="all"||(S.who==="none"?!l.assignee:l.assignee===S.who))&&(!n||[l.name,l.category,l.city,l.phone,l.email,l.companyCode].some(v=>String(v||"").toLowerCase().includes(n))));
+  if(S.sort==="name")vis.sort((a,b)=>a.name.localeCompare(b.name,"lt"));
+  else if(S.sort==="called")vis.sort((a,b)=>ms(b.lastCalledAt)-ms(a.lastCalledAt));
+  else vis.sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));
+  const f=([k,p])=>`<input class="inp" name="${k}" placeholder="${p}" ${k==="name"?"required":""}>`;
+  return`<div class="scroll thin"><div class="page">
+    <div class="ph"><div><h1 class="title">Kontaktai</h1><p class="sub"><span class="tnum">${leads.length}</span> įmonių · ${leads.filter(l=>!l.assignee).length} nepriskirta</p></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px"><button class="btn pri" data-act="find-toggle">${icon("spark",15)} Rasti naujų</button><button class="btn" data-act="add-toggle">${icon("plus",15)} Pridėti</button><button class="btn" data-act="csv" ${leads.length?"":"disabled"}>${icon("download",15)} CSV</button></div></div>
+    ${S.finding?findPanel():""}
+    ${S.adding?`<form class="card add rise" data-act="add-form">${[["name","Pavadinimas *"],["phone","Telefonas"],["email","El. paštas"],["website","Svetainė (jei yra)"],["category","Sritis"],["city","Miestas"],["companyCode","Įmonės kodas"]].map(f).join("")}
+      <select class="inp" name="need">${NEEDS.map(x=>`<option>${x}</option>`).join("")}</select>
+      <div class="acts"><button type="button" class="btn" data-act="add-toggle">Atšaukti</button><button class="btn pri">Pridėti</button></div></form>`:""}
+    <nav class="filters">${[["all","Visi",leads.length],...STATUSES.map(s=>[s.id,s.short,counts[s.id]])].map(([id,t,c])=>`<button data-act="filter" data-v="${id}" aria-pressed="${S.filter===id}">${id==="all"?"":sdot(id)}${t}<span class="n">${c}</span></button>`).join("")}</nav>
+    <div class="bar"><input data-key="q" placeholder="Ieškoti pagal pavadinimą, telefoną, kodą…" value="${esc(S.q)}">
+      <select class="sel" data-key="who"><option value="all">Visi žmonės</option><option value="none" ${S.who==="none"?"selected":""}>Nepriskirti</option>${people().map(id=>`<option value="${esc(id)}" ${S.who===id?"selected":""}>${esc(who(id))}</option>`).join("")}</select>
+      <select class="sel" data-key="sort"><option value="created" ${S.sort==="created"?"selected":""}>Naujausi</option><option value="called" ${S.sort==="called"?"selected":""}>Neseniai skambinta</option><option value="name" ${S.sort==="name"?"selected":""}>Pagal pavadinimą</option></select></div>
+    ${S.loaded&&!vis.length?`<div class="empty" style="min-height:0;padding:80px 0"><p class="big" style="font-size:28px">${leads.length?"Nieko nerasta.":"Sąrašas tuščias."}</p></div>`:""}
+    <ul class="rows">${vis.map(l=>`<li class="row" data-act="open" data-id="${esc(l.id)}">
+      <div style="min-width:0"><div class="trunc" style="font-size:14.5px;font-weight:500">${esc(l.name)}</div><div class="trunc muted" style="font-size:12.5px">${esc([l.category,l.city,l.revenue].filter(Boolean).join(" · ")||"—")}</div></div>
+      <div class="st"><button class="pick" data-act="menu" data-id="${esc(l.id)}">${sdot(l.status)}<span class="trunc">${stat(l.status).short}</span></button>
+        ${S.menu===l.id?`<ul class="menu rise">${STATUSES.map(s=>`<li><button data-act="set" data-id="${esc(l.id)}" data-s="${s.id}">${sdot(s.id)}${s.label}</button></li>`).join("")}</ul>`:""}</div>
+      <div class="c2">${l.phone?`<a class="mono tnum" style="font-size:13px" href="${esc(tel(l.phone))}" data-stop>${esc(l.phone)}</a>`:`<span class="mono muted">—</span>`}<div class="trunc muted" style="font-size:12px">${esc(l.need||"")}${l.lastCalledAt?` · ${when(l.lastCalledAt)}`:""}</div></div>
+      <div class="c3" data-stop>${mgr?`${avatar(l.assignee,22)}<select class="sel" style="border:0;background:none;padding:0;max-width:150px" data-assign="${esc(l.id)}">${memberOptions(l.assignee)}</select>`:`${avatar(l.assignee,22)}<span class="trunc">${esc(l.assignee?who(l.assignee):"Nepriskirta")}</span>`}</div>
+    </li>`).join("")}</ul>
   </div></div>`;
 }
 
-/* ---------- render ---------- */
-function render(){
-  // Keep focus, caret and scroll while live data re-renders the view.
+/* ===== team view ===== */
+function memberStats(id){
+  const c=callsBy(id),today=dayKey(Date.now());
+  const cT=c.filter(a=>dayKey(ms(a.createdAt))===today),cM=c.filter(a=>inPeriod(a.createdAt,"month"));
+  const won=deals.filter(d=>d.owner===id&&d.stage==="won"&&inPeriod(d.closedAt,"month"));
+  const rev=won.reduce((a,d)=>a+num(d.value),0);
+  return{today:cT.length,month:cM.length,reached:cM.filter(a=>a.status!=="no_answer").length,interested:cM.filter(a=>a.status==="interested").length,won:won.length,rev,comm:won.reduce((a,d)=>a+commissionOf(d),0),leads:leads.filter(l=>l.assignee===id&&l.status!=="declined").length};
+}
+function viewTeam(){
+  const mgr=isManager(),ids=people();
+  const rows=ids.map(id=>({id,m:member(id),s:memberStats(id)})).sort((a,b)=>b.s.rev-a.s.rev||b.s.month-a.s.month);
+  const unassigned=leads.filter(l=>!l.assignee&&l.status==="new").length;
+  return`<div class="scroll thin"><div class="page">
+    <div class="ph"><div><h1 class="title">Komanda</h1><p class="sub">${pl(ids.length,"žmogus","žmonės","žmonių")} · šio mėnesio rodikliai</p></div>
+      ${mgr?`<button class="btn pri" data-act="distribute" ${unassigned?"":"disabled"}>${icon("shuffle",15)} Paskirstyti ${pl(unassigned,"naują kontaktą","naujus kontaktus","naujų kontaktų")}</button>`:""}</div>
+    <div class="card tablewrap" style="margin-top:22px;padding:6px 16px 10px"><table>
+      <thead><tr><th></th><th>Žmogus</th><th>Rolė</th><th class="r">Šiandien</th><th class="r">Mėn. skamb.</th><th class="r">Pasiekta</th><th class="r">Laimėta</th><th class="r">Pajamos</th><th class="r">Komisiniai</th><th class="r">Kontaktų</th>${mgr?`<th class="r">Kom. %</th><th class="r">Tikslas/d.</th>`:""}</tr></thead>
+      <tbody>${rows.map(({id,m,s},i)=>`<tr>
+        <td><span class="rank ${i===0&&s.rev+s.month>0?"first":""}">${i+1}</span></td>
+        <td><span style="display:inline-flex;align-items:center;gap:10px;white-space:nowrap">${avatar(id,30)}<span><b style="font-weight:600">${esc(who(id))}</b>${id===meId?` <span class="muted">(tu)</span>`:""}</span></span></td>
+        <td>${mgr&&(id!==meId||isOwner)?`<select class="sel" data-role="${esc(id)}"><option value="caller" ${m.role!=="manager"?"selected":""}>Skambintojas</option><option value="manager" ${m.role==="manager"?"selected":""}>Vadovas</option></select>`:`<span class="spill">${m.role==="manager"||(id===meId&&isOwner)?"Vadovas":"Skambintojas"}</span>`}</td>
+        <td class="r mono tnum"><span style="color:${s.today>=num(m.goal||DEF_GOAL)?"var(--d-won)":"var(--text)"}">${s.today}</span><span class="muted">/${num(m.goal)||DEF_GOAL}</span></td>
+        <td class="r mono tnum">${s.month}</td><td class="r mono tnum">${s.reached}</td><td class="r mono tnum">${s.won}</td>
+        <td class="r mono tnum">${eur(s.rev)}</td><td class="r mono tnum">${eur(s.comm)}</td><td class="r mono tnum">${s.leads}</td>
+        ${mgr?`<td class="r"><input class="mini mono" inputmode="decimal" data-comm="${esc(id)}" value="${esc(num(m.commission??DEF_COMMISSION))}"></td><td class="r"><input class="mini mono" inputmode="numeric" data-goal="${esc(id)}" value="${esc(num(m.goal)||DEF_GOAL)}"></td>`:""}
+      </tr>`).join("")}</tbody></table></div>
+    <div class="grid2">
+      <div class="card panel"><h2>Kaip pridėti skambintoją</h2><ol style="margin:12px 0 0 18px;font-size:13.5px;line-height:1.9" class="t2"><li>Viršuje spausk <b>Share</b> ir pakviesk žmogų su teise <b>Contributor</b>.</li><li>Kai jis pirmą kartą atidarys nuorodą, atsiras šioje lentelėje.</li><li>Nustatyk jo komisinius ir dienos tikslą, tada spausk „Paskirstyti“.</li></ol></div>
+      <div class="card panel"><h2>Kaip skaičiuojama</h2><p class="t2" style="margin-top:10px;font-size:13.5px;line-height:1.7"><b>Komisiniai</b> = laimėto sandorio suma × žmogaus komisinių %. <b>Pelnas</b> = suma − savikaina − komisiniai. Skambintojas mato tik savo eilę: jam priskirtus ir dar niekam nepriskirtus kontaktus.</p></div></div>
+  </div></div>`;
+}
+
+/* ===== overview ===== */
+function viewOverview(){
+  const counts=Object.fromEntries(STATUSES.map(s=>[s.id,0]));leads.forEach(l=>counts[l.status]=(counts[l.status]||0)+1);
+  // Each later step is a subset of the earlier one, so the funnel never exceeds 100 %.
+  const ids=new Set(leads.map(l=>l.id)),dealLead=new Set(deals.map(d=>d.leadId).filter(i=>ids.has(i)));
+  const wonSet=new Set(deals.filter(d=>d.stage==="won").map(d=>d.leadId).filter(i=>ids.has(i)));
+  const wantSet=new Set([...leads.filter(l=>l.status==="interested").map(l=>l.id),...dealLead]);
+  const reachSet=new Set([...leads.filter(l=>["declined","thinking","interested"].includes(l.status)).map(l=>l.id),...wantSet]);
+  const callSet=new Set([...leads.filter(l=>l.status!=="new").map(l=>l.id),...reachSet]);
+  const called=callSet.size,reached=reachSet.size;
+  const won=deals.filter(d=>d.stage==="won"),wonM=won.filter(d=>inPeriod(d.closedAt,"month"));
+  const revM=wonM.reduce((a,d)=>a+num(d.value),0),profM=wonM.reduce((a,d)=>a+profitOf(d),0);
+  const pipe=deals.filter(d=>d.stage==="meeting"||d.stage==="proposal").reduce((a,d)=>a+num(d.value),0);
+  const calls=acts.filter(a=>a.kind==="call"),today=dayKey(Date.now());
+  const todayCalls=calls.filter(a=>dayKey(ms(a.createdAt))===today).length;
+  const teamGoal=people().filter(id=>member(id).role!=="manager"||id===meId).reduce((a,id)=>a+(num(member(id).goal)||DEF_GOAL),0);
+  const days=[...Array(14)].map((_,i)=>dayKey(Date.now()-(13-i)*864e5));
+  const byDay=days.map(d=>calls.filter(a=>dayKey(ms(a.createdAt))===d).length),max=Math.max(1,...byDay),hv=S.hover;
+  const steps=[["Kontaktai",leads.length,"var(--s-new)"],["Paskambinta",called,"var(--s-no_answer)"],["Pasiekta",reached,"var(--s-thinking)"],["Nori",wantSet.size,"var(--s-interested)"],["Laimėta",wonSet.size,"var(--accent)"]];
+  const leaders=people().map(id=>({id,s:memberStats(id)})).sort((a,b)=>b.s.rev-a.s.rev||b.s.month-a.s.month).slice(0,5);
+  return`<div class="scroll thin"><div class="page">
+    <div class="ph"><div><h1 class="title">Apžvalga</h1><p class="sub">${new Date().toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"long",month:"long",day:"numeric"})}</p></div></div>
+    <div class="tiles">
+      <div class="card tile hero"><span class="lbl">Pajamos šį mėnesį</span><span class="k tnum">${eurShort(revM)}</span><small>pelnas ${eur(profM)}</small></div>
+      <div class="card tile"><span class="lbl">Atviri sandoriai</span><span class="k tnum">${eurShort(pipe)}</span><small>${pl(deals.filter(d=>d.stage==="meeting"||d.stage==="proposal").length,"derinamas","derinami","derinamų")}</small></div>
+      <div class="card tile"><span class="lbl">Skambučių šiandien</span><span class="k tnum">${todayCalls}</span><small>komandos tikslas ${teamGoal}</small></div>
+      <div class="card tile"><span class="lbl">Pasiekiamumas</span><span class="k tnum">${called?Math.round(reached/called*100)+" %":"—"}</span><small>${reached} iš ${called} atsiliepė</small></div></div>
+    <div class="grid2">
+      <section class="card panel"><h2>Piltuvėlis</h2><div class="funnel">${steps.map(([t,c,col],i)=>{const base=steps[0][1]||1,prev=i?steps[i-1][1]:0;return`<div class="frow"><span class="t2">${t}</span><div class="ftrack"><span style="width:${Math.max(c?2:0,c/base*100)}%;background:${col}"></span></div><span class="mono tnum r">${c}${i&&prev?` <span class="muted" style="font-size:11px">${Math.round(c/prev*100)}%</span>`:""}</span></div>`}).join("")}</div></section>
+      <section class="card panel"><h2>Lyderiai šį mėnesį</h2>${leaders.length?`<table><tbody>${leaders.map(({id,s},i)=>`<tr><td style="width:30px"><span class="rank ${i===0&&s.rev+s.month>0?"first":""}">${i+1}</span></td><td><span style="display:inline-flex;align-items:center;gap:8px">${avatar(id,24)}${esc(who(id))}</span></td><td class="r mono tnum">${s.month} skamb.</td><td class="r mono tnum" style="font-weight:600">${eur(s.rev)}</td></tr>`).join("")}</tbody></table>`:`<p class="muted" style="margin-top:12px;font-size:13px">Dar nėra duomenų.</p>`}</section></div>
+    <section class="card panel"><div style="display:flex;justify-content:space-between;align-items:baseline"><h2>Skambučiai per 14 dienų</h2><span class="muted tnum" style="font-size:12px">${hv!==null?`${esc(days[hv])}: ${byDay[hv]}`:`iš viso ${byDay.reduce((a,b)=>a+b,0)} · daugiausia ${max}`}</span></div>
+      <div class="bars">${byDay.map((c,i)=>`<button data-act="bar" data-i="${i}" aria-label="${esc(days[i])}: ${c} skambučių"><span style="height:${c/max*100}%;opacity:${hv===null||hv===i?1:.3}"></span></button>`).join("")}</div>
+      <div class="muted" style="margin-top:8px;display:flex;justify-content:space-between;font-size:11px"><span>${esc(days[0].slice(5).replace("-","."))}</span><span>šiandien</span></div></section>
+    <section class="card panel"><h2>Kontaktai pagal statusą</h2>
+      <div style="margin-top:14px;display:flex;height:12px;gap:2px;overflow:hidden;border-radius:999px" role="img" aria-label="Kontaktų pasiskirstymas">${leads.length?STATUSES.filter(s=>counts[s.id]).map(s=>`<div title="${s.short}: ${counts[s.id]}" style="flex-grow:${counts[s.id]};background:var(--s-${s.id})"></div>`).join(""):`<div style="flex:1;background:var(--line)"></div>`}</div>
+      <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px 22px">${STATUSES.map(s=>`<span style="display:inline-flex;align-items:center;gap:8px;font-size:13px" class="t2">${sdot(s.id)}${s.short} <b class="mono tnum" style="color:var(--text);font-weight:500">${counts[s.id]}</b></span>`).join("")}</div></section>
+  </div></div>`;
+}
+
+/* ===== render ===== */
+function render(bg){
   const a=document.activeElement,key=a?.dataset?.key,sel=key&&"selectionStart" in a?[a.selectionStart,a.selectionEnd]:null;
-  const center=document.querySelector(".center,.scroll"),top=center?.scrollTop||0;
+  const sc=document.querySelector(".center,.scroll"),top=sc?.scrollTop||0;
+  const pane=document.querySelector(".drawer .pane"),ptop=pane?.scrollTop||0;
   const tl=$("tlist"),tAtBottom=!tl||tl.scrollHeight-tl.scrollTop-tl.clientHeight<40;
+  if(bg&&document.querySelector(".drawer form")?.contains(a))return; // live data must not wipe a deal being edited
   renderShell();
   const r=route();
-  $("main").innerHTML=connBanner()+(r==="kontaktai"?viewContacts():r==="paieska"?viewSearch():r==="statistika"?viewStats():viewCall());
-  const c2=document.querySelector(".center,.scroll");if(c2)c2.scrollTop=top;
+  $("main").innerHTML=connBanner()+(r==="kontaktai"?viewContacts():r==="pardavimai"?viewDeals():r==="komanda"?viewTeam():r==="apzvalga"?viewOverview():viewCall());
+  const sc2=document.querySelector(".center,.scroll");if(sc2)sc2.scrollTop=top;
+  const p2=document.querySelector(".drawer .pane");if(p2)p2.scrollTop=ptop;
   const tl2=$("tlist");if(tl2&&tAtBottom)tl2.scrollTop=tl2.scrollHeight;
   if(key){const el=document.querySelector(`[data-key="${key}"]`);if(el){el.focus({preventScroll:true});if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1])}catch{}}}
 }
 
-/* ---------- events ---------- */
+/* ===== events ===== */
 document.addEventListener("click",async e=>{
   if(e.target.closest("[data-stop]"))return;
   const b=e.target.closest("[data-act]");
   if(!b){if(S.menu){S.menu=null;render()}return}
-  const act=b.dataset.act,id=b.dataset.id;
   if(b.tagName==="FORM")return;
+  const act=b.dataset.act,id=b.dataset.id;
+  if(act==="drawer-bg"&&e.target.closest("[data-stop-bg]"))return;
   switch(act){
+    case"theme":setTheme(theme()==="dark"?"light":"dark");render();break;
     case"tab":S.tab=b.dataset.v;render();break;
-    case"pick":S.sel=id;S.sheet=false;S.editing=false;S.askWhen=false;history.replaceState(null,"","#");render();break;
+    case"scope":S.scope=b.dataset.v;S.sel=null;render();break;
+    case"pick":S.sel=id;S.sheet=false;S.editing=false;S.askWhen=false;S.dealAsk=false;history.replaceState(null,"","#");render();break;
     case"sheet-open":S.sheet=true;render();break;
     case"sheet-close":S.sheet=false;render();break;
     case"skip":{const c=current(queues());if(c){S.skipped.add(c.l.id);S.sel=null;S.note="";render()}break}
-    case"outcome":{const c=current(queues());if(!c)break;const s=b.dataset.s;if(s==="thinking"){S.askWhen=true;render()}else logCall(c.l,s);break}
-    case"callback":{const c=current(queues());if(!c)break;const d=new Date();d.setDate(d.getDate()+Number(b.dataset.d));d.setHours(10,0,0,0);logCall(c.l,"thinking",d.getTime());break}
-    case"callback-custom":{const c=current(queues()),t=Date.parse(S.custom);if(c&&t)logCall(c.l,"thinking",t);break}
+    case"outcome":{const c=current(queues());if(!c)break;const s=b.dataset.s;
+      if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;render()}else logCall(c.l,s);break}
+    case"callback":{const c=current(queues());if(!c)break;const d=new Date();d.setDate(d.getDate()+Number(b.dataset.d));d.setHours(10,0,0,0);logCall(c.l,"thinking",{callbackAt:d.getTime()});break}
+    case"callback-custom":{const c=current(queues()),t=Date.parse(S.custom);if(c&&t)logCall(c.l,"thinking",{callbackAt:t});break}
     case"ask-back":S.askWhen=false;render();break;
+    case"deal-back":S.dealAsk=false;render();break;
+    case"deal-skip":{const c=current(queues());if(c)logCall(c.l,"interested");break}
     case"edit-toggle":S.editing=!S.editing;render();break;
     case"edit-close":S.editing=false;render();break;
     case"filter":S.filter=b.dataset.v;render();break;
-    case"add-toggle":S.adding=!S.adding;render();break;
+    case"add-toggle":S.adding=!S.adding;S.finding=false;render();break;
+    case"find-toggle":S.finding=!S.finding;S.adding=false;render();break;
+    case"find-open":S.finding=true;break;
+    case"find-close":S.finding=false;render();break;
     case"menu":e.stopPropagation();S.menu=S.menu===id?null:id;render();break;
     case"set":e.stopPropagation();S.menu=null;setStatus(id,b.dataset.s);break;
-    case"open":if(e.target.closest(".st"))break;S.sel=id;location.hash="";break;
+    case"open":if(e.target.closest(".st,.c3"))break;S.sel=id;S.scope="all";location.hash="";break;
     case"fchip":{const arr=S.form[b.dataset.arr],v=b.dataset.v;S.form[b.dataset.arr]=arr.includes(v)?arr.filter(x=>x!==v):[...arr,v];render();break}
     case"fcount":S.form.count=Number(b.dataset.v);render();break;
     case"req":S.reqText=buildRequest();render();
       try{await navigator.clipboard.writeText(S.reqText);toast("Nukopijuota. Įklijuok į pokalbį su Claude.")}
-      catch{const t=$("reqbox");t?.focus();t?.select();toast("Pažymėjau tekstą: nukopijuok jį rankiniu būdu.")}break;
+      catch{const t=$("reqbox");t?.focus();t?.select();toast("Pažymėjau tekstą, nukopijuok jį rankiniu būdu.")}break;
     case"csv":exportCsv();break;
     case"bar":S.hover=S.hover===Number(b.dataset.i)?null:Number(b.dataset.i);render();break;
+    case"period":S.period=b.dataset.v;render();break;
+    case"deal-open":S.dealOpen=id;render();break;
+    case"drawer-bg":case"drawer-close":S.dealOpen=null;render();break;
+    case"deal-open-lead":S.dealOpen=null;S.sel=id;S.scope="all";location.hash="";break;
+    case"distribute":b.disabled=true;await distribute();break;
   }
 });
 document.addEventListener("input",e=>{
   const k=e.target.dataset?.key;if(!k)return;const v=e.target.value;
   if(k==="note")S.note=v;
-  else if(k==="composer"){S.composer=v;const s=e.target.closest("form")?.querySelector(".send");if(s)s.disabled=!v.trim();return}
-  else if(k==="custom"){S.custom=v;render();return}
-  else if(k==="q"){S.q=v;render();return}
-  else if(k==="sort"){S.sort=v;render();return}
+  else if(k==="composer"){S.composer=v;const s=e.target.closest("form")?.querySelector(".send");if(s)s.disabled=!v.trim()}
+  else if(k==="custom"){S.custom=v;render()}
+  else if(k==="q"){S.q=v;render()}
   else if(k.startsWith("f."))S.form[k.slice(2)]=v;
 });
-document.addEventListener("change",e=>{if(e.target.dataset?.key==="sort"){S.sort=e.target.value;render()}});
+document.addEventListener("change",e=>{
+  const t=e.target,k=t.dataset||{};
+  if(k.key==="sort"){S.sort=t.value;render()}
+  else if(k.key==="who"){S.who=t.value;render()}
+  else if(k.assign!==undefined)assign(k.assign,t.value);
+  else if(k.role!==undefined)saveMember(k.role,{role:t.value});
+  else if(k.comm!==undefined)saveMember(k.comm,{commission:Math.max(0,Math.min(100,num(t.value)))});
+  else if(k.goal!==undefined)saveMember(k.goal,{goal:Math.max(1,Math.round(num(t.value))||DEF_GOAL)});
+});
 document.addEventListener("keydown",e=>{
   const t=e.target;
   if(t.dataset?.key==="composer"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();const c=current(queues());if(c)sendNote(c.l);return}
+  if(e.key==="Escape"){if(S.dealOpen){S.dealOpen=null;render();return}if(S.menu){S.menu=null;render();return}}
   if(t.closest("input,textarea,select")||e.metaKey||e.ctrlKey||e.altKey)return;
-  if(route()!=="")return;
+  if(route()!==""||S.editing||S.dealAsk)return;
   const map={"1":"no_answer","2":"declined","3":"thinking","4":"interested"};
-  const c=current(queues());if(!c||S.editing)return;
-  if(map[e.key]){e.preventDefault();if(map[e.key]==="thinking"){S.askWhen=true;render()}else logCall(c.l,map[e.key])}
-  if(e.key==="Escape"&&S.menu){S.menu=null;render()}
+  const c=current(queues());if(!c||!map[e.key])return;
+  e.preventDefault();const s=map[e.key];
+  if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;render()}else logCall(c.l,s);
 });
 document.addEventListener("submit",async e=>{
   e.preventDefault();const f=e.target,act=f.dataset.act;
   if(act==="note-form"){const c=current(queues());if(c)sendNote(c.l);return}
-  const d=Object.fromEntries(new FormData(f));for(const k in d)d[k]=String(d[k]).trim().slice(0,1000);
+  const d=Object.fromEntries(new FormData(f));for(const k in d)d[k]=String(d[k]).trim().slice(0,2000);
   if(act==="edit-form"){
     const c=current(queues());if(!c)return;
     const next={...c.l,...d,updatedAt:Date.now()};leads=leads.map(x=>x.id===next.id?next:x);S.editing=false;render();
     if(await saveLead(next))toast("Išsaugota.");
+  }else if(act==="deal-form"){
+    const c=current(queues());if(!c)return;
+    if(!(num(d.value)>0)){toast("Įrašyk sumą arba spausk „Be sandorio“.");return}
+    logCall(c.l,"interested",{deal:{value:d.value,cost:d.cost,stage:d.stage,title:d.title}});
+  }else if(act==="deal-edit"){
+    const old=deals.find(x=>x.id===S.dealOpen);if(!old)return;
+    const next={...old,stage:d.stage,value:num(d.value),cost:num(d.cost),title:d.title,owner:d.owner||old.owner,note:d.note};
+    S.dealOpen=null;await saveDeal(next,old.stage);toast("Sandoris išsaugotas.");
   }else if(act==="add-form"){
     if(!d.name)return;
     const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\b(uab|mb|ii|ab|vsi)\b/g,"").replace(/[^a-z0-9]/g,"");
     const pk=s=>String(s||"").replace(/\D/g,"").slice(-8);
     if(leads.some(l=>(d.companyCode&&l.companyCode===d.companyCode)||(pk(d.phone).length===8&&pk(l.phone)===pk(d.phone))||norm(l.name)===norm(d.name))){toast("Toks kontaktas jau yra sąraše.");return}
-    const now=Date.now(),l={id:uid(),name:d.name,companyCode:d.companyCode||"",category:d.category||"",city:d.city||"",phone:d.phone||"",email:d.email||"",website:d.website||"",revenue:"",need:d.need||"Svetainė",reason:"",source:"",status:"new",callbackAt:null,attempts:0,lastCalledAt:null,lastCalledBy:"",createdBy:meId||"",createdAt:now,updatedAt:now};
+    const now=Date.now(),l={id:uid(),name:d.name,companyCode:d.companyCode||"",category:d.category||"",city:d.city||"",phone:d.phone||"",email:d.email||"",website:d.website||"",revenue:"",need:d.need||"Svetainė",reason:"",source:"",status:"new",callbackAt:null,attempts:0,lastCalledAt:null,lastCalledBy:"",assignee:"",createdBy:meId||"",createdAt:now,updatedAt:now};
     leads=[l,...leads];S.adding=false;render();
     if(await saveLead(l))await addAct({leadId:l.id,kind:"created",status:null,note:""});
   }
@@ -643,16 +924,16 @@ document.addEventListener("submit",async e=>{
 
 async function exportCsv(){
   const cell=v=>/[",\n;]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
-  const head=["Pavadinimas","Statusas","Telefonas","El. paštas","Sritis","Miestas","Pajamos","Reikia","Svetainė","Įmonės kodas","Bandymų","Paskutinis skambutis","Šaltinis"];
-  const rows=leads.map(l=>[l.name,stat(l.status).label,l.phone,l.email,l.category,l.city,l.revenue,l.need,l.website,l.companyCode,String(l.attempts||0),l.lastCalledAt?new Date(ms(l.lastCalledAt)).toISOString():"",l.source].map(v=>cell(String(v||""))));
+  const head=["Pavadinimas","Statusas","Atsakingas","Telefonas","El. paštas","Sritis","Miestas","Pajamos","Reikia","Svetainė","Įmonės kodas","Bandymų","Paskutinis skambutis","Sandorio suma","Sandorio etapas","Šaltinis"];
+  const rows=leads.map(l=>{const d=deals.find(x=>x.leadId===l.id);return[l.name,stat(l.status).label,l.assignee?who(l.assignee):"",l.phone,l.email,l.category,l.city,l.revenue,l.need,l.website,l.companyCode,String(l.attempts||0),l.lastCalledAt?new Date(ms(l.lastCalledAt)).toISOString():"",d?String(num(d.value)):"",d?stage(d.stage).label:"",l.source].map(v=>cell(String(v||"")))});
   const csv="﻿"+[head,...rows].map(r=>r.join(";")).join("\n");
-  if(downloads){try{await downloads.save({filename:`zvalgas-${new Date().toISOString().slice(0,10)}.csv`,data:csv});return}catch(e){if(e?.code==="declined")return}}
+  if(downloads){try{await downloads.save({filename:`rysys-${dayKey(Date.now())}.csv`,data:csv});return}catch(e){if(e?.code==="declined")return}}
   try{await navigator.clipboard.writeText(csv);toast("CSV nukopijuotas. Įklijuok į Excel ar Google Sheets.")}catch{toast("Nepavyko eksportuoti.")}
 }
 
-addEventListener("hashchange",()=>{S.menu=null;S.sheet=false;render()});
+addEventListener("hashchange",()=>{S.menu=null;S.sheet=false;S.dealOpen=null;render()});
 matchMedia("(min-width:1280px)").addEventListener("change",render);
-setInterval(render,60000); // relative times and the 3-hour retry window
+setInterval(()=>render(true),60000);
 render();
 connect();
 </script>
