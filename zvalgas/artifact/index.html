@@ -657,6 +657,7 @@ const safeUrl=u=>{const v=/^https?:\/\//i.test(u||"")?u:"https://"+u;return /^ht
 const host=u=>{try{return new URL(safeUrl(u)).hostname.replace(/^www\./,"")}catch{return u}};
 const tel=p=>"tel:"+String(p||"").replace(/[^\d+]/g,"");
 const ms=v=>typeof v==="number"?v:(v?Date.parse(v)||0:0);
+const MAXEUR=1e7;
 const num=v=>{const n=Number(String(v??"").replace(/\s/g,"").replace(",","."));return Number.isFinite(n)?n:0};
 const eur=n=>new Intl.NumberFormat("lt-LT",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n||0);
 const eurShort=n=>Math.abs(n)>=1e4?new Intl.NumberFormat("lt-LT",{notation:"compact",maximumFractionDigits:1}).format(n)+" €":eur(n);
@@ -818,9 +819,9 @@ async function distribute(){
 }
 
 /* Owner-only: remove every call, note, deal and status, keep the contacts themselves. */
-async function wipe(){
-  if(!db||!isOwner||S.wiping)return;
-  if(!confirm("Ištrinti VISUS skambučius, pastabas, sandorius ir pelną?\n\nKontaktai (pavadinimai, telefonai, el. paštai, pajamos) liks. Statusai grįš į „Neskambinta“. Atšaukti nebus galima."))return;
+async function wipe(silent){
+  if(!db||S.wiping)return;
+  if(!silent&&!confirm("Ištrinti VISUS skambučius, pastabas, sandorius ir pelną?\n\nKontaktai (pavadinimai, telefonai, el. paštai, pajamos) liks. Statusai grįš į „Neskambinta“. Atšaukti nebus galima."))return;
   S.wiping=true;render();let n=0,fail=0;
   const del=async col=>{let docs=[];try{docs=(await db.collection(col).get()).docs}catch{docs=(col==="deals"?deals:acts).map(x=>({id:x.id}))}
     for(const d of docs){try{await db.collection(col).doc(d.id).delete();n++}catch{fail++}}};
@@ -828,11 +829,21 @@ async function wipe(){
     await del("deals");await del("activities");
     for(const l of leads){
       if(l.status==="new"&&!l.attempts&&!l.lastCalledAt&&!l.callbackAt&&!l.note)continue;
-      const next={...l,status:"new",attempts:0,lastCalledAt:null,lastCalledBy:"",callbackAt:null,updatedAt:Date.now()};delete next.note;
-      try{await db.collection("leads").doc(l.id).set(next);n++}catch{fail++}
+      const patch={status:"new",attempts:0,lastCalledAt:null,lastCalledBy:"",callbackAt:null,note:"",updatedAt:Date.now()};
+      const ref=db.collection("leads").doc(l.id);
+      try{if(typeof ref.update==="function")await ref.update(patch);else await ref.set({...l,...patch});n++}catch{fail++}
     }
   }finally{S.wiping=false;S.sel=null;S.cv=null;S.note="";render()}
-  toast(fail?`Išvalyta, bet ${fail} įrašų nepavyko. Spausk dar kartą.`:"Išvalyta. Kontaktai liko, visi vėl „Neskambinta“.");
+  toast(fail?`Išvalyta, bet ${fail} įrašų nepavyko. Komandoje spausk „Išvalyti“ dar kartą.`:"Skambučiai ir pardavimai išvalyti. Kontaktai liko, visi vėl „Neskambinta“.");
+}
+/* One-time cleanup the owner asked for (2026-11-26): runs once, the first time the owner opens the page. */
+const RESET_ID="reset-2026-11-26";
+const fresh0={leads:false,deals:false,acts:false,meta:false};let metaIds=new Set(),resetDone=false;
+async function maybeReset(){
+  if(resetDone||!db||!isOwner||!fresh0.leads||!fresh0.deals||!fresh0.acts||!fresh0.meta||metaIds.has(RESET_ID))return;
+  resetDone=true;
+  try{await db.collection("meta").doc(RESET_ID).set({at:Date.now(),by:meId||""})}catch{resetDone=false;return}
+  await wipe(true);
 }
 /* ===== data ===== */
 /* Apyvarta ir darbuotojai iš 1551.lt (2026-11). Įrašoma į DB vieną kartą, jei kontakte jų dar nėra. */
@@ -860,10 +871,11 @@ async function connect(){
   db.collection("leads").onSnapshot(snap=>{
     if(!snap.metadata.fromCache){got=true;clearTimeout(timer);S.conn="ok"}
     leads=snap.docs.map(d=>({...d.data(),id:d.id}));S.loaded=true;render(true);resolveNames();
-    if(!snap.metadata.fromCache)backfill();
+    if(!snap.metadata.fromCache){backfill();fresh0.leads=true;maybeReset()}
   },fail);
-  db.collection("activities").orderBy("createdAt","desc").limit(1000).onSnapshot(snap=>{acts=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames()},()=>{});
-  db.collection("deals").onSnapshot(snap=>{deals=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames()},()=>{});
+  db.collection("activities").orderBy("createdAt","desc").limit(1000).onSnapshot(snap=>{acts=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames();if(!snap.metadata?.fromCache){fresh0.acts=true;maybeReset()}},()=>{});
+  db.collection("deals").onSnapshot(snap=>{deals=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames();if(!snap.metadata?.fromCache){fresh0.deals=true;maybeReset()}},()=>{});
+  db.collection("meta").onSnapshot(snap=>{if(snap.metadata?.fromCache)return;metaIds=new Set(snap.docs.map(d=>d.id));fresh0.meta=true;maybeReset()},()=>{});
   let joined=false;
   db.collection("team").onSnapshot(snap=>{
     team=Object.fromEntries(snap.docs.map(d=>[d.id,{...d.data(),id:d.id}]));
@@ -1147,7 +1159,7 @@ function viewTeam(){
   const mgr=isManager(),ids=people();
   const rows=ids.map(id=>({id,m:member(id),s:memberStats(id)})).sort((a,b)=>b.s.rev-a.s.rev||b.s.month-a.s.month);
   const unassigned=leads.filter(l=>!l.assignee&&l.status==="new").length;
-  const right=(isOwner?`<button class="btn" data-act="wipe" ${S.wiping?"disabled":""}>${icon("x",15)} ${S.wiping?"Valoma…":"Išvalyti skambučius ir pardavimus"}</button>`:"")+(mgr?`<button class="btn ink" data-act="distribute" ${unassigned?"":"disabled"}>${icon("shuffle",15)} Paskirstyti ${pl(unassigned,"naują kontaktą","naujus kontaktus","naujų kontaktų")}</button>`:"");
+  const right=(isOwner||mgr?`<button class="btn" data-act="wipe" ${S.wiping?"disabled":""}>${icon("x",15)} ${S.wiping?"Valoma…":"Išvalyti skambučius ir pardavimus"}</button>`:"")+(mgr?`<button class="btn ink" data-act="distribute" ${unassigned?"":"disabled"}>${icon("shuffle",15)} Paskirstyti ${pl(unassigned,"naują kontaktą","naujus kontaktus","naujų kontaktų")}</button>`:"");
   return`<div class="scroll thin"><div class="page">${head("Komanda",`${pl(ids.length,"žmogus","žmonės","žmonių")} · šis mėnuo`,right)}
     <div class="tablewrap box"><table class="grid" style="font-size:13px">
       <thead><tr><th style="width:28px"></th><th>Žmogus</th><th>Rolė</th><th class="r">Šiandien</th><th class="r">Skambučiai</th><th class="r">Atsiliepė</th><th class="r">Laimėta</th><th class="r">Pajamos</th><th class="r">Komisiniai</th><th class="r">Kontaktai</th>${mgr?`<th class="r">Kom. %</th><th class="r">Tikslas</th>`:""}</tr></thead>
@@ -1343,9 +1355,11 @@ document.addEventListener("submit",async e=>{
   }else if(act==="deal-form"){
     const c=current(queues());if(!c)return;
     if(!(num(d.value)>0)){toast("Įrašyk sumą arba spausk „Be sandorio“.");return}
+    if(num(d.value)>MAXEUR||num(d.cost)>MAXEUR){toast("Per didelė suma. Daugiausia 10 000 000 €.");return}
     logCall(c.l,"interested",{deal:{value:d.value,cost:d.cost,stage:d.stage,title:d.title}});
   }else if(act==="deal-edit"){
     const old=deals.find(x=>x.id===S.dealOpen);if(!old)return;
+    if(num(d.value)>MAXEUR||num(d.cost)>MAXEUR){toast("Per didelė suma. Daugiausia 10 000 000 €.");return}
     const next={...old,stage:d.stage,value:num(d.value),cost:num(d.cost),title:d.title,owner:d.owner||old.owner,note:d.note};
     S.dealOpen=null;await saveDeal(next,old.stage);toast("Sandoris išsaugotas.");
   }else if(act==="add-form"){
