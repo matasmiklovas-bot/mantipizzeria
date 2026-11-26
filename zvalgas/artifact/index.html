@@ -391,6 +391,107 @@ body{font-size:14.5px;letter-spacing:-.003em}
 .dial a.go{font-size:16.5px}
 .nav a[aria-current=page]{background:var(--tint);box-shadow:none;color:var(--text);font-weight:600}
 @media(max-width:899px){.grid td:first-child{max-width:190px!important}.grid td,.grid th{padding-left:6px;padding-right:6px}}
+/* ===== modern layer 2 ===== */
+:root{--bg:#f4f5f2;--hero1:#0d1611;--hero2:#14251b;--glow:#22c55e}
+:root[data-theme=dark]{--bg:#0b0c0b;--hero1:#121c16;--hero2:#18291f}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.main{background:radial-gradient(900px 320px at 75% -120px,color-mix(in srgb,var(--call) 9%,transparent),transparent 70%)}
+.side{background:color-mix(in srgb,var(--surface) 70%,var(--bg));border-right:1px solid var(--line)}
+.brand{border-bottom:0;height:68px}
+.mark{background:linear-gradient(145deg,#2fbf6b,#0b6b3a);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 12px -4px rgba(14,122,67,.6);border-radius:10px}
+.nav{gap:3px}
+.nav a{border-radius:11px;height:42px}
+.sidefoot{border-top:0}
+.ph{border-bottom:0;min-height:76px;padding:22px 0 8px;margin-bottom:14px}
+.ph h1{font-size:27px;font-weight:700;letter-spacing:-.04em}
+/* hero */
+.focus{max-width:860px}
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:22px 22px 20px;color:#fff;
+  background:radial-gradient(120% 140% at 100% 0%,color-mix(in srgb,var(--glow) 26%,transparent),transparent 55%),linear-gradient(160deg,var(--hero1),var(--hero2));
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 24px 48px -28px rgba(8,30,18,.8);animation:rise .3s ease-out both}
+@media(min-width:768px){.hero{padding:26px 28px 22px}}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent 40%);border-radius:inherit}
+.hero{--text:#f2f4f1;--muted:rgba(255,255,255,.6)}
+.hero .crumbs{color:rgba(255,255,255,.6)}
+.hero .crumbs>span:first-child{background:rgba(255,255,255,.1);border-radius:99px;padding:4px 10px 4px 8px;color:#fff!important}
+.hero .crumbs .push{color:rgba(255,255,255,.75)}
+.hero .fname{margin-top:14px;color:#fff;font-size:30px}
+@media(min-width:768px){.hero .fname{font-size:38px}}
+.hero .fmeta{color:rgba(255,255,255,.55);font-size:13px;margin-top:6px}
+.htags{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
+.htags span{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);font-size:12.5px;color:rgba(255,255,255,.88)}
+.htags svg{opacity:.7}
+.htags .need{background:color-mix(in srgb,var(--glow) 22%,transparent);border-color:color-mix(in srgb,var(--glow) 40%,transparent);color:#d7ffe6;font-weight:500}
+.hero .dial{margin-top:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);box-shadow:none;border-radius:18px;backdrop-filter:blur(6px)}
+.hero .dial .lbl{color:rgba(255,255,255,.55)}
+.hero .dial .nr .num{color:#fff;font-size:30px;letter-spacing:-.02em}
+.hero .dial .copy{color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.1)}
+.hero .dial .copy:hover{background:rgba(255,255,255,.06)}
+.hero .dial a.go{background:linear-gradient(180deg,#26b765,#149a50);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 10px 30px -10px rgba(34,197,94,.7);font-size:17px}
+.hero .dial a.go:hover{background:linear-gradient(180deg,#2cc66f,#17a957)}
+.hero .links{margin-top:14px;color:rgba(255,255,255,.7)}
+.hero .links .muted{color:rgba(255,255,255,.5)}
+.hero .u{text-decoration-color:rgba(255,255,255,.25)}
+.hero .avatar{box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+/* why */
+.whybox{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;margin-top:14px}
+.whybox::before{display:none}
+.wicon{display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;border-radius:10px;background:var(--tint);color:var(--call)}
+.whybox p{margin-top:3px}
+/* facts */
+.brief.facts{border-top:0;margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:768px){.brief.facts{grid-template-columns:repeat(4,1fr)}}
+.brief.facts>div{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--sh)}
+.brief.facts>div:last-child:nth-child(odd){grid-column:1/-1}
+@media(min-width:768px){.brief.facts>div:last-child:nth-child(odd){grid-column:auto}}
+.brief.facts dt{font-size:12px}
+.brief.facts dd{font-size:15px;font-weight:550;letter-spacing:-.01em}
+.brief.facts dd .muted{font-weight:400}
+/* conversation + outcome */
+.cv,.outcome{margin-top:16px}
+.cv>header,.outcome header{font-size:15px;letter-spacing:-.01em}
+.outcome header{border-bottom:0;padding-top:6px}
+.outcome .pad{padding:0 16px 16px}
+.obtn{height:64px;font-size:15.5px}
+.obtn .dot{width:10px;height:10px;box-shadow:0 0 0 4px color-mix(in srgb,var(--tone) 18%,transparent)}
+.obtn:hover{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 7%,var(--surface))}
+textarea.note{border-radius:14px;border-color:var(--line)}
+/* queue */
+.qhead{border-bottom:0;padding-bottom:6px}
+.qtop h1{font-size:17px;font-weight:700;letter-spacing:-.03em}
+.goal .track{height:6px;border-radius:99px;background:var(--hover)}
+.goal .track span{border-radius:99px;background:linear-gradient(90deg,#2fbf6b,var(--call))}
+/* metrics */
+.kpis{background:none;border:0;box-shadow:none;overflow:visible;gap:12px;border-radius:0}
+.kpi{margin:0;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--sh);padding:18px 20px;animation:rise .35s ease-out both}
+.kpi:nth-child(2){animation-delay:.04s}.kpi:nth-child(3){animation-delay:.08s}.kpi:nth-child(4){animation-delay:.12s}
+.kpi:first-child{border:0;color:#fff;background:radial-gradient(120% 140% at 100% 0%,color-mix(in srgb,var(--glow) 28%,transparent),transparent 60%),linear-gradient(160deg,var(--hero1),var(--hero2));box-shadow:0 18px 40px -24px rgba(8,30,18,.8)}
+.kpi:first-child .lbl,.kpi:first-child small{color:rgba(255,255,255,.6)}
+.kpi .v{font-size:34px}
+.cols .box,.box{border-radius:18px}
+.box{animation:rise .35s ease-out both}
+.funnel{gap:10px}
+.ftrack{height:22px}
+/* board */
+.board{gap:12px}
+.col{background:color-mix(in srgb,var(--text) 3.5%,transparent);border-radius:18px;padding:12px 10px 4px;min-height:120px}
+.col h3{border-bottom:0;padding:0 4px 10px}
+.dcard{border-radius:14px}
+.none{padding:6px 6px 14px}
+/* tables */
+.tablewrap{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh)}
+.grid th{background:var(--surface);padding-top:12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.grid tr:last-child td{border-bottom:0}
+.grid td:first-child,.grid th:first-child{padding-left:16px}
+.statusbar{border-bottom:0;gap:4px;margin-bottom:14px}
+.statusbar button{border:0;margin:0;border-radius:99px;height:34px;padding:0 13px;background:transparent}
+.statusbar button[aria-pressed=true]{background:var(--surface);box-shadow:var(--sh);border:0}
+.search,.sel{border-radius:12px;border-color:var(--line);background:var(--surface);height:38px}
+/* mobile */
+.tabs{background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:saturate(1.4) blur(18px);-webkit-backdrop-filter:saturate(1.4) blur(18px)}
+.tabs a[aria-current=page]{color:var(--call)}
+.mbar{background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+@media(max-width:767px){.hero{border-radius:20px;padding:18px 16px}.hero .dial .nr .num{font-size:26px}.focus{padding-top:14px}}
 </style>
 </head>
 <body>
@@ -432,6 +533,8 @@ const ICON={
   spark:"M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18",
   chart:"M4 20V10M10 20V4M16 20v-7M22 20H2",
   euro:"M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9",
+  pin:"M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z",
+  tag:"M3.5 12.5V4.5a1 1 0 0 1 1-1h8l8.5 8.5-9 9-8.5-8.5ZM8 8.5h.01",
   users:"M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM21 19v-1a4 4 0 0 0-3-3.9M15.5 3.2a3.5 3.5 0 0 1 0 6.6",
   mail:"M4 6h16v12H4zM4 7l8 6 8-6",
   globe:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18",
@@ -855,21 +958,25 @@ function viewCall(){
     const l=cur.l,meta=[l.category,l.city].filter(Boolean).join(" · ");
     const days=[["Rytoj, 10:00",1],["Po 3 d.",3],["Po savaitės",7],["Po 2 sav.",14]];
     const ld=deals.filter(d=>d.leadId===l.id);
+    const tags=[[icon("pin",13),spokenCity(l.city)||l.city],[icon("tag",13),(l.category||"").split(",")[0]],[icon("euro",13),l.revenue?revShort(l)+" apyvarta":""],[icon("users",13),l.employees||""]].filter(t=>t[1]);
     center=`<article class="focus in" id="lead-${esc(l.id)}">
+      <section class="hero">
       <div class="crumbs"><span style="display:inline-flex;align-items:center;gap:7px;color:${cur.tone};font-weight:500"><span class="dot" style="background:${cur.tone}"></span>${esc(cur.label)}</span>
         ${pos>=0?`<span class="mono">${pos+1}/${q.queue.length}</span>`:""}
         ${l.assignee?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(firstName(l.assignee))}</span>`:""}
         <button class="push t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
-      <h1 class="fname">${esc(spokenName(l.name))}</h1>${meta||spokenName(l.name)!==l.name?`<p class="fmeta">${esc([spokenName(l.name)!==l.name?l.name:"",meta].filter(Boolean).join(" · "))}</p>`:""}
-      ${S.editing?editForm(l):`
+      <h1 class="fname">${esc(spokenName(l.name))}</h1>${spokenName(l.name)!==l.name?`<p class="fmeta">${esc(l.name)}</p>`:""}
+      ${tags.length?`<div class="htags">${tags.map(([i,t])=>`<span>${i}${esc(t)}</span>`).join("")}<span class="need">${esc(l.need||"Svetainė")}</span></div>`:""}
+      ${S.editing?`</section>`+editForm(l):`
       <div class="dial"><div class="nr"><span class="lbl">Telefonas</span><span class="num">${esc(l.phone||"—")}</span></div>
         ${l.phone?`<button class="copy" data-act="copy" data-v="${esc(l.phone)}" title="Kopijuoti numerį">${icon("copy",16)}<span>Kopijuoti</span></button><a class="go" data-act="dial" data-id="${esc(l.id)}" data-v="${esc(l.phone)}" href="${esc(tel(l.phone))}">${icon("phone",18)} Skambinti</a>`:""}</div>
       <div class="links">${l.email?`<a href="mailto:${esc(l.email)}" class="u">${esc(l.email)}</a>`:""}
         ${l.website&&safeUrl(l.website)?`<a class="u" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.website))}">${esc(host(l.website))}</a>`:`<span class="muted">Svetainės nėra</span>`}
         ${l.source&&safeUrl(l.source)?`<a class="u muted" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.source))}">Šaltinis: ${esc(host(l.source))}</a>`:""}</div>
-      ${l.reason?`<div class="whybox"><span class="lbl">Kodėl skambinti · siūlyti: ${esc(l.need||"Svetainė")}</span><p>${esc(l.reason)}</p></div>`:""}
+      </section>
+      ${l.reason?`<div class="whybox"><span class="wicon">${icon("spark",15)}</span><div><span class="lbl">Kodėl skambinti</span><p>${esc(l.reason)}</p></div></div>`:""}
       ${convoHtml(l)}
-      <dl class="brief">
+      <dl class="brief facts">
         <div><dt>Pajamos</dt><dd>${l.revenue?esc(l.revenue):`<span class="muted">Neskelbiamos</span>`}</dd></div>
         ${l.employees?`<div><dt>Darbuotojai</dt><dd>${esc(l.employees)}</dd></div>`:""}
         <div><dt>Bandymai</dt><dd><span class="mono">${l.attempts||0}</span>${l.lastCalledAt?` <span class="muted">· paskutinis ${when(l.lastCalledAt)}, ${esc(firstName(l.lastCalledBy))}</span>`:""}</dd></div>
@@ -891,7 +998,7 @@ function viewCall(){
           <label class="field">Etapas<select class="inp" name="stage">${STAGES.filter(s=>s.id!=="lost").map(s=>`<option value="${s.id}" ${s.id===(S.dealStage||"meeting")?"selected":""}>${s.label}</option>`).join("")}</select></label>
           <label class="field" style="grid-column:1/-1">Kas parduodama<select class="inp" name="title">${NEEDS.map(n=>`<option ${n===l.need?"selected":""}>${n}</option>`).join("")}</select></label>
           <div class="full"><button type="button" class="btn" data-act="deal-back">Atgal</button><button type="button" class="btn" data-act="deal-skip">Be sandorio</button><button class="btn go">Išsaugoti sandorį</button></div></form>`
-        :`<div class="obtns">${[["no_answer","Neatsiliepė",1],["declined","Nenori",2],["thinking","Pagalvos",3],["interested","Nori",4]].map(([s,t,k])=>`<button class="obtn" data-act="outcome" data-s="${s}" ${S.busy?"disabled":""}><span>${sdot(s)}${t}</span><span class="kbd">${k}</span></button>`).join("")}</div>`}
+        :`<div class="obtns">${[["no_answer","Neatsiliepė",1],["declined","Nenori",2],["thinking","Pagalvos",3],["interested","Nori",4]].map(([s,t,k])=>`<button class="obtn" style="--tone:var(--s-${s})" data-act="outcome" data-s="${s}" ${S.busy?"disabled":""}><span>${sdot(s)}${t}</span><span class="kbd">${k}</span></button>`).join("")}</div>`}
         ${cur.tab==="queue"?`<div class="skip"><button data-act="skip">Praleisti ${icon("skip",13)}</button></div>`:""}
         </div>
       </section>
