@@ -6,7 +6,7 @@
 <title>Coldline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap&subset=latin-ext" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap&subset=latin-ext" rel="stylesheet">
 <style>
 /* Coldline. Colour carries meaning only: green = call / won, red = declined, blue = callback, amber = no answer. Everything else is ink on paper. */
 :root{
@@ -29,7 +29,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text)}
-body{font-family:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+body{font-family:"Geist",ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
 button,input,select,textarea{font:inherit;color:inherit;background:none;border:0;border-radius:0}
 select option{background:var(--surface);color:var(--text)}
 button{cursor:pointer}
@@ -37,7 +37,7 @@ button:disabled{cursor:default;opacity:.4}
 a{color:inherit;text-decoration:none}
 ::selection{background:var(--ink);color:var(--on-ink)}
 :focus-visible{outline:2px solid var(--text);outline-offset:1px}
-.mono,.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.mono,.num{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}.t2{color:var(--text-2)}
 .dot{display:inline-block;width:8px;height:8px;border-radius:1px;flex-shrink:0}
 .thin{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
@@ -48,7 +48,7 @@ button,a.go,.btn,.chip,.obtn,.qitem,.dcard,.nav a,.tabs a{transition:transform .
 button:active:not(:disabled),a.go:active,.btn:active,.chip:active,.nav a:active,.tabs a:active{transform:scale(.97)}
 .obtn:active:not(:disabled),.qitem:active,.dcard:active{transform:scale(.985)}
 .tnum{font-variant-numeric:tabular-nums}
-.kbd{display:inline-block;min-width:18px;border:1px solid var(--line-2);border-bottom-width:2px;border-radius:3px;padding:0 4px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;line-height:15px;text-align:center;color:var(--muted)}
+.kbd{display:inline-block;min-width:18px;border:1px solid var(--line-2);border-bottom-width:2px;border-radius:3px;padding:0 4px;font-family:"Geist Mono",monospace;font-size:10.5px;line-height:15px;text-align:center;color:var(--muted)}
 @media(pointer:coarse){
   .btn,.seg button,.qtabs button,.chip,.sel,.search,.pick>button{min-height:44px}
   .inp{height:46px}.mini{height:40px;width:72px}
@@ -86,7 +86,7 @@ button:active:not(:disabled),a.go:active,.btn:active,.chip:active,.nav a:active,
 .nav a[aria-current=page]{background:var(--sunk);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
 .nav a[aria-current=page] svg{color:var(--call)}
 .nav .lab,.nav .cnt{display:none}
-@media(min-width:1180px){.nav .lab{display:inline}.nav .cnt{display:inline;margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11.5px;opacity:.7}}
+@media(min-width:1180px){.nav .lab{display:inline}.nav .cnt{display:inline;margin-left:auto;font-family:"Geist Mono",monospace;font-size:11.5px;opacity:.7}}
 .sidefoot{margin-top:auto;border-top:1px solid var(--line);padding:10px 8px;display:flex;flex-direction:column;gap:2px}
 .sidefoot button,.sidefoot .who{display:flex;align-items:center;gap:11px;height:36px;padding:0 12px;border-radius:var(--r);color:var(--text-2);font-size:13px;width:100%;text-align:left}
 .sidefoot button:hover{background:var(--hover);color:var(--text)}
@@ -150,14 +150,14 @@ textarea.inp{height:auto;padding:9px 10px;line-height:1.5;resize:vertical}
 .qtabs button{height:30px;font-size:12.5px;color:var(--text-2);border-left:1px solid var(--line-2)}
 .qtabs button:first-child{border-left:0}
 .qtabs button[aria-pressed=true]{background:var(--ink);color:var(--on-ink)}
-.qtabs .n{font-family:"IBM Plex Mono",monospace;font-size:11px;opacity:.7;margin-left:4px}
+.qtabs .n{font-family:"Geist Mono",monospace;font-size:11px;opacity:.7;margin-left:4px}
 .qlist{flex:1;min-height:0;overflow-y:auto;list-style:none}
-.qitem{display:grid;grid-template-columns:8px 1fr;column-gap:10px;row-gap:2px;width:100%;padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+.qitem{display:grid;grid-template-columns:8px 1fr auto;column-gap:10px;row-gap:2px;width:100%;padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
 .qitem:hover{background:var(--hover)}
 .qitem[aria-current=true]{background:var(--sunk);box-shadow:inset 3px 0 0 var(--text)}
 .qitem .dot{margin-top:6px}
 .qitem b{font-weight:500;font-size:13.5px}
-.qitem small{grid-column:2;font-size:12px;color:var(--muted)}
+.qitem small{grid-column:2/4;font-size:12px;color:var(--muted)}
 .center{min-width:0;flex:1;overflow-y:auto}
 .mbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;height:48px;border-bottom:1px solid var(--line);background:var(--surface);padding:0 16px;font-size:13px}
 @media(min-width:1024px){.mbar{display:none}}
@@ -273,7 +273,7 @@ textarea.note:focus{border-color:var(--text);outline:none;background:var(--surfa
 .statusbar button{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .statusbar button:hover{color:var(--text)}
 .statusbar button[aria-pressed=true]{color:var(--text);border-bottom-color:var(--text);font-weight:500}
-.statusbar .n{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+.statusbar .n{font-family:"Geist Mono",monospace;font-size:11.5px;color:var(--muted)}
 .grid{width:100%;border-collapse:collapse;font-size:13.5px}
 .grid th{position:sticky;top:0;z-index:1;background:var(--bg);text-align:left;font-weight:500;font-size:12px;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line-2);white-space:nowrap}
 .grid td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -299,7 +299,7 @@ form.add{display:grid;gap:10px;padding:16px;margin-bottom:16px}
 @media(min-width:1024px){form.add{grid-template-columns:repeat(4,1fr)}}
 form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 @media(min-width:640px){form.add .acts{grid-column:1/-1}}
-.req{width:100%;min-height:180px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--sunk);padding:10px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.6;resize:vertical;color:var(--text)}
+.req{width:100%;min-height:180px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--sunk);padding:10px;font-family:"Geist Mono",monospace;font-size:12.5px;line-height:1.6;resize:vertical;color:var(--text)}
 
 /* metrics */
 .kpis{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(16,16,14,.04);background:var(--surface);overflow:hidden}
@@ -316,11 +316,11 @@ form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .bars{height:140px;display:flex;align-items:flex-end;gap:4px;border-bottom:1px solid var(--line-2)}
 .bars button{flex:1;height:100%;display:flex;align-items:flex-end}
 .bars span{display:block;width:100%;background:var(--text);border-radius:2px 2px 0 0}
-.axis{margin-top:6px;display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace}
+.axis{margin-top:6px;display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:"Geist Mono",monospace}
 .board{display:grid;gap:16px;margin-top:20px}
 @media(min-width:1000px){.board{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .col h3{display:flex;align-items:center;justify-content:space-between;gap:8px;height:34px;font-size:13px;font-weight:600;border-bottom:2px solid var(--text);margin-bottom:8px}
-.col h3 span{font-weight:400;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+.col h3 span{font-weight:400;font-family:"Geist Mono",monospace;font-size:12px;color:var(--muted)}
 .dcard{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px rgba(16,16,14,.04);background:var(--surface);padding:11px 12px;margin-bottom:8px}
 .dcard:hover{border-color:var(--line-2)}
 .dcard .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
@@ -336,7 +336,61 @@ form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .ledger .tot{font-weight:600;background:var(--sunk)}
 .iconbtn{display:grid;place-items:center;width:32px;height:32px;border-radius:var(--r);color:var(--muted)}
 .iconbtn:hover{background:var(--hover);color:var(--text)}
-.rank{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);width:18px;display:inline-block}
+.rank{font-family:"Geist Mono",monospace;font-size:12px;color:var(--muted);width:18px;display:inline-block}
+/* ===== modern layer ===== */
+:root{--r:10px;--sh:0 1px 0 rgba(16,16,14,.03),0 1px 2px rgba(16,16,14,.04),0 6px 20px -10px rgba(16,16,14,.12);--tint:color-mix(in srgb,var(--call) 7%,var(--surface))}
+:root[data-theme=dark]{--sh:0 1px 0 rgba(255,255,255,.03) inset,0 8px 24px -12px rgba(0,0,0,.7)}
+body{font-size:14.5px;letter-spacing:-.003em}
+.dot{border-radius:50%}
+.avatar{border-radius:50%}
+.box,.kpis,.cv,.outcome{border-radius:18px;box-shadow:var(--sh)}
+.dial{border-radius:18px}
+.dcard{border-radius:14px;box-shadow:var(--sh)}
+.ph h1{font-size:22px;letter-spacing:-.03em}
+.fname{font-weight:650;letter-spacing:-.035em}
+.qtabs,.seg{border:0;background:var(--hover);padding:3px;border-radius:11px;gap:2px}
+.qtabs button,.seg button{border:0!important;border-radius:8px;color:var(--muted)}
+.qtabs button[aria-pressed=true],.seg button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08),0 1px 6px -2px rgba(0,0,0,.08);font-weight:500}
+.qitem{margin:2px 8px;width:calc(100% - 16px);border:0;border-radius:12px;padding:11px 12px}
+.qitem[aria-current=true]{background:var(--tint);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--call) 22%,transparent)}
+.qitem .qrev{align-self:center;font-size:11.5px;color:var(--text-2);background:var(--hover);border-radius:6px;padding:1px 6px}
+.qlist{padding:6px 0 12px}
+.whybox{border-left:0;background:var(--surface);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);position:relative}
+.whybox::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--call)}
+.cv>header{border-bottom:0;padding-top:10px}
+.cv-body{padding:4px 16px 18px}
+.cv-past{border-bottom:0;padding-bottom:4px}
+.cv-you{font-size:13.5px}
+.cv-them span{border-radius:14px 14px 4px 14px;padding:7px 13px}
+.cv-now{margin-top:6px;background:var(--tint);border:1px solid color-mix(in srgb,var(--call) 18%,transparent);border-radius:16px;padding:16px}
+.cv-now>.lbl:first-child{color:var(--call);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+.cv-say{font-size:19px;line-height:1.5;letter-spacing:-.012em}
+@media(min-width:768px){.cv-say{font-size:20.5px}}
+.cv-tip{margin-top:10px;display:flex;gap:7px;align-items:flex-start;font-size:13px;line-height:1.45;color:var(--text-2)}
+.cv-tip svg{flex-shrink:0;margin-top:2px;color:var(--call)}
+.cv-reply{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 36px 11px 14px;box-shadow:0 1px 2px rgba(16,16,14,.04)}
+.cv-reply::after{content:"→";position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);transition:transform .12s ease,color .12s ease}
+.cv-reply:hover{border-color:var(--call);background:var(--surface)}
+.cv-reply:hover::after{color:var(--call);transform:translate(3px,-50%)}
+.cv-end{background:var(--surface);border-radius:14px}
+.obtn{border-radius:14px;background:var(--surface);box-shadow:0 1px 2px rgba(16,16,14,.04)}
+.kpi .v{font-weight:650;letter-spacing:-.04em}
+.ftrack{border:0;border-radius:6px;overflow:hidden;background:var(--hover)}
+.ftrack span{border-radius:6px}
+.bars{gap:6px;border-bottom:0;height:150px}
+.bars span{background:color-mix(in srgb,var(--call) 70%,var(--surface));border-radius:6px}
+.bars button:last-child span{background:var(--call)}
+.col h3{height:auto;padding-bottom:10px;border-bottom:2px solid var(--line);flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:3px}
+.col h3 span{white-space:nowrap}
+.grid th{background:transparent}
+.grid tbody tr:hover td{background:var(--tint)}
+.menu{border-radius:14px}.menu button{border-radius:8px}
+.toast{border-radius:12px}
+.btn{border-radius:10px}
+.btn.go{box-shadow:0 1px 0 rgba(255,255,255,.15) inset,0 6px 16px -8px color-mix(in srgb,var(--call) 80%,transparent)}
+.dial a.go{font-size:16.5px}
+.nav a[aria-current=page]{background:var(--tint);box-shadow:none;color:var(--text);font-weight:600}
+@media(max-width:899px){.grid td:first-child{max-width:190px!important}.grid td,.grid th{padding-left:6px;padding-right:6px}}
 </style>
 </head>
 <body>
@@ -409,45 +463,58 @@ const PROBLEM={
   "Vidinė sistema / CRM":"užsakymus tvarkot rankom",
 };
 const PITCH={
-  "Svetainė":"Žiūrėjau Google „{cat} {city}“, jūsų ten nėra, rodo tik kitus. Galim padaryti paprastą svetainę: kainos, nuotraukos, telefonas. Nesat galvoję?",
-  "Svetainės atnaujinimas":"Žiūrėjau jūsų svetainę telefone, sunkiai ten kas randasi. Galim ją atnaujinti, kad normaliai veiktų. Nesat galvoję?",
-  "Rezervacijų sistema":"Dabar pas jus užsirašyti galima tik paskambinus, tiesa? Galim padaryti, kad žmonės užsirašytų patys internetu. Jums mažiau skambučių. Būtų aktualu?",
-  "El. parduotuvė":"Matau, kad prekiaujat, bet internetu nupirkti nieko negalima. Galim padaryti paprastą parduotuvę. Nesat galvoję?",
-  "Vidinė sistema / CRM":"Kaip dabar užsakymus susirašot, Excel, sąsiuviny? Darom paprastas sistemas, kad viskas būtų vienoj vietoj. Kaip pas jus?",
+  "Svetainė":"Trumpai, neužlaikysiu. Ieškojau Google „{cat} {city}“: rodo jūsų konkurentus, o jūsų nėra. Tai reiškia, kad dalis žmonių, kurie jau nori pirkti, skambina ne jums. Mes darom paprastas svetaines, kad jus rastų. O kaip dabar pas jus klientai ateina?",
+  "Svetainės atnaujinimas":"Trumpai, neužlaikysiu. Atsidariau jūsų svetainę telefone ir sunkiai ten ką nors radau. O dauguma žmonių dabar žiūri būtent iš telefono, ir jei nesigaudo, tiesiog išeina pas kitus. Galim ją atnaujinti, kad normaliai veiktų. Iš kur dabar daugiausia klientų ateina?",
+  "Rezervacijų sistema":"Trumpai, neužlaikysiu. Dabar pas jus užsirašyti galima tik paskambinus, tiesa? O žmonės dažnai nori užsirašyti vakare, kai jūs nedirbat, ir tada užsirašo pas tą, pas kurį galima internetu. Galim padaryti, kad užsirašytų patys ir gautų priminimą. Kaip dabar tvarkotės su registracija?",
+  "El. parduotuvė":"Trumpai, neužlaikysiu. Matau, kad prekiaujat, bet internetu nupirkti nieko negalima. O žmonės vis daugiau perka vakare iš telefono, ir tie pinigai dabar nueina kitiems. Galim padaryti paprastą parduotuvę. Kaip dabar pas jus užsako?",
+  "Vidinė sistema / CRM":"Trumpai, neužlaikysiu. Kaip dabar susirašot užsakymus ir klientus: Excel, sąsiuvinis? Klausiu, nes tokiose įmonėse dažnai kas nors pasimeta, ir tai kainuoja pinigus. Darom paprastas sistemas, kad viskas būtų vienoj vietoj. Kaip pas jus?",
 };
+/* say = what you say, tip = how to say it, replies = what they answer -> next step */
 const FLOW={
-  start:{say:"Laba diena, čia {me}. Kalbu su {name} vadovu?",
+  start:{say:"Laba diena, čia {me}. Kalbu su {name} vadovu?",tip:"Kalbėk ramiai ir su šypsena. Pirmos sekundės lemia viską.",
     replies:[["Taip, klausau","pitch"],["Jo dabar nėra","gate"],["O kas skambina?","who"],["Neturiu dabar laiko","busy"]]},
-  gate:{say:"Aišku. O kada jį geriau pagauti?",
+  gate:{say:"Aišku. O kada jį geriau pagauti? Ir kuo jis vardu?",tip:"Sekretorė nėra kliūtis. Būk mandagus, ji tau padės.",
     replies:[["Pasakė, kada skambinti","end_callback"],["Davė jo numerį","end_number"],["Nesako","gate2"]]},
-  gate2:{say:"Gerai. Tai gal perduokit, kad skambino {me} dėl svetainės.",
+  gate2:{say:"Gerai. Tai gal perduokit, kad skambino {me}: pastebėjau, kad {problem}, ir turiu, kaip tai pataisyti. Paliksiu savo numerį.",
     replies:[["Gerai, perduosiu","end_callback"],["Nereikia","no"]]},
-  who:{say:"Aš {me}, darau svetaines. Pastebėjau, kad {problem}, tai ir paskambinau. Turit minutę?",
-    replies:[["Na, sakykit","pitch"],["Neturiu laiko","busy"],["Neįdomu","no"]]},
-  busy:{say:"Supratau, netrukdysiu. Kada geriau paskambinti?",
+  who:{say:"Atsiprašau, nepasakiau: aš {me}, darau svetaines mažoms įmonėms. Paskambinau, nes pastebėjau, kad {problem}, ir manau, kad dėl to netenkat klientų. Minutę turit?",
+    replies:[["Na, sakykit","pitch"],["Neturiu laiko","busy"],["Neįdomu","nosoft"]]},
+  busy:{say:"Supratau, tik viena mintis: {problem}, ir dėl to dalis klientų skambina kitiems. Kada galiu perskambinti dviem minutėm, vakare ar rytoj ryte?",tip:"Duok du variantus, ne „kada nors“.",
     replies:[["Pasakė, kada","end_callback"],["Ai, sakykit dabar","pitch"],["Neskambinkit daugiau","no"]]},
-  pitch:{say:"{pitch}",
-    replies:[["O, įdomu","interest"],["O kiek kainuos?","price"],["Mums Facebook užtenka","fb"],["Jau turim svetainę","have"],["Brangu, pinigų nėra","money"],["Atsiųskit ką nors paštu","offer"],["Ne, nereikia","no"]]},
-  fb:{say:"Jo, Facebook gerai. Bet kai žmogus Google ieško „{cat} {city}“, jūsų neranda ir skambina kitiems. Svetainė atvestų ir tuos. Iš kur dabar daugiausia klientų?",
-    replies:[["Per Facebook, rekomendacijas","fb2"],["Nežinau","fb2"],["Vis tiek nereikia","no"]]},
-  fb2:{say:"Tai gerai, jus žino. Svetainė pagautų tuos, kurie Facebook nesėdi. Galiu per 15 minučių parodyti, kaip atrodytų. Kada patogu?",
-    replies:[["Sutarėm laiką","end_meeting"],["Atsiųskit pavyzdį","offer"],["Ne, ačiū","no"]]},
-  have:{say:"A, gerai. O klientų iš jos ateina? Jei norit, nemokamai pažiūrėsiu, ką verta pataisyti.",
-    replies:[["Gerai, pažiūrėkit","offer"],["Ateina, viskas gerai","no"]]},
-  price:{say:"Priklauso, ko reikia. Paprasta nuo kelių šimtų eurų. Tiksliai pasakysiu, kai pasikalbam. Gal susitinkam 15 minučių?",
-    replies:[["Sutarėm laiką","end_meeting"],["Brangoka","money"],["Atsiųskit kainą","offer"]]},
-  money:{say:"Suprantu. Bet jei svetainė atveda bent porą klientų per mėnesį, ji greit atsiperka. Galim pradėti nuo paprasčiausios.",
-    replies:[["Gerai, pažiūrėkim","interest"],["Pagalvosiu","think"],["Vis tiek ne","no"]]},
-  interest:{say:"Tai gal susitinkam ar susiskambinam trumpai? Parodysiu pavyzdžių ir pasakysiu kainą. Kada jums tiktų?",
-    replies:[["Sutarėm laiką","end_meeting"],["Geriau atsiųskit","offer"],["Pagalvosiu","think"]]},
-  offer:{say:"Gerai, atsiųsiu. Ko labiausiai reikėtų? Ir koks jūsų paštas?",
-    replies:[["Pasakė, ko reikia, ir paštą","end_offer"],["„Tiesiog siųskit“","end_later"]]},
-  think:{say:"Aišku, neskubinu. Paskambinsiu po kelių dienų. Kada geriau?",
+  pitch:{say:"{pitch}",tip:"Paklausęs tylėk ir lauk. Tegul kalba jis: kuo daugiau papasakos, tuo lengviau parduoti.",
+    replies:[["Per Facebook, pažįstamus","fb"],["O, įdomu","close"],["O kiek kainuos?","price"],["Jau turim svetainę","have"],["Klientų ir taip užtenka","enough"],["Brangu, pinigų nėra","money"],["Atsiųskit ką nors paštu","email"],["Ne, nereikia","nosoft"]]},
+  fb:{say:"Facebook gerai, jo nemeskit. Bet ten jus randa tie, kurie jau žino. Nauji žmonės ieško Google „{cat} {city}“ ir jūsų neranda. Svetainė atvestų būtent tuos, kurių dabar netenkat. Logiška, ne?",tip:"Nesakyk, kad Facebook blogai. Sakyk, kad svetainė prideda.",
+    replies:[["Na, gal ir taip","close"],["Mums Facebook užtenka","fb2"],["O kiek kainuos?","price"]]},
+  fb2:{say:"Suprantu. Tik pagalvokit: Facebook gali bet kada pakeisti taisykles ar užblokuoti puslapį, o svetainė yra jūsų. Ir Google ją rodo metų metus. Galiu per 15 minučių parodyti, kaip atrodytų, nieko neįsipareigojant. Kada patogiau, rytoj ar poryt?",
+    replies:[["Sutarėm laiką","end_meeting"],["Atsiųskit pavyzdį","email"],["Ne, ačiū","no"]]},
+  have:{say:"Gerai. O ar ji atneša klientų? Daug svetainių yra, bet telefone sunkiai veikia arba Google jų nerodo. Galiu nemokamai peržiūrėti ir pasakyti, ką verta pataisyti. Niekuo neįsipareigojat.",tip:"Klausk apie rezultatą, ne apie svetainę.",
+    replies:[["Gerai, pažiūrėkit","email"],["Nežinau, ar atneša","close"],["Atneša, viskas gerai","no"]]},
+  enough:{say:"Gerai girdėti, kad darbo yra. Bet kai klientų daugiau, galit rinktis geresnius užsakymus ir kelti kainą. O kai sezonas atslūgsta, telefonas vis tiek skamba. Gal verta bent pažiūrėti, kaip tai atrodytų?",
+    replies:[["Na, galima pažiūrėti","close"],["Pagalvosiu","think"],["Ne, nereikia","no"]]},
+  price:{say:"Paprasta svetainė nuo kelių šimtų eurų, ir viskas įskaičiuota. Bet tiksliai pasakysiu, kai suprasiu, ko jums reikia, kad nemokėtumėt už tai, ko nereikia. Susiskambinam 15 minučių, rytoj ar poryt?",tip:"Kainą sakyk ramiai ir iškart grįžk prie susitikimo.",
+    replies:[["Sutarėm laiką","end_meeting"],["Brangu","money"],["Atsiųskit kainą","email"]]},
+  money:{say:"Suprantu, kiekvienas euras svarbus. Tai pažiūrėkim kitaip: kiek uždirbat iš vieno kliento? Jei svetainė atveda bent du per mėnesį, ji atsiperka per kelis mėnesius, o dirba metų metus. Ir galim pradėti nuo paprasčiausios.",tip:"Nesiginčyk. Sutik, tada parodyk, kad tai uždarbis, ne išlaida.",
+    replies:[["Gerai, pažiūrėkim","close"],["Pagalvosiu","think"],["Vis tiek ne","no"]]},
+  nosoft:{say:"Supratau, nenoriu įkyrėti. Tik paklausiu, kad žinočiau: dėl kainos, dėl laiko ar tiesiog nematot naudos?",tip:"Klausk ramiai, be spaudimo. Jei ir vėl „ne“, paleisk.",
+    replies:[["Dėl kainos","money"],["Neturim laiko tuo užsiimti","notime"],["Nematau naudos","value"],["Tiesiog ne","no"]]},
+  notime:{say:"Būtent todėl viską darom patys: tekstus, nuotraukas, viską sutvarkom. Jums reikės tik vieno 20 minučių pokalbio ir pasakyti, ar patinka. Jokio vargo.",
+    replies:[["Tai gal ir galima","close"],["Pagalvosiu","think"],["Vis tiek ne","no"]]},
+  value:{say:"Paprastai: jei per mėnesį svetainė atveda bent du naujus klientus, kiek tai jums pinigų? Dažniausiai vien to užtenka, kad atsipirktų per kelis mėnesius. Ir Google rodo ją kasdien, net kai jūs ilsitės.",
+    replies:[["Na, gal ir taip","close"],["Vis tiek ne","no"]]},
+  close:{say:"Tai darom taip: susiskambinam ar susitinkam 15 minučių, parodysiu, kaip galėtų atrodyti jūsų svetainė, ir pasakysiu tikslią kainą. Jei nepatiks, nieko nemokat. Kada jums geriau, rytoj ar poryt?",tip:"Siūlyk du laikus. Nepaklausk „ar norit“, klausk „kada“.",
+    replies:[["Sutarėm laiką","end_meeting"],["Geriau atsiųskit","email"],["Pagalvosiu","think"]]},
+  email:{say:"Būtinai atsiųsiu. Tik kad nesiųsčiau bendro teksto, kurio niekas neskaito: ko jums labiausiai reikėtų? Ir kur nusiųsti?",tip:"„Atsiųskit paštu“ dažnai reiškia mandagų „ne“. Gauk konkretų klausimą ir laiką perskambinti.",
+    replies:[["Pasakė, ko reikia, ir paštą","email2"],["„Tiesiog siųskit“","email2"]]},
+  email2:{say:"Gerai. Atsiųsiu šiandien, o poryt paskambinsiu, kai pažiūrėsit. Užtruksim penkias minutes, tinka?",
+    replies:[["Tinka","end_offer"],["Neskambinkit, parašysiu pats","end_later"]]},
+  think:{say:"Žinoma. O dėl ko labiausiai abejojat: dėl kainos ar ar apskritai reikia? Klausiu, kad kitą kartą neskambinčiau tuščiai.",tip:"„Pagalvosiu“ beveik visada slepia kitą priežastį. Išsiaiškink kokią.",
+    replies:[["Dėl kainos","money"],["Ar apskritai reikia","value"],["Tiesiog pagalvosiu","think2"]]},
+  think2:{say:"Gerai, neskubinu. Paskambinsiu po kelių dienų. Kokia diena jums geriau?",
     replies:[["Pasakė, kada","end_callback"],["Neskambinkit","no"]]},
-  no:{say:"Supratau, ačiū. Jei ką, numerį turit. Geros dienos!",end:"declined"},
-  end_meeting:{say:"Tai sutarėm. Iki, geros dienos!",end:"meeting"},
-  end_offer:{say:"Ačiū! Šiandien atsiųsiu, po poros dienų paskambinsiu.",end:"offer"},
-  end_later:{say:"Gerai, atsiųsiu ir po kelių dienų paskambinsiu. Geros dienos!",end:"callback"},
+  no:{say:"Supratau, ačiū, kad išklausėt. Jei kada prireiks, mano numerį turit. Geros dienos!",end:"declined"},
+  end_meeting:{say:"Tai sutarėm. Atsiųsiu priminimą, iki pasimatymo. Geros dienos!",end:"meeting"},
+  end_offer:{say:"Ačiū! Šiandien atsiųsiu, poryt paskambinsiu. Geros dienos!",end:"offer"},
+  end_later:{say:"Gerai, atsiųsiu. Jei kils klausimų, skambinkit. Geros dienos!",end:"callback"},
   end_callback:{say:"Ačiū, tada ir paskambinsiu. Geros dienos!",end:"callback"},
   end_number:{say:"Ačiū, paskambinsiu. Geros dienos!",end:"callback"},
 };
@@ -760,7 +827,7 @@ function convoHtml(l){
       ${steps}
       <div class="cv-now in" id="cv-step-${c.path.length}">
         <span class="lbl">Tu sakai</span>
-        <p class="cv-say">${fillLine(cur.say,l)}</p>
+        <p class="cv-say">${fillLine(cur.say,l)}</p>${cur.tip?`<p class="cv-tip">${icon("spark",14)}<span>${esc(cur.tip)}</span></p>`:""}
         ${end?`<div class="cv-end" style="--tone:${end.tone}"><div><b>${end.label}</b><small>${end.hint}</small></div><button class="btn go" data-act="cv-finish" data-end="${cur.end}">Pažymėti ${icon("arrow",15)}</button></div>`
         :`<span class="lbl" style="margin-top:14px">Ką atsakė?</span><div class="cv-replies">${cur.replies.map(([t,n])=>`<button class="cv-reply" data-act="cv-pick" data-next="${n}" data-label="${esc(t)}">${esc(t)}</button>`).join("")}</div>`}
       </div>
@@ -778,9 +845,9 @@ function viewCall(){
       <div class="qtabs">${[["queue","Skambinti"],["waiting","Laukia"],["won","Nori"]].map(([id,t])=>`<button data-act="tab" data-v="${id}" aria-pressed="${S.tab===id}">${t}<span class="n">${q[id].length}</span></button>`).join("")}</div></div>
     <ul class="qlist thin">${q[S.tab].length?"":`<li class="muted" style="padding:28px 14px;text-align:center;font-size:13px">Tuščia</li>`}
       ${q[S.tab].map(p=>`<li id="q-${esc(p.l.id)}"><button class="qitem" data-act="pick" data-id="${esc(p.l.id)}" aria-current="${cur&&p.l.id===cur.l.id}">
-        <span class="dot" style="background:${p.tone}"></span><b class="trunc">${esc(p.l.name)}</b>
-        <small class="trunc">${esc([p.l.city,p.l.category,revShort(p.l)].filter(Boolean).join(" · ")||"—")}</small>
-        <small class="trunc" style="color:${p.tone}">${esc(p.label)}</small></button></li>`).join("")}</ul>`;
+        <span class="dot" style="background:${p.tone}"></span><b class="trunc">${esc(spokenName(p.l.name))}</b>${revShort(p.l)?`<span class="qrev mono">${esc(revShort(p.l))}</span>`:""}
+        <small class="trunc">${esc([spokenCity(p.l.city)||p.l.city,(p.l.category||"").split(",")[0]].filter(Boolean).join(" · ")||"—")}</small>
+        ${p.l.status==="new"&&!p.l.attempts?"":`<small class="trunc" style="color:${p.tone}">${esc(p.label)}</small>`}</button></li>`).join("")}</ul>`;
   let center;
   if(!S.loaded&&S.conn!=="none")center=`<div class="muted" style="padding:32px;font-size:13px">Kraunama…</div>`;
   else if(!cur)center=`<div class="empty"><div><h2>Eilė tuščia</h2><p class="muted" style="margin:6px auto 0;max-width:360px;font-size:14px">${leads.length?"Visiems paskambinta. Neatsiliepę ir galvojantys grįš patys.":"Dar nėra kontaktų."}</p><a href="#kontaktai" data-act="find-open" class="btn ink" style="margin-top:18px">${icon("spark",15)} Rasti įmonių</a></div></div>`;
@@ -793,7 +860,7 @@ function viewCall(){
         ${pos>=0?`<span class="mono">${pos+1}/${q.queue.length}</span>`:""}
         ${l.assignee?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(firstName(l.assignee))}</span>`:""}
         <button class="push t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
-      <h1 class="fname">${esc(l.name)}</h1>${meta?`<p class="fmeta">${esc(meta)}</p>`:""}
+      <h1 class="fname">${esc(spokenName(l.name))}</h1>${meta||spokenName(l.name)!==l.name?`<p class="fmeta">${esc([spokenName(l.name)!==l.name?l.name:"",meta].filter(Boolean).join(" · "))}</p>`:""}
       ${S.editing?editForm(l):`
       <div class="dial"><div class="nr"><span class="lbl">Telefonas</span><span class="num">${esc(l.phone||"—")}</span></div>
         ${l.phone?`<button class="copy" data-act="copy" data-v="${esc(l.phone)}" title="Kopijuoti numerį">${icon("copy",16)}<span>Kopijuoti</span></button><a class="go" data-act="dial" data-id="${esc(l.id)}" data-v="${esc(l.phone)}" href="${esc(tel(l.phone))}">${icon("phone",18)} Skambinti</a>`:""}</div>
@@ -876,7 +943,7 @@ function viewDeals(){
     <div class="board">${STAGES.map(s=>{const items=shown(s.id);return`<section class="col">
       <h3><span style="display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;color:var(--text);font-weight:600">${ddot(s.id)}${s.label}</span><span>${items.length} · ${eur(items.reduce((a,d)=>a+num(d.value),0))}</span></h3>
       ${items.length?items.map(d=>`<button id="dc-${esc(d.id)}" class="dcard" data-act="deal-open" data-id="${esc(d.id)}">
-        <div class="top"><b class="trunc">${esc(d.leadName||"—")}</b><span class="mono">${eur(d.value)}</span></div>
+        <div class="top"><b class="trunc">${esc(d.leadName?spokenName(d.leadName):"—")}</b><span class="mono">${eur(d.value)}</span></div>
         <div class="bot"><span class="trunc">${esc(d.title||"")}</span><span style="display:inline-flex;align-items:center;gap:6px;flex-shrink:0">${avatar(d.owner,16)}${when(d.updatedAt)}</span></div>
       </button>`).join(""):`<div class="none">—</div>`}
     </section>`}).join("")}</div>
@@ -932,7 +999,7 @@ function viewContacts(){
     ${S.loaded&&!vis.length?`<div class="empty" style="min-height:0;padding:64px 0"><h2>${leads.length?"Nieko nerasta":"Sąrašas tuščias"}</h2></div>`:`
     <div class="tablewrap"><table class="grid"><thead><tr><th>Įmonė</th><th>Telefonas</th><th class="hide-s r">Pajamos</th><th class="hide-m">Siūlyti</th><th class="hide-s">Atsakingas</th><th class="hide-m">Paskutinis</th><th>Statusas</th></tr></thead><tbody>
     ${vis.map(l=>`<tr id="r-${esc(l.id)}" data-act="open" data-id="${esc(l.id)}">
-      <td style="max-width:320px"><div class="trunc" style="font-weight:500">${esc(l.name)}</div><div class="trunc muted" style="font-size:12.5px">${esc([l.category,l.city].filter(Boolean).join(" · ")||"—")}</div></td>
+      <td style="max-width:320px"><div class="trunc" style="font-weight:500" title="${esc(l.name)}">${esc(spokenName(l.name))}</div><div class="trunc muted" style="font-size:12.5px">${esc([l.category,l.city].filter(Boolean).join(" · ")||"—")}</div></td>
       <td class="mono" style="white-space:nowrap">${l.phone?`<a href="${esc(tel(l.phone))}" data-stop>${esc(l.phone)}</a>`:`<span class="muted">—</span>`}</td>
       <td class="hide-s r mono" style="white-space:nowrap">${revShort(l)||`<span class="muted">—</span>`}</td>
       <td class="hide-m t2" style="white-space:nowrap">${esc(l.need||"")}</td>
