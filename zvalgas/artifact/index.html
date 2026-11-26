@@ -59,6 +59,7 @@ button:active:not(:disabled),a.go:active,.btn:active,.chip:active,.nav a:active,
   .grid td{padding:13px 10px}
   .skip button{min-height:44px;padding:0 6px}
   .tabs a{padding:10px 0 9px}
+  .cv-me input{height:40px;width:104px;font-size:16px}
 }
 @keyframes in{from{opacity:0}to{opacity:1}}
 .in{animation:in .18s ease-out both}
@@ -189,9 +190,12 @@ textarea.inp{height:auto;padding:9px 10px;line-height:1.5;resize:vertical}
 .whybox{margin-top:20px;border-left:3px solid var(--call);padding:2px 0 2px 14px}
 .whybox p{margin-top:4px;font-size:15px;line-height:1.55;color:var(--text)}
 .cv{margin-top:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:0 1px 2px rgba(16,16,14,.04);overflow:hidden}
-.cv>header{display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 10px 0 16px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
+.cv>header{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;align-items:center;min-height:48px;padding:6px 10px 6px 16px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
 .mini-btn{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 10px;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--text-2)}
 .mini-btn:hover{background:var(--hover);color:var(--text)}
+.cv-me{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.cv-me input{width:92px;height:32px;padding:0 9px;border:1px solid var(--line);border-radius:7px;background:var(--sunk);font:inherit;font-size:13px;color:var(--text)}
+.cv-me input:focus{outline:none;border-color:var(--text);background:var(--surface)}
 .cv-body{padding:16px;display:flex;flex-direction:column;gap:12px}
 .cv-past{display:flex;flex-direction:column;gap:6px;padding-bottom:12px;border-bottom:1px dashed var(--line)}
 .cv-you{font-size:13.5px;line-height:1.5;color:var(--muted)}
@@ -405,47 +409,47 @@ const PROBLEM={
   "Vidinė sistema / CRM":"užklausas tvarkote rankomis",
 };
 const PITCH={
-  "Svetainė":"Ieškojau Google „{cat} {city}“ ir jūsų neradau, rodo tik konkurentus. Padarom paprastą svetainę su kainomis, nuotraukomis ir telefonu, per dvi savaites. Esat apie tai galvoję?",
-  "Svetainės atnaujinimas":"Pažiūrėjau jūsų svetainę. Ji pasenusi, telefone sunkiai skaitosi, tai dalis žmonių tiesiog išeina. Atnaujintume per kelias savaites. Esat apie tai galvoję?",
-  "Rezervacijų sistema":"Dabar užsirašyti pas jus galima tik paskambinus, tiesa? Galim įdėti registraciją internetu: klientai užsirašo patys, net naktį, ir gauna priminimą. Jums mažiau skambučių. Įdomu būtų?",
-  "El. parduotuvė":"Matau, kad prekiaujat, bet internetu užsisakyti negalima. Parduotuvė internete pardavinėtų ir tada, kai jūs nedirbat. Svarstėt kada nors?",
-  "Vidinė sistema / CRM":"Kaip dabar sekat užklausas ir klientus, Excel ar sąsiuvinyje? Darom paprastas sistemas, kur viskas vienoj vietoj ir niekas nepasimeta. Kaip pas jus dabar?",
+  "Svetainė":"Trumpai: ieškojau Google „{cat} {city}“ ir jūsų neradau, meta tik kitus. Tai skambinu pasiūlyti paprastą svetainę: kainos, nuotraukos, telefonas. Per kokias dvi savaites padarom. Nesat apie tai galvoję?",
+  "Svetainės atnaujinimas":"Trumpai: užėjau į jūsų svetainę iš telefono ir, atvirai, sunkiai ten ką nors randi. Dalis žmonių tiesiog išeina. Galėtume ją atnaujinti, kad normaliai veiktų ir telefone. Nesat galvoję?",
+  "Rezervacijų sistema":"Trumpai: dabar pas jus užsirašyti galima tik paskambinus, tiesa? Galim padaryti, kad žmonės užsirašytų patys internetu, net vakare, ir gautų priminimą. Jums mažiau skambučių darbo metu. Būtų aktualu?",
+  "El. parduotuvė":"Trumpai: matau, kad prekiaujat, bet internetu užsisakyti nėra kaip. Galim padaryti paprastą parduotuvę, kad pirktų ir tada, kai jūs nedirbat. Nesat svarstę?",
+  "Vidinė sistema / CRM":"Trumpai: kaip dabar užsakymus ir klientus susirašot, Excel, sąsiuviny? Darom paprastas sistemas, kur viskas vienoj vietoj ir niekas nepasimeta. Kaip pas jus tas dabar vyksta?",
 };
 const FLOW={
-  start:{say:"Laba diena, čia {me}. Ar kalbu su {name} savininku ar vadovu?",
-    replies:[["Taip, aš","pitch"],["Jo nėra","gate"],["Kas jūs? Ko norit?","who"],["Neturiu laiko","busy"]]},
-  gate:{say:"Supratau. O kada jį geriausia pagauti? Ir kuo jis vardu?",
-    replies:[["Pasakė, kada","end_callback"],["Davė kitą numerį","end_number"],["Nesako","gate2"]]},
-  gate2:{say:"Nieko tokio. Gal galiu palikti savo numerį? Pasakykit, kad skambino {me} dėl svetainės.",
-    replies:[["Gerai, perduos","end_callback"],["Nereikia","no"]]},
-  who:{say:"Darau svetaines mažoms įmonėms. Skambinu, nes pastebėjau, kad {problem}. Turit minutę?",
-    replies:[["Gerai, sakykit","pitch"],["Neturiu laiko","busy"],["Neįdomu","no"]]},
-  busy:{say:"Suprantu, nelaikysiu. Kada geriau paskambinti, vakare ar rytoj?",
-    replies:[["Pasakė, kada","end_callback"],["Sakykit dabar","pitch"],["Neskambinkit","no"]]},
+  start:{say:"Laba diena, čia {me}. Gal kalbu su {name} vadovu?",
+    replies:[["Taip, klausau","pitch"],["Jo dabar nėra","gate"],["O kas skambina?","who"],["Neturiu dabar laiko","busy"]]},
+  gate:{say:"Aha, supratau. O kada jį geriau pagauti? Ir kaip jį vadinti?",
+    replies:[["Pasakė, kada skambinti","end_callback"],["Davė jo numerį","end_number"],["Nesako","gate2"]]},
+  gate2:{say:"Nieko tokio. Gal galit perduoti, kad skambino {me} dėl svetainės? Paliksiu savo numerį.",
+    replies:[["Gerai, perduosiu","end_callback"],["Nereikia","no"]]},
+  who:{say:"Atsiprašau, nepasakiau: aš {me}, darau svetaines mažoms įmonėms. Skambinu, nes pastebėjau, kad {problem}. Turit minutę?",
+    replies:[["Na, sakykit","pitch"],["Neturiu laiko","busy"],["Neįdomu","no"]]},
+  busy:{say:"Aišku, netrukdysiu. Kada geriau paskambinti, vakare ar rytoj?",
+    replies:[["Pasakė, kada","end_callback"],["Ai, sakykit dabar","pitch"],["Neskambinkit daugiau","no"]]},
   pitch:{say:"{pitch}",
-    replies:[["Įdomu, papasakokit","interest"],["Kiek kainuoja?","price"],["Turim Facebook, užtenka","fb"],["Jau turim svetainę","have"],["Brangu, nėra pinigų","money"],["Siųskit pasiūlymą","offer"],["Nereikia","no"]]},
-  fb:{say:"Facebook gerai, bet Google jo beveik nerodo. Kai kas nors ieško „{cat} {city}“, jūsų ten nėra. Facebook liktų, svetainė tiesiog atvestų dar ir tuos žmones. Iš kur dabar daugiausia ateina klientai?",
-    replies:[["Iš Facebook, rekomendacijų","fb2"],["Nežino","fb2"],["Vis tiek nereikia","no"]]},
-  fb2:{say:"Tai jau turit gerą vardą. Svetainė padėtų tiems, kurie ieško Google, o Facebook nenaudoja. Dažnai tai vyresni ir mokūs klientai. Per 15 minučių parodyčiau, kaip atrodytų. Kada patogu?",
-    replies:[["Sutarėm laiką","end_meeting"],["Atsiųskit pavyzdį","offer"],["Ne","no"]]},
-  have:{say:"Gerai. O ar iš jos ateina užklausų? Galiu nemokamai peržiūrėti ir pasakyti, ką verta pataisyti. Jokių įsipareigojimų.",
-    replies:[["Gerai, peržiūrėkit","offer"],["Ateina, viskas gerai","no"]]},
-  price:{say:"Priklauso, ko reikia. Paprasta svetainė nuo kelių šimtų eurų. Tikslią kainą pasakysiu po trumpo pokalbio. Gal susitinkam ar susiskambinam 15 minučių?",
-    replies:[["Sutarėm laiką","end_meeting"],["Brangu","money"],["Atsiųskit kainą","offer"]]},
-  money:{say:"Suprantu. Pagalvokit taip: kiek uždirbat iš vieno naujo kliento? Jei svetainė atveda bent porą per mėnesį, ji greitai atsiperka. Galim pradėti nuo paprasčiausio varianto.",
+    replies:[["O, įdomu","interest"],["O kiek kainuos?","price"],["Mums Facebook užtenka","fb"],["Jau turim svetainę","have"],["Brangu, pinigų nėra","money"],["Atsiųskit ką nors paštu","offer"],["Ne, nereikia","no"]]},
+  fb:{say:"Jo, Facebook gerai, jo nemeskit. Bet kai žmogus Google renka „{cat} {city}“, jūsų ten nėra, ir jis paskambina kitiems. Svetainė tiesiog atvestų dar ir tuos. O iš kur dabar daugiausia klientų ateina?",
+    replies:[["Per Facebook, rekomendacijas","fb2"],["Nežinau","fb2"],["Vis tiek nereikia","no"]]},
+  fb2:{say:"Tai gerai, vadinasi, žmonės jus žino. Svetainė pagautų tuos, kurie Facebook nesėdi, o tokių nemažai. Galiu per 15 minučių parodyti, kaip tai atrodytų. Kada jums patogiau?",
+    replies:[["Sutarėm laiką","end_meeting"],["Atsiųskit pavyzdį","offer"],["Ne, ačiū","no"]]},
+  have:{say:"A, tai gerai. O ar iš jos realiai ateina klientų? Jei norit, nemokamai pažiūrėsiu ir pasakysiu, ką verta pataisyti. Niekuo neįsipareigojat.",
+    replies:[["Gerai, pažiūrėkit","offer"],["Ateina, viskas gerai","no"]]},
+  price:{say:"Priklauso, ko reikia. Paprasta svetainė nuo kelių šimtų eurų. Tikslią sumą pasakysiu, kai pasikalbėsim, ko jums reikia. Gal susitinkam ar susiskambinam kokioms 15 minučių?",
+    replies:[["Sutarėm laiką","end_meeting"],["Brangoka","money"],["Atsiųskit kainą","offer"]]},
+  money:{say:"Suprantu, pinigai visiems svarbu. Bet pagalvokit, kiek uždirbat iš vieno naujo kliento. Jei svetainė atveda bent porą per mėnesį, ji greit atsiperka. Ir galim pradėti nuo paprasčiausio.",
     replies:[["Gerai, pažiūrėkim","interest"],["Pagalvosiu","think"],["Vis tiek ne","no"]]},
-  interest:{say:"Puiku. Geriausia trumpai susitikti ar susiskambinti: parodysiu pavyzdžių ir pasakysiu kainą. Kada jums patogu, šią ar kitą savaitę?",
-    replies:[["Sutarėm laiką","end_meeting"],["Siųskit pasiūlymą","offer"],["Pagalvosiu","think"]]},
-  offer:{say:"Būtinai atsiųsiu. Kad būtų tikslu: ko labiausiai norėtumėt? Ir koks jūsų el. paštas?",
-    replies:[["Pasakė, ko reikia, ir el. paštą","end_offer"],["Tiesiog siųskit","end_later"]]},
-  think:{say:"Žinoma. Paskambinsiu po kelių dienų, kai turėsit laiko pagalvoti. Kada geriausia?",
+  interest:{say:"Tai gal susitinkam trumpai ar susiskambinam? Parodysiu, ką esam darę, ir pasakysiu kainą. Kada jums tiktų, šią ar kitą savaitę?",
+    replies:[["Sutarėm laiką","end_meeting"],["Geriau atsiųskit","offer"],["Pagalvosiu","think"]]},
+  offer:{say:"Gerai, atsiųsiu. Kad nesiųsčiau bet ko: ko jums labiausiai reikėtų? Ir koks jūsų el. paštas?",
+    replies:[["Pasakė, ko reikia, ir el. paštą","end_offer"],["„Tiesiog siųskit“","end_later"]]},
+  think:{say:"Aišku, nėra kur skubėti. Paskambinsiu po kelių dienų. Kada jums geriau?",
     replies:[["Pasakė, kada","end_callback"],["Neskambinkit","no"]]},
-  no:{say:"Supratau, ačiū už laiką. Jei kada prireiks, mano numerį turit. Gražios dienos!",end:"declined"},
-  end_meeting:{say:"Super, tada susitinkam. Atsiųsiu priminimą el. paštu. Gražios dienos!",end:"meeting"},
-  end_offer:{say:"Ačiū! Pasiūlymą atsiųsiu šiandien ir paskambinsiu po poros dienų jį aptarti.",end:"offer"},
-  end_later:{say:"Gerai, atsiųsiu ir paskambinsiu po kelių dienų. Gražios dienos!",end:"callback"},
-  end_callback:{say:"Ačiū, tada paskambinsiu. Gražios dienos!",end:"callback"},
-  end_number:{say:"Ačiū, paskambinsiu juo. Gražios dienos!",end:"callback"},
+  no:{say:"Gerai, supratau. Ačiū, kad išklausėt. Jei kada prireiks, numerį turit. Geros dienos!",end:"declined"},
+  end_meeting:{say:"Tai sutarėm. Dar atsiųsiu priminimą į paštą. Geros dienos!",end:"meeting"},
+  end_offer:{say:"Ačiū! Šiandien atsiųsiu, o po poros dienų paskambinsiu aptarti.",end:"offer"},
+  end_later:{say:"Gerai, atsiųsiu ir po kelių dienų paskambinsiu. Geros dienos!",end:"callback"},
+  end_callback:{say:"Ačiū, tada ir paskambinsiu. Geros dienos!",end:"callback"},
+  end_number:{say:"Ačiū labai, paskambinsiu. Geros dienos!",end:"callback"},
 };
 const ENDS={
   meeting:{label:"Susitikimas sutartas",hint:"Įrašyk sumą, jei kalbėjot apie kainą.",tone:"var(--s-interested)"},
@@ -719,9 +723,14 @@ function convo(l){
   if(!S.cv||S.cv.lead!==l.id)S.cv={lead:l.id,path:["start"],picks:[],noted:false};
   return S.cv;
 }
+function callName(){
+  const m=meId&&team[meId];if(m&&m.callName)return m.callName;
+  try{const v=localStorage.getItem("coldline-name");if(v)return v}catch{}
+  const f=firstName(meId);return f==="Aš"||f==="Komandos"||f==="Niekas"?"":f;
+}
 function fillLine(t,l){
-  const me=firstName(meId),city=(l.city||"").replace(/\s*r\.$/,"");
-  const vars={me:me==="Aš"||me==="Komandos"?"[tavo vardas]":me,name:l.name,cat:(l.category||"").toLowerCase()||"jūsų paslaugos",city:city?city:"",problem:PROBLEM[l.need]||PROBLEM["Svetainė"],pitch:PITCH[l.need]||PITCH["Svetainė"]};
+  const me=callName(),city=(l.city||"").replace(/\s*r\.$/,"");
+  const vars={me:me||"[tavo vardas]",name:l.name,cat:(l.category||"").toLowerCase()||"jūsų paslaugos",city:city?city:"",problem:PROBLEM[l.need]||PROBLEM["Svetainė"],pitch:PITCH[l.need]||PITCH["Svetainė"]};
   let out=t;for(let i=0;i<2;i++)out=out.replace(/\{(\w+)\}/g,(m,k)=>vars[k]??m);
   return esc(out.replace(/\s+“/g,"“").replace(/ {2,}/g," "));
 }
@@ -729,7 +738,7 @@ function convoHtml(l){
   const c=convo(l),cur=FLOW[c.path[c.path.length-1]],end=cur.end?ENDS[cur.end]:null;
   const steps=c.path.slice(0,-1).map((id,i)=>`<div class="cv-past"><p class="cv-you">${fillLine(FLOW[id].say,l)}</p><p class="cv-them"><span>${esc(c.picks[i])}</span></p></div>`).join("");
   return`<section class="cv" id="cv-${esc(l.id)}">
-    <header><span>Pokalbis</span><span style="display:inline-flex;gap:6px">${c.path.length>1?`<button class="mini-btn" data-act="cv-back">${icon("undo",14)} Atgal</button><button class="mini-btn" data-act="cv-reset">Iš naujo</button>`:""}</span></header>
+    <header><span>Pokalbis</span><span style="display:inline-flex;gap:6px;align-items:center"><label class="cv-me" title="Kaip prisistatai skambindamas">Aš <input data-key="callname" value="${esc(callName())}" placeholder="vardas" autocomplete="off" enterkeyhint="done"></label>${c.path.length>1?`<button class="mini-btn" data-act="cv-back">${icon("undo",14)} Atgal</button><button class="mini-btn" data-act="cv-reset">Iš naujo</button>`:""}</span></header>
     <div class="cv-body">
       ${steps}
       <div class="cv-now in" id="cv-step-${c.path.length}">
@@ -1083,6 +1092,7 @@ document.addEventListener("click",async e=>{
     case"distribute":b.disabled=true;await distribute();break;
   }
 });
+let nameT=0;
 document.addEventListener("input",e=>{
   const k=e.target.dataset?.key;if(!k)return;const v=e.target.value;
   if(k==="note")S.note=v;
@@ -1090,6 +1100,8 @@ document.addEventListener("input",e=>{
   else if(k==="custom"){S.custom=v;render()}
   else if(k==="q"){S.q=v;render()}
   else if(k.startsWith("f."))S.form[k.slice(2)]=v;
+  else if(k==="callname"){const n=v.trim().slice(0,40);try{localStorage.setItem("coldline-name",n)}catch{};if(meId&&team[meId])team[meId]={...team[meId],callName:n};
+    render(true);clearTimeout(nameT);if(meId)nameT=setTimeout(()=>saveMember(meId,{callName:n}),700)}
 });
 document.addEventListener("change",e=>{
   const t=e.target,k=t.dataset||{};
