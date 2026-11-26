@@ -186,6 +186,27 @@ textarea.inp{height:auto;padding:9px 10px;line-height:1.5;resize:vertical}
 .brief dt{color:var(--muted);font-size:13px}
 .brief dd{color:var(--text);word-break:break-word}
 .brief .why dd{font-size:15px;line-height:1.55}
+.whybox{margin-top:20px;border-left:3px solid var(--call);padding:2px 0 2px 14px}
+.whybox p{margin-top:4px;font-size:15px;line-height:1.55;color:var(--text)}
+.cv{margin-top:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:0 1px 2px rgba(16,16,14,.04);overflow:hidden}
+.cv>header{display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 10px 0 16px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
+.mini-btn{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 10px;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--text-2)}
+.mini-btn:hover{background:var(--hover);color:var(--text)}
+.cv-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+.cv-past{display:flex;flex-direction:column;gap:6px;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.cv-you{font-size:13.5px;line-height:1.5;color:var(--muted)}
+.cv-them{display:flex;justify-content:flex-end}
+.cv-them span{display:inline-block;max-width:80%;border-radius:12px 12px 4px 12px;background:var(--ink);color:var(--on-ink);padding:6px 12px;font-size:13px;font-weight:500}
+.cv-now .lbl{display:block;margin-bottom:6px}
+.cv-say{font-size:18px;line-height:1.5;letter-spacing:-.005em;color:var(--text);font-weight:500}
+@media(min-width:768px){.cv-say{font-size:19px}}
+.cv-replies{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:560px){.cv-replies{grid-template-columns:1fr 1fr}}
+.cv-reply{min-height:48px;padding:10px 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--sunk);text-align:left;font-size:14.5px;font-weight:500;color:var(--text)}
+.cv-reply:hover{border-color:var(--text);background:var(--surface)}
+.cv-end{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);border-left:4px solid var(--tone);border-radius:10px;padding:12px 14px;background:var(--sunk)}
+.cv-end b{display:block;font-size:15px}
+.cv-end small{display:block;margin-top:2px;font-size:12.5px;color:var(--muted)}
 details.plan{margin-top:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 details.plan summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:0 16px;font-size:14px;font-weight:600}
 details.plan summary::-webkit-details-marker{display:none}
@@ -256,7 +277,9 @@ textarea.note:focus{border-color:var(--text);outline:none;background:var(--surfa
 .grid tbody tr:hover td{background:var(--surface)}
 .grid .r{text-align:right}
 .hide-s{display:none}
+.hide-m{display:none}
 @media(min-width:900px){.hide-s{display:table-cell}}
+@media(min-width:1280px){.hide-m{display:table-cell}}
 .tablewrap{overflow-x:auto}
 .pick{position:relative;display:inline-block}
 .pick>button{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 8px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:12.5px;color:var(--text-2);white-space:nowrap}
@@ -365,25 +388,71 @@ const ICON={
   moon:"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z",
   chev:"m6 9 6 6 6-6",
   shuffle:"M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5",
+  arrow:"M5 12h14m-5-5 5 5-5 5",
+  undo:"M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3",
   search:"M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm9 2-4-4",
   target:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z",
 };
 const NAV=[["","Skambinti","phone"],["pardavimai","Pardavimai","euro"],["kontaktai","Kontaktai","list"],["komanda","Komanda","users"],["apzvalga","Apžvalga","chart"]];
 
-/* Short call plan per need; {name}, {me}, {cat} are filled in. */
-const SCRIPTS={
-  "Svetainė":["Laba diena, čia {me}. Skambinu trumpai dėl {name}. Ieškojau jūsų internete ir neradau svetainės. Žmonės, kurie Google ieško „{cat}“, randa konkurentus. Darome paprastas, greitas svetaines per dvi savaites. Ar galiu atsiųsti pavyzdį el. paštu?"],
-  "Svetainės atnaujinimas":["Laba diena, čia {me}. Peržiūrėjau {name} svetainę ir pastebėjau dalykų, dėl kurių prarandate klientų (žr. „Kodėl“ aukščiau). Galiu nemokamai atsiųsti trumpą apžvalgą, ką taisyti pirmiausia. Kam geriausia ją siųsti?"],
-  "Rezervacijų sistema":["Laba diena, čia {me}. Skambinu dėl {name}. Dabar klientai registruojasi telefonu, taip? Įdiegiame internetinę registraciją: klientai užsiregistruoja patys 24/7, gauna priminimus, o jums mažiau skambučių ir neatvykusių. Ar galiu parodyti, kaip tai atrodytų?"],
-  "El. parduotuvė":["Laba diena, čia {me}. Matau, kad {name} prekiauja, bet internetu užsakyti negalima. El. parduotuvė dirba ir naktį, o mokėjimai ateina iš karto. Ar svarstėte pardavinėti internetu?"],
-  "Vidinė sistema / CRM":["Laba diena, čia {me}. Skambinu dėl {name}. Kaip dabar sekate užklausas ir klientus: Excel, el. paštas? Darome paprastas sistemas, kur viskas vienoje vietoje ir niekas nepasimeta. Ar galiu užduoti porą klausimų apie jūsų procesą?"],
+/* Conversation guide. Each step: what you say, and what they might answer.
+   {me} {name} {cat} {city} {problem} are filled in. Endings map to a call result. */
+const PROBLEM={
+  "Svetainė":"jūsų beveik nėra Google, tik Facebook ar katalogai",
+  "Svetainės atnaujinimas":"jūsų svetainė pasenusi ir telefone sunkiai naudojama",
+  "Rezervacijų sistema":"užsiregistruoti pas jus galima tik paskambinus",
+  "El. parduotuvė":"jūsų prekių negalima užsisakyti internetu",
+  "Vidinė sistema / CRM":"užklausas tvarkote rankomis",
 };
-const OBJECTIONS=[
-  ["„Neturime laiko“","Suprantu. Užtruks dvi minutes, arba atsiųsiu pavyzdį el. paštu ir pažiūrėsite, kai patogu. Koks adresas?"],
-  ["„Per brangu“","Kiek jums atneša vienas naujas klientas? Dažniausiai svetainė atsiperka su keliais klientais. Galiu pasiūlyti paprastesnį variantą."],
-  ["„Jau turime / užtenka Facebook“","Puiku. Ar per jį ateina užklausų iš Google? Galiu nemokamai patikrinti ir pasakyti, ką verta pagerinti."],
-  ["„Atsiųskite pasiūlymą“","Būtinai. Kad pasiūlymas būtų tikslus: ko labiausiai reikia, ir kas priima sprendimą? Susiskambinkime ketvirtadienį jį aptarti?"],
-];
+const PITCH={
+  "Svetainė":"Ieškojau Google „{cat} {city}“ ir jūsų neradau, rodo tik konkurentus. Padarom paprastą svetainę su kainomis, nuotraukomis ir telefonu, per dvi savaites. Esat apie tai galvoję?",
+  "Svetainės atnaujinimas":"Pažiūrėjau jūsų svetainę. Ji pasenusi, telefone sunkiai skaitosi, tai dalis žmonių tiesiog išeina. Atnaujintume per kelias savaites. Esat apie tai galvoję?",
+  "Rezervacijų sistema":"Dabar užsirašyti pas jus galima tik paskambinus, tiesa? Galim įdėti registraciją internetu: klientai užsirašo patys, net naktį, ir gauna priminimą. Jums mažiau skambučių. Įdomu būtų?",
+  "El. parduotuvė":"Matau, kad prekiaujat, bet internetu užsisakyti negalima. Parduotuvė internete pardavinėtų ir tada, kai jūs nedirbat. Svarstėt kada nors?",
+  "Vidinė sistema / CRM":"Kaip dabar sekat užklausas ir klientus, Excel ar sąsiuvinyje? Darom paprastas sistemas, kur viskas vienoj vietoj ir niekas nepasimeta. Kaip pas jus dabar?",
+};
+const FLOW={
+  start:{say:"Laba diena, čia {me}. Ar kalbu su {name} savininku ar vadovu?",
+    replies:[["Taip, aš","pitch"],["Jo nėra","gate"],["Kas jūs? Ko norit?","who"],["Neturiu laiko","busy"]]},
+  gate:{say:"Supratau. O kada jį geriausia pagauti? Ir kuo jis vardu?",
+    replies:[["Pasakė, kada","end_callback"],["Davė kitą numerį","end_number"],["Nesako","gate2"]]},
+  gate2:{say:"Nieko tokio. Gal galiu palikti savo numerį? Pasakykit, kad skambino {me} dėl svetainės.",
+    replies:[["Gerai, perduos","end_callback"],["Nereikia","no"]]},
+  who:{say:"Darau svetaines mažoms įmonėms. Skambinu, nes pastebėjau, kad {problem}. Turit minutę?",
+    replies:[["Gerai, sakykit","pitch"],["Neturiu laiko","busy"],["Neįdomu","no"]]},
+  busy:{say:"Suprantu, nelaikysiu. Kada geriau paskambinti, vakare ar rytoj?",
+    replies:[["Pasakė, kada","end_callback"],["Sakykit dabar","pitch"],["Neskambinkit","no"]]},
+  pitch:{say:"{pitch}",
+    replies:[["Įdomu, papasakokit","interest"],["Kiek kainuoja?","price"],["Turim Facebook, užtenka","fb"],["Jau turim svetainę","have"],["Brangu, nėra pinigų","money"],["Siųskit pasiūlymą","offer"],["Nereikia","no"]]},
+  fb:{say:"Facebook gerai, bet Google jo beveik nerodo. Kai kas nors ieško „{cat} {city}“, jūsų ten nėra. Facebook liktų, svetainė tiesiog atvestų dar ir tuos žmones. Iš kur dabar daugiausia ateina klientai?",
+    replies:[["Iš Facebook, rekomendacijų","fb2"],["Nežino","fb2"],["Vis tiek nereikia","no"]]},
+  fb2:{say:"Tai jau turit gerą vardą. Svetainė padėtų tiems, kurie ieško Google, o Facebook nenaudoja. Dažnai tai vyresni ir mokūs klientai. Per 15 minučių parodyčiau, kaip atrodytų. Kada patogu?",
+    replies:[["Sutarėm laiką","end_meeting"],["Atsiųskit pavyzdį","offer"],["Ne","no"]]},
+  have:{say:"Gerai. O ar iš jos ateina užklausų? Galiu nemokamai peržiūrėti ir pasakyti, ką verta pataisyti. Jokių įsipareigojimų.",
+    replies:[["Gerai, peržiūrėkit","offer"],["Ateina, viskas gerai","no"]]},
+  price:{say:"Priklauso, ko reikia. Paprasta svetainė nuo kelių šimtų eurų. Tikslią kainą pasakysiu po trumpo pokalbio. Gal susitinkam ar susiskambinam 15 minučių?",
+    replies:[["Sutarėm laiką","end_meeting"],["Brangu","money"],["Atsiųskit kainą","offer"]]},
+  money:{say:"Suprantu. Pagalvokit taip: kiek uždirbat iš vieno naujo kliento? Jei svetainė atveda bent porą per mėnesį, ji greitai atsiperka. Galim pradėti nuo paprasčiausio varianto.",
+    replies:[["Gerai, pažiūrėkim","interest"],["Pagalvosiu","think"],["Vis tiek ne","no"]]},
+  interest:{say:"Puiku. Geriausia trumpai susitikti ar susiskambinti: parodysiu pavyzdžių ir pasakysiu kainą. Kada jums patogu, šią ar kitą savaitę?",
+    replies:[["Sutarėm laiką","end_meeting"],["Siųskit pasiūlymą","offer"],["Pagalvosiu","think"]]},
+  offer:{say:"Būtinai atsiųsiu. Kad būtų tikslu: ko labiausiai norėtumėt? Ir koks jūsų el. paštas?",
+    replies:[["Pasakė, ko reikia, ir el. paštą","end_offer"],["Tiesiog siųskit","end_later"]]},
+  think:{say:"Žinoma. Paskambinsiu po kelių dienų, kai turėsit laiko pagalvoti. Kada geriausia?",
+    replies:[["Pasakė, kada","end_callback"],["Neskambinkit","no"]]},
+  no:{say:"Supratau, ačiū už laiką. Jei kada prireiks, mano numerį turit. Gražios dienos!",end:"declined"},
+  end_meeting:{say:"Super, tada susitinkam. Atsiųsiu priminimą el. paštu. Gražios dienos!",end:"meeting"},
+  end_offer:{say:"Ačiū! Pasiūlymą atsiųsiu šiandien ir paskambinsiu po poros dienų jį aptarti.",end:"offer"},
+  end_later:{say:"Gerai, atsiųsiu ir paskambinsiu po kelių dienų. Gražios dienos!",end:"callback"},
+  end_callback:{say:"Ačiū, tada paskambinsiu. Gražios dienos!",end:"callback"},
+  end_number:{say:"Ačiū, paskambinsiu juo. Gražios dienos!",end:"callback"},
+};
+const ENDS={
+  meeting:{label:"Susitikimas sutartas",hint:"Įrašyk sumą, jei kalbėjot apie kainą.",tone:"var(--s-interested)"},
+  offer:{label:"Siųsti pasiūlymą",hint:"Sandoris bus etape „Pasiūlymas išsiųstas“.",tone:"var(--s-interested)"},
+  callback:{label:"Perskambinti",hint:"Pasirink, kada.",tone:"var(--s-thinking)"},
+  declined:{label:"Nenori",hint:"Kontaktas bus pažymėtas „Nenori“.",tone:"var(--s-declined)"},
+};
 
 /* ===== helpers ===== */
 const $=id=>document.getElementById(id);
@@ -416,6 +485,8 @@ function when(t){
 /* Lithuanian plural: 1 / 2–9 / 0,10–20 */
 const pl=(n,one,few,many)=>{const a=Math.abs(n)%100,b=a%10;return`${n} ${b===1&&a!==11?one:b>=2&&b<=9&&(a<10||a>19)?few:many}`};
 const fmtDur=ms=>{const t=Math.max(0,Math.round(ms/1000));return`${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`};
+const revVal=l=>typeof l.revenueValue==="number"?l.revenueValue:num(String(l.revenue||"").split("€")[0].replace(/[^\d]/g,""))||0;
+const revShort=l=>{const v=revVal(l);return v?eurShort(v):""};
 const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
 let toastT;function toast(t){const el=$("toast");el.innerHTML=`<div class="toast in">${esc(t)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>el.innerHTML="",3400)}
 const LSKEY="coldline.theme";
@@ -510,7 +581,7 @@ async function logCall(l,status,extra={}){
   const note=S.note.trim();
   const dur=S.callFor===l.id&&S.callStart?Math.round((now-S.callStart)/1000):null;S.callStart=null;S.callFor=null;
   leads=leads.map(x=>x.id===l.id?next:x);
-  S.note="";S.askWhen=false;S.dealAsk=false;S.custom="";S.sel=null;history.replaceState(null,"","#");
+  S.note="";S.askWhen=false;S.dealAsk=false;S.dealStage=null;S.custom="";S.sel=null;S.cv=null;history.replaceState(null,"","#");
   render();
   if(await saveLead(next)){
     await addAct({leadId:l.id,kind:"call",status,note,duration:dur});
@@ -556,6 +627,20 @@ async function distribute(){
 }
 
 /* ===== data ===== */
+/* Apyvarta ir darbuotojai iš 1551.lt (2026-11). Įrašoma į DB vieną kartą, jei kontakte jų dar nėra. */
+const SEED={"l01-karlona":["9 790 € (2022 m., 1551.lt)",9790,""],"l04-silkine-banga":["44 453 € (2025 m., 1551.lt)",44453,"iki 10 darbuotojų"],"l05-zara":["25 335 € (2025 m., 1551.lt)",25335,"iki 10 darbuotojų"],"l07-chonas":["787 341 € (2025 m., 1551.lt)",787341,"11–20 darbuotojų"],"l08-kesandra":["250 308 € (2024 m., 1551.lt)",250308,"iki 10 darbuotojų"],"l10-intransport":["443 237 € (2025 m., 1551.lt)",443237,"iki 10 darbuotojų"],"l11-skamerda":["44 868 € (2019 m., 1551.lt)",44868,"iki 10 darbuotojų"],"l12-narbona":["543 316 € (2025 m., 1551.lt)",543316,"iki 10 darbuotojų"],"l14-mom-trans":["299 305 € (2025 m., 1551.lt)",299305,"iki 10 darbuotojų"],"l15-justoma":["153 460 € (2025 m., 1551.lt)",153460,"iki 10 darbuotojų"],"m01-em-statyba":["332 127 € (2025 m., 1551.lt)",332127,"iki 10 darbuotojų"],"m02-gertika":["193 374 € (2024 m., 1551.lt)",193374,"iki 10 darbuotojų"],"m03-santechrad":["6 827 € (2025 m., 1551.lt)",6827,""],"m04-varinukas":["531 313 € (2025 m., 1551.lt)",531313,"iki 10 darbuotojų"],"m05-svega":["325 769 € (2025 m., 1551.lt)",325769,"iki 10 darbuotojų"],"m06-juriveda":["202 500 € (2025 m., 1551.lt)",202500,"iki 10 darbuotojų"],"m07-milandra":["400 063 € (2025 m., 1551.lt)",400063,"11–20 darbuotojų"],"m08-utenos-apdaila":["63 655 € (2025 m., 1551.lt)",63655,""],"m09-elektros-trauka":["828 739 € (2025 m., 1551.lt)",828739,"iki 10 darbuotojų"],"m10-kilovatai":["82 870 € (2025 m., 1551.lt)",82870,"iki 10 darbuotojų"],"m11-ligrita":["153 516 € (2025 m., 1551.lt)",153516,"iki 10 darbuotojų"],"m12-skardos-meistrai":["965 104 € (2025 m., 1551.lt)",965104,"iki 10 darbuotojų"],"m13-saugiklis":["31 989 € (2025 m., 1551.lt)",31989,"iki 10 darbuotojų"],"m14-dilgrenta":["366 167 € (2025 m., 1551.lt)",366167,"iki 10 darbuotojų"],"m15-zaibo-pica":["",0,"iki 10 darbuotojų"],"m16-viip":["43 933 € (2025 m., 1551.lt)",43933,""],"m17-delfai":["247 626 € (2019 m., 1551.lt)",247626,"11–20 darbuotojų"],"m19-maluno-virtuve":["400 134 € (2023 m., 1551.lt)",400134,"iki 10 darbuotojų"],"m21-agvala":["1 490 003 € (2024 m., 1551.lt)",1490003,"31–50 darbuotojų"],"m22-ruta":["",0,"iki 10 darbuotojų"],"m24-gelze":["107 867 € (2025 m., 1551.lt)",107867,"iki 10 darbuotojų"],"m30-pavliukevic":["15 405 € (2025 m., 1551.lt)",15405,"iki 10 darbuotojų"],"m34-audgira":["236 378 € (2025 m., 1551.lt)",236378,"iki 10 darbuotojų"],"m35-gv-auto":["3 109 182 € (2025 m., 1551.lt)",3109182,"21–30 darbuotojų"],"m37-zemaitaicio":["81 539 € (2021 m., 1551.lt)",81539,"iki 10 darbuotojų"],"m38-ago-transport":["21 641 € (2016 m., 1551.lt)",21641,""],"m39-gontera":["663 068 € (2025 m., 1551.lt)",663068,"iki 10 darbuotojų"],"m42-roberto-danius":["",0,"iki 10 darbuotojų"],"m43-feropolis":["1 074 175 € (2025 m., 1551.lt)",1074175,"iki 10 darbuotojų"],"m44-metalana":["298 458 € (2022 m., 1551.lt)",298458,"iki 10 darbuotojų"],"m45-autorestadas":["10 755 € (2025 m., 1551.lt)",10755,""],"m47-mk-cechas":["26 760 € (2024 m., 1551.lt)",26760,"iki 10 darbuotojų"],"m49-arnitana":["30 299 € (2025 m., 1551.lt)",30299,"iki 10 darbuotojų"],"m50-baldu-prizme":["117 014 € (2025 m., 1551.lt)",117014,"iki 10 darbuotojų"]};
+let seeded=false;
+async function backfill(){
+  if(seeded||!db)return;seeded=true;
+  for(const l of leads){
+    const s=SEED[l.id];if(!s)continue;
+    const [rev,val,emp]=s,patch={};
+    if(val&&typeof l.revenueValue!=="number"){patch.revenue=rev;patch.revenueValue=val}
+    if(emp&&!l.employees)patch.employees=emp;
+    if(!Object.keys(patch).length)continue;
+    try{await db.collection("leads").doc(l.id).set({...l,...patch})}catch{}
+  }
+}
 async function connect(){
   const c=window.claude&&typeof window.claude.use==="function"?window.claude:null;
   if(!c){S.conn="none";render();return}
@@ -567,6 +652,7 @@ async function connect(){
   db.collection("leads").onSnapshot(snap=>{
     if(!snap.metadata.fromCache){got=true;clearTimeout(timer);S.conn="ok"}
     leads=snap.docs.map(d=>({...d.data(),id:d.id}));S.loaded=true;render(true);resolveNames();
+    if(!snap.metadata.fromCache)backfill();
   },fail);
   db.collection("activities").orderBy("createdAt","desc").limit(1000).onSnapshot(snap=>{acts=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames()},()=>{});
   db.collection("deals").onSnapshot(snap=>{deals=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames()},()=>{});
@@ -629,13 +715,31 @@ function editForm(l){
     <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px"><button type="button" class="btn" data-act="edit-close">Atšaukti</button><button class="btn ink">Išsaugoti</button></div>
   </form>`;
 }
-function scriptHtml(l){
-  const me=firstName(meId);
-  const fill=s=>esc(s).replace("{name}",`<b>${esc(l.name)}</b>`).replace("{me}",esc(me==="Aš"||me==="Komandos"?"[vardas]":me)).replace("{cat}",esc((l.category||"").toLowerCase()||"jūsų paslaugų"));
-  const s=SCRIPTS[l.need]||SCRIPTS["Svetainė"];
-  return`<details class="plan" data-keep-open><summary>Ką sakyti<span class="muted">${icon("chev",16)}</span></summary>
-    <div class="body"><span class="lbl">Pradžia</span><p class="say">${fill(s[0])}</p>
-    <span class="lbl" style="margin-bottom:8px">Jei sako</span><dl>${OBJECTIONS.map(([q,a])=>`<div><dt>${esc(q)}</dt><dd>${esc(a)}</dd></div>`).join("")}</dl></div></details>`;
+function convo(l){
+  if(!S.cv||S.cv.lead!==l.id)S.cv={lead:l.id,path:["start"],picks:[],noted:false};
+  return S.cv;
+}
+function fillLine(t,l){
+  const me=firstName(meId),city=(l.city||"").replace(/\s*r\.$/,"");
+  const vars={me:me==="Aš"||me==="Komandos"?"[tavo vardas]":me,name:l.name,cat:(l.category||"").toLowerCase()||"jūsų paslaugos",city:city?city:"",problem:PROBLEM[l.need]||PROBLEM["Svetainė"],pitch:PITCH[l.need]||PITCH["Svetainė"]};
+  let out=t;for(let i=0;i<2;i++)out=out.replace(/\{(\w+)\}/g,(m,k)=>vars[k]??m);
+  return esc(out.replace(/\s+“/g,"“").replace(/ {2,}/g," "));
+}
+function convoHtml(l){
+  const c=convo(l),cur=FLOW[c.path[c.path.length-1]],end=cur.end?ENDS[cur.end]:null;
+  const steps=c.path.slice(0,-1).map((id,i)=>`<div class="cv-past"><p class="cv-you">${fillLine(FLOW[id].say,l)}</p><p class="cv-them"><span>${esc(c.picks[i])}</span></p></div>`).join("");
+  return`<section class="cv" id="cv-${esc(l.id)}">
+    <header><span>Pokalbis</span><span style="display:inline-flex;gap:6px">${c.path.length>1?`<button class="mini-btn" data-act="cv-back">${icon("undo",14)} Atgal</button><button class="mini-btn" data-act="cv-reset">Iš naujo</button>`:""}</span></header>
+    <div class="cv-body">
+      ${steps}
+      <div class="cv-now in" id="cv-step-${c.path.length}">
+        <span class="lbl">Tu sakai</span>
+        <p class="cv-say">${fillLine(cur.say,l)}</p>
+        ${end?`<div class="cv-end" style="--tone:${end.tone}"><div><b>${end.label}</b><small>${end.hint}</small></div><button class="btn go" data-act="cv-finish" data-end="${cur.end}">Pažymėti ${icon("arrow",15)}</button></div>`
+        :`<span class="lbl" style="margin-top:14px">Ką atsakė?</span><div class="cv-replies">${cur.replies.map(([t,n])=>`<button class="cv-reply" data-act="cv-pick" data-next="${n}" data-label="${esc(t)}">${esc(t)}</button>`).join("")}</div>`}
+      </div>
+    </div>
+  </section>`;
 }
 function viewCall(){
   const q=queues(),cur=current(q),wide=matchMedia("(min-width:1280px)").matches,desk=matchMedia("(min-width:768px)").matches;
@@ -649,7 +753,7 @@ function viewCall(){
     <ul class="qlist thin">${q[S.tab].length?"":`<li class="muted" style="padding:28px 14px;text-align:center;font-size:13px">Tuščia</li>`}
       ${q[S.tab].map(p=>`<li id="q-${esc(p.l.id)}"><button class="qitem" data-act="pick" data-id="${esc(p.l.id)}" aria-current="${cur&&p.l.id===cur.l.id}">
         <span class="dot" style="background:${p.tone}"></span><b class="trunc">${esc(p.l.name)}</b>
-        <small class="trunc">${esc([p.l.city,p.l.category].filter(Boolean).join(" · ")||"—")}</small>
+        <small class="trunc">${esc([p.l.city,p.l.category,revShort(p.l)].filter(Boolean).join(" · ")||"—")}</small>
         <small class="trunc" style="color:${p.tone}">${esc(p.label)}</small></button></li>`).join("")}</ul>`;
   let center;
   if(!S.loaded&&S.conn!=="none")center=`<div class="muted" style="padding:32px;font-size:13px">Kraunama…</div>`;
@@ -670,15 +774,15 @@ function viewCall(){
       <div class="links">${l.email?`<a href="mailto:${esc(l.email)}" class="u">${esc(l.email)}</a>`:""}
         ${l.website&&safeUrl(l.website)?`<a class="u" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.website))}">${esc(host(l.website))}</a>`:`<span class="muted">Svetainės nėra</span>`}
         ${l.source&&safeUrl(l.source)?`<a class="u muted" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.source))}">Šaltinis: ${esc(host(l.source))}</a>`:""}</div>
+      ${l.reason?`<div class="whybox"><span class="lbl">Kodėl skambinti · siūlyti: ${esc(l.need||"Svetainė")}</span><p>${esc(l.reason)}</p></div>`:""}
+      ${convoHtml(l)}
       <dl class="brief">
-        ${l.reason?`<div class="why"><dt>Kodėl skambinti</dt><dd>${esc(l.reason)}</dd></div>`:""}
-        <div><dt>Siūlyti</dt><dd>${esc(l.need||"Svetainė")}</dd></div>
-        <div><dt>Pajamos</dt><dd>${esc(l.revenue||"Nežinomos")}</dd></div>
+        <div><dt>Pajamos</dt><dd>${l.revenue?esc(l.revenue):`<span class="muted">Neskelbiamos</span>`}</dd></div>
+        ${l.employees?`<div><dt>Darbuotojai</dt><dd>${esc(l.employees)}</dd></div>`:""}
         <div><dt>Bandymai</dt><dd><span class="mono">${l.attempts||0}</span>${l.lastCalledAt?` <span class="muted">· paskutinis ${when(l.lastCalledAt)}, ${esc(firstName(l.lastCalledBy))}</span>`:""}</dd></div>
         ${l.companyCode?`<div><dt>Įmonės kodas</dt><dd class="mono">${esc(l.companyCode)}</dd></div>`:""}
         ${ld.length?`<div><dt>Sandoriai</dt><dd style="display:flex;gap:14px;flex-wrap:wrap">${ld.map(d=>`<span class="tagline">${ddot(d.stage)}<span class="mono">${eur(d.value)}</span> ${stage(d.stage).label}</span>`).join("")}</dd></div>`:""}
-      </dl>
-      ${scriptHtml(l)}`}
+      </dl>`}
       <section class="outcome">
         <header><span>Rezultatas</span><span style="display:inline-flex;align-items:center;gap:12px">${S.callFor===l.id&&S.callStart?`<span class="live-call"><span class="pulse"></span><span id="calltimer" class="mono">${fmtDur(Date.now()-S.callStart)}</span></span>`:""}${desk?`<span class="muted" style="font-weight:400;font-size:12px">klavišai 1–4</span>`:""}</span></header>
         <div class="pad">
@@ -691,7 +795,7 @@ function viewCall(){
         :S.dealAsk?`<form id="df-${esc(l.id)}" class="dealform sub in" data-act="deal-form">
           <label class="field">Suma, €<input class="inp mono" name="value" inputmode="decimal" placeholder="1200" autofocus></label>
           <label class="field">Savikaina, €<input class="inp mono" name="cost" inputmode="decimal" placeholder="0"></label>
-          <label class="field">Etapas<select class="inp" name="stage">${STAGES.filter(s=>s.id!=="lost").map(s=>`<option value="${s.id}">${s.label}</option>`).join("")}</select></label>
+          <label class="field">Etapas<select class="inp" name="stage">${STAGES.filter(s=>s.id!=="lost").map(s=>`<option value="${s.id}" ${s.id===(S.dealStage||"meeting")?"selected":""}>${s.label}</option>`).join("")}</select></label>
           <label class="field" style="grid-column:1/-1">Kas parduodama<select class="inp" name="title">${NEEDS.map(n=>`<option ${n===l.need?"selected":""}>${n}</option>`).join("")}</select></label>
           <div class="full"><button type="button" class="btn" data-act="deal-back">Atgal</button><button type="button" class="btn" data-act="deal-skip">Be sandorio</button><button class="btn go">Išsaugoti sandorį</button></div></form>`
         :`<div class="obtns">${[["no_answer","Neatsiliepė",1],["declined","Nenori",2],["thinking","Pagalvos",3],["interested","Nori",4]].map(([s,t,k])=>`<button class="obtn" data-act="outcome" data-s="${s}" ${S.busy?"disabled":""}><span>${sdot(s)}${t}</span><span class="kbd">${k}</span></button>`).join("")}</div>`}
@@ -786,6 +890,7 @@ function viewContacts(){
   const vis=leads.filter(l=>(S.filter==="all"||l.status===S.filter)&&(S.who==="all"||(S.who==="none"?!l.assignee:l.assignee===S.who))&&(!n||[l.name,l.category,l.city,l.phone,l.email,l.companyCode].some(v=>String(v||"").toLowerCase().includes(n))));
   if(S.sort==="name")vis.sort((a,b)=>a.name.localeCompare(b.name,"lt"));
   else if(S.sort==="called")vis.sort((a,b)=>ms(b.lastCalledAt)-ms(a.lastCalledAt));
+  else if(S.sort==="revenue")vis.sort((a,b)=>revVal(b)-revVal(a));
   else vis.sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));
   const f=([k,p])=>`<input class="inp" name="${k}" placeholder="${p}" ${k==="name"?"required":""}>`;
   const right=`<button class="btn ink" data-act="find-toggle">${icon("spark",15)} Rasti naujų</button><button class="btn" data-act="add-toggle">${icon("plus",15)} Pridėti</button><button class="btn" data-act="csv" ${leads.length?"":"disabled"}>${icon("download",15)} CSV</button>`;
@@ -797,15 +902,16 @@ function viewContacts(){
     <nav class="statusbar">${[["all","Visi",leads.length],...STATUSES.map(s=>[s.id,s.short,counts[s.id]])].map(([id,t,c])=>`<button data-act="filter" data-v="${id}" aria-pressed="${S.filter===id}">${id==="all"?"":sdot(id)}${t}<span class="n">${c}</span></button>`).join("")}</nav>
     <div class="toolbar"><label class="search">${icon("search",15)}<input data-key="q" placeholder="Pavadinimas, telefonas arba kodas" value="${esc(S.q)}"></label>
       <select class="sel" data-key="who"><option value="all">Visi žmonės</option><option value="none" ${S.who==="none"?"selected":""}>Nepriskirti</option>${people().map(id=>`<option value="${esc(id)}" ${S.who===id?"selected":""}>${esc(who(id))}</option>`).join("")}</select>
-      <select class="sel" data-key="sort"><option value="created" ${S.sort==="created"?"selected":""}>Naujausi</option><option value="called" ${S.sort==="called"?"selected":""}>Neseniai skambinta</option><option value="name" ${S.sort==="name"?"selected":""}>A–Ž</option></select></div>
+      <select class="sel" data-key="sort"><option value="created" ${S.sort==="created"?"selected":""}>Naujausi</option><option value="called" ${S.sort==="called"?"selected":""}>Neseniai skambinta</option><option value="revenue" ${S.sort==="revenue"?"selected":""}>Didžiausios pajamos</option><option value="name" ${S.sort==="name"?"selected":""}>A–Ž</option></select></div>
     ${S.loaded&&!vis.length?`<div class="empty" style="min-height:0;padding:64px 0"><h2>${leads.length?"Nieko nerasta":"Sąrašas tuščias"}</h2></div>`:`
-    <div class="tablewrap"><table class="grid"><thead><tr><th>Įmonė</th><th>Telefonas</th><th class="hide-s">Siūlyti</th><th class="hide-s">Atsakingas</th><th class="hide-s">Paskutinis</th><th>Statusas</th></tr></thead><tbody>
+    <div class="tablewrap"><table class="grid"><thead><tr><th>Įmonė</th><th>Telefonas</th><th class="hide-s r">Pajamos</th><th class="hide-m">Siūlyti</th><th class="hide-s">Atsakingas</th><th class="hide-m">Paskutinis</th><th>Statusas</th></tr></thead><tbody>
     ${vis.map(l=>`<tr id="r-${esc(l.id)}" data-act="open" data-id="${esc(l.id)}">
       <td style="max-width:320px"><div class="trunc" style="font-weight:500">${esc(l.name)}</div><div class="trunc muted" style="font-size:12.5px">${esc([l.category,l.city].filter(Boolean).join(" · ")||"—")}</div></td>
       <td class="mono" style="white-space:nowrap">${l.phone?`<a href="${esc(tel(l.phone))}" data-stop>${esc(l.phone)}</a>`:`<span class="muted">—</span>`}</td>
-      <td class="hide-s t2" style="white-space:nowrap">${esc(l.need||"")}</td>
+      <td class="hide-s r mono" style="white-space:nowrap">${revShort(l)||`<span class="muted">—</span>`}</td>
+      <td class="hide-m t2" style="white-space:nowrap">${esc(l.need||"")}</td>
       <td class="hide-s c3" data-stop>${mgr?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}<select class="sel" style="border:0;background:none;padding:0;height:24px;max-width:150px" data-assign="${esc(l.id)}">${memberOptions(l.assignee)}</select></span>`:`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(l.assignee?who(l.assignee):"—")}</span>`}</td>
-      <td class="hide-s muted" style="white-space:nowrap;font-size:12.5px">${l.lastCalledAt?when(l.lastCalledAt):"—"}</td>
+      <td class="hide-m muted" style="white-space:nowrap;font-size:12.5px">${l.lastCalledAt?when(l.lastCalledAt):"—"}</td>
       <td class="st"><div class="pick"><button data-act="menu" data-id="${esc(l.id)}">${sdot(l.status)}${stat(l.status).short}${icon("chev",13)}</button>
         ${S.menu===l.id?`<ul class="menu in">${STATUSES.map(s=>`<li><button data-act="set" data-id="${esc(l.id)}" data-s="${s.id}">${sdot(s.id)}${s.label}</button></li>`).join("")}</ul>`:""}</div></td>
     </tr>`).join("")}</tbody></table></div>`}
@@ -928,6 +1034,17 @@ document.addEventListener("click",async e=>{
   switch(act){
     case"dial":S.callStart=Date.now();S.callFor=id;copyText(b.dataset.v,"Skambinama. Numeris nukopijuotas, jei reikėtų surinkti ranka.");render();break;
     case"copy":copyText(b.dataset.v,"Numeris nukopijuotas.");break;
+    case"cv-pick":{const c=S.cv;if(!c)break;c.path.push(b.dataset.next);c.picks.push(b.dataset.label);render();
+      const el=document.getElementById("cv-step-"+c.path.length);if(el)el.scrollIntoView({block:"nearest",behavior:"smooth"});break}
+    case"cv-back":{const c=S.cv;if(c&&c.path.length>1){c.path.pop();c.picks.pop();render()}break}
+    case"cv-reset":{if(S.cv){S.cv.path=["start"];S.cv.picks=[]}render();break}
+    case"cv-finish":{const c=current(queues());if(!c||!S.cv)break;
+      const sum="Pokalbis: "+S.cv.picks.join(" → ");if(!S.note.includes(sum))S.note=(S.note.trim()?S.note.trim()+"\n":"")+sum;
+      const e=b.dataset.end;
+      if(e==="meeting"||e==="offer"){S.dealAsk=true;S.dealStage=e==="offer"?"proposal":"meeting";S.focus='form[data-act=deal-form] input[name=value]'}
+      else if(e==="callback")S.askWhen=true;
+      else{logCall(c.l,"declined");break}
+      render();document.querySelector(".outcome")?.scrollIntoView({block:"start",behavior:"smooth"});break}
     case"theme":setTheme(theme()==="dark"?"light":"dark");render();break;
     case"tab":S.tab=b.dataset.v;render();break;
     case"scope":S.scope=b.dataset.v;S.sel=null;render();break;
