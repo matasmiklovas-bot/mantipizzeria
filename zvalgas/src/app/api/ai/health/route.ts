@@ -12,11 +12,14 @@ export async function GET(request: Request) {
     } catch (err) {
       out.gemini = { ok: false, error: geminiErrorMessage(err), detail: String((err as Error)?.message ?? err).slice(0, 300) };
     }
-    try {
-      const r = await geminiStream("Atsakyk trumpai lietuviškai.", [{ role: "user", content: "Kokia šiandien data ir kokia vakar buvo didžiausia naujiena Lietuvoje? Vienu sakiniu." }], { search: true });
-      out.geminiSearch = { ok: true, searches: r.searches.length, text: r.text.slice(0, 160) };
-    } catch (err) {
-      out.geminiSearch = { ok: false, error: geminiErrorMessage(err), detail: String((err as Error)?.message ?? err).slice(0, 300) };
+    const tries = (new URL(request.url).searchParams.get("models") || "").split(",").filter(Boolean);
+    for (const m of tries.length ? tries : [""]) {
+      try {
+        const r = await geminiStream("Atsakyk trumpai lietuviškai.", [{ role: "user", content: "Kokia šiandien data? Patikrink Google. Vienu sakiniu." }], { search: true, model: m || undefined });
+        out[`search:${m || "default"}`] = { ok: true, searches: r.searches.length, text: r.text.slice(0, 120) };
+      } catch (err) {
+        out[`search:${m || "default"}`] = { ok: false, detail: String((err as Error)?.message ?? err).slice(0, 160) };
+      }
     }
     return Response.json(out, { headers: { "Cache-Control": "no-store" } });
   }

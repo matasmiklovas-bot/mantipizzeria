@@ -6,6 +6,8 @@ const BASE = process.env.GEMINI_BASE || "https://generativelanguage.googleapis.c
 
 export const geminiOn = () => !!process.env.GEMINI_API_KEY;
 const model = () => process.env.GEMINI_MODEL || "gemini-flash-latest";
+/** Model for Google Search grounding (the free tier allows it only on some models). */
+export const searchModel = () => process.env.GEMINI_SEARCH_MODEL || model();
 
 type Turn = { role: "user" | "assistant"; content: string };
 type Part = { text?: string };
@@ -39,8 +41,8 @@ export function geminiErrorMessage(e: unknown): string {
   return "Gemini neatsakė.";
 }
 
-async function call(path: string, payload: string, signal?: AbortSignal) {
-  const r = await fetch(`${BASE}/${model()}:${path}`, {
+async function call(path: string, payload: string, signal?: AbortSignal, m?: string) {
+  const r = await fetch(`${BASE}/${m || model()}:${path}`, {
     method: "POST",
     headers: { "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY ?? "" },
     body: payload,
@@ -59,9 +61,9 @@ const textOf = (c: Chunk) => (c.candidates?.[0]?.content?.parts ?? []).map((p) =
 export async function geminiStream(
   system: string,
   turns: Turn[],
-  opts: { search?: boolean; signal?: AbortSignal; onText?: (t: string) => void; onSearch?: (q: string) => void } = {},
+  opts: { search?: boolean; signal?: AbortSignal; model?: string; onText?: (t: string) => void; onSearch?: (q: string) => void } = {},
 ) {
-  const r = await call("streamGenerateContent?alt=sse", body(system, turns, !!opts.search), opts.signal);
+  const r = await call("streamGenerateContent?alt=sse", body(system, turns, !!opts.search), opts.signal, opts.model ?? (opts.search ? searchModel() : undefined));
   const reader = r.body!.getReader();
   const dec = new TextDecoder();
   let buf = "";
