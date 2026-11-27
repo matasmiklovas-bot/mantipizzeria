@@ -492,6 +492,15 @@ textarea.note{border-radius:14px;border-color:var(--line)}
 .tabs a[aria-current=page]{color:var(--call)}
 .mbar{background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 @media(max-width:767px){.hero{border-radius:20px;padding:18px 16px}.hero .dial .nr .num{font-size:26px}.focus{padding-top:14px}}
+.ailog{margin-top:12px;list-style:none;border-radius:12px;background:var(--sunk);border:1px solid var(--line);padding:10px 12px;font-family:"Geist Mono",monospace;font-size:12px;line-height:1.7;color:var(--text-2);max-height:180px;overflow:auto}
+.ailog li.now{color:var(--call)}
+.ailog li.now::after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;border-radius:50%;background:var(--call);animation:pulse 1s infinite}
+.cblist{display:flex;flex-direction:column;gap:4px}
+.cbrow{display:grid;grid-template-columns:10px minmax(0,1.4fr) minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 10px;border-radius:12px;text-align:left;font-size:13.5px}
+.cbrow:hover{background:var(--tint)}
+.cbrow b{font-weight:550}
+.cbrow .late{color:var(--danger)}
+label.btn{cursor:pointer}
 </style>
 </head>
 <body>
@@ -535,6 +544,8 @@ const ICON={
   euro:"M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9",
   pin:"M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z",
   tag:"M3.5 12.5V4.5a1 1 0 0 1 1-1h8l8.5 8.5-9 9-8.5-8.5ZM8 8.5h.01",
+  logout:"M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11",
+  upload:"M12 16V4M7 9l5-5 5 5M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2",
   users:"M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM21 19v-1a4 4 0 0 0-3-3.9M15.5 3.2a3.5 3.5 0 0 1 0 6.6",
   mail:"M4 6h16v12H4zM4 7l8 6 8-6",
   globe:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18",
@@ -687,7 +698,7 @@ function setTheme(t){try{localStorage.setItem(LSKEY,t)}catch{}document.documentE
 document.documentElement.dataset.theme=theme();
 
 /* ===== state ===== */
-let db=null,user=null,downloads=null,meId=null,isOwner=false;
+let db=null,user=null,downloads=null,ai=null,meId=null,isOwner=false;
 let leads=[],acts=[],deals=[],team={},names={},avatars={};
 const S={conn:"wait",loaded:false,tab:"queue",scope:"mine",sel:null,skipped:new Set(),sheet:false,filter:"all",q:"",sort:"created",who:"all",adding:false,finding:false,menu:null,
   note:"",askWhen:false,custom:"",dealAsk:false,editing:false,composer:"",busy:false,hover:null,dealOpen:null,dealFilter:"open",period:"month",
@@ -840,7 +851,7 @@ async function wipe(silent){
 const RESET_ID="reset-2026-11-26";
 const fresh0={leads:false,deals:false,acts:false,meta:false};let metaIds=new Set(),resetDone=false;
 async function maybeReset(){
-  if(resetDone||!db||!isOwner||!fresh0.leads||!fresh0.deals||!fresh0.acts||!fresh0.meta||metaIds.has(RESET_ID))return;
+  if(window.COLDLINE_WEB||resetDone||!db||!isOwner||!fresh0.leads||!fresh0.deals||!fresh0.acts||!fresh0.meta||metaIds.has(RESET_ID))return;
   resetDone=true;
   try{await db.collection("meta").doc(RESET_ID).set({at:Date.now(),by:meId||""})}catch{resetDone=false;return}
   await wipe(true);
@@ -863,7 +874,7 @@ async function backfill(){
 async function connect(){
   const c=window.claude&&typeof window.claude.use==="function"?window.claude:null;
   if(!c){S.conn="none";render();return}
-  [db,user,downloads]=await Promise.all([c.use("db"),c.use("user"),c.use("downloads")].map(p=>p.catch(()=>null)));
+  [db,user,downloads,ai]=await Promise.all([c.use("db"),c.use("user"),c.use("downloads"),c.use("ai")].map(p=>p.catch(()=>null)));
   if(user){try{meId=await user.id();isOwner=await user.isOwner()}catch{}}
   if(!db){S.conn="none";render();return}
   let got=false;const timer=setTimeout(()=>{if(!got){S.conn="slow";render()}},10000);
@@ -892,7 +903,7 @@ function renderShell(){
   const count={"":q,pardavimai:openDeals,kontaktai:leads.length,komanda:people().length};
   patch($("nav"),NAV.map(([h,t,i])=>`<a href="#${h}" title="${t}" ${r===h?'aria-current="page"':""}>${icon(i,18)}<span class="lab">${t}</span>${count[h]?`<span class="cnt">${count[h]}</span>`:""}</a>`).join(""));
   patch($("tabs"),NAV.map(([h,t,i])=>`<a href="#${h}" ${r===h?'aria-current="page"':""}>${icon(i,20)}${t}</a>`).join(""));
-  patch($("sidefoot"),`<button data-act="theme" title="Tema">${icon(theme()==="dark"?"sun":"moon",17)}<span class="lab">${theme()==="dark"?"Šviesi tema":"Tamsi tema"}</span></button>${meId?`<span class="who" title="${esc(who(meId))}">${avatar(meId,22)}<span class="lab trunc">${esc(who(meId))}</span></span>`:""}`);
+  patch($("sidefoot"),`<button data-act="theme" title="Tema">${icon(theme()==="dark"?"sun":"moon",17)}<span class="lab">${theme()==="dark"?"Šviesi tema":"Tamsi tema"}</span></button>${meId?`<span class="who" title="${esc(who(meId))}">${avatar(meId,22)}<span class="lab trunc">${esc(who(meId))}</span></span>`:""}${window.COLDLINE_WEB?`<button data-act="logout" title="Atsijungti">${icon("logout",17)}<span class="lab">Atsijungti</span></button>`:""}`);
   $("live").className="live"+(S.conn==="ok"?" on":"");
   $("live").title=S.conn==="ok"?"Prisijungta":"Neprisijungta";
 }
@@ -1102,14 +1113,15 @@ function findPanel(){
   const F=S.form,chip=(arr,v)=>`<button class="chip" data-act="fchip" data-arr="${arr}" data-v="${esc(v)}" aria-pressed="${F[arr].includes(v)}">${esc(v)}</button>`;
   return`<section class="box in" style="padding:16px;margin-bottom:16px">
     <div class="sect">Rasti naujų įmonių<button class="iconbtn" data-act="find-close" aria-label="Uždaryti">${icon("x",16)}</button></div>
-    <p class="t2" style="font-size:13px;max-width:640px;margin-top:-6px">Šis puslapis pats internete ieškoti negali. Paruošk užklausą ir įklijuok ją pokalbyje su Claude. Rastos įmonės atsiras čia.</p>
+    <p class="t2" style="font-size:13px;max-width:640px;margin-top:-6px">${ai?"Claude ieškos internete: tikrins katalogus, svetaines ir pajamas. Trunka 1–4 min. Rastos įmonės iškart atsiras sąraše, be dublikatų.":"Šis puslapis pats internete ieškoti negali. Paruošk užklausą ir įklijuok ją pokalbyje su Claude. Rastos įmonės atsiras čia."}</p>
     <div style="margin-top:14px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
       <label class="field">Sritis<input class="inp" data-key="f.industry" value="${esc(F.industry)}" placeholder="Kirpyklos, autoservisai, statybos"></label>
       <label class="field">Miestas<input class="inp" data-key="f.city" value="${esc(F.city)}" placeholder="Visa Lietuva"></label></div>
     <div style="margin-top:14px"><span class="lbl" style="margin-bottom:6px">Metinės pajamos</span><div class="chips">${REVENUE.map(v=>chip("revenue",v)).join("")}</div></div>
     <div style="margin-top:12px"><span class="lbl" style="margin-bottom:6px">Ko trūksta</span><div class="chips">${NEEDS.map(v=>chip("needs",v)).join("")}</div></div>
     <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><div class="seg">${[10,20,30,50].map(c=>`<button data-act="fcount" data-v="${c}" aria-pressed="${F.count===c}">${c}</button>`).join("")}</div>
-      <button class="btn ink" data-act="req">${icon("copy",15)} Nukopijuoti užklausą</button></div>
+      ${ai?`<button class="btn go" data-act="ai-search" ${S.aiBusy?"disabled":""}>${icon("spark",15)} ${S.aiBusy?"Ieškoma…":"Ieškoti su AI"}</button>`:`<button class="btn ink" data-act="req">${icon("copy",15)} Nukopijuoti užklausą</button>`}</div>
+    ${S.aiLog&&S.aiLog.length?`<ul class="ailog">${S.aiLog.map((t,i)=>`<li class="${i===S.aiLog.length-1&&S.aiBusy?"now":""}">${esc(t)}</li>`).join("")}</ul>`:""}
     ${S.reqText?`<textarea class="req in" readonly id="reqbox" style="margin-top:12px">${esc(S.reqText)}</textarea>`:""}
   </section>`;
 }
@@ -1122,7 +1134,7 @@ function viewContacts(){
   else if(S.sort==="revenue")vis.sort((a,b)=>revVal(b)-revVal(a));
   else vis.sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));
   const f=([k,p])=>`<input class="inp" name="${k}" placeholder="${p}" ${k==="name"?"required":""}>`;
-  const right=`<button class="btn ink" data-act="find-toggle">${icon("spark",15)} Rasti naujų</button><button class="btn" data-act="add-toggle">${icon("plus",15)} Pridėti</button><button class="btn" data-act="csv" ${leads.length?"":"disabled"}>${icon("download",15)} CSV</button>`;
+  const right=`<button class="btn ink" data-act="find-toggle">${icon("spark",15)} Rasti naujų</button><button class="btn" data-act="add-toggle">${icon("plus",15)} Pridėti</button><button class="btn" data-act="csv" ${leads.length?"":"disabled"}>${icon("download",15)} CSV</button><button class="btn" data-act="backup" title="Visi kontaktų duomenys JSON faile" ${leads.length?"":"disabled"}>${icon("download",15)} Kopija</button>${mgr?`<label class="btn" title="Įkelti kontaktus iš JSON kopijos">${icon("upload",15)} Importuoti<input type="file" accept=".json,application/json" data-key="import" hidden></label>`:""}`;
   return`<div class="scroll thin"><div class="page">${head("Kontaktai",`${leads.length} · ${leads.filter(l=>!l.assignee).length} nepriskirta`,right)}
     ${S.finding?findPanel():""}
     ${S.adding?`<form class="box add in" data-act="add-form">${[["name","Pavadinimas"],["phone","Telefonas"],["email","El. paštas"],["website","Svetainė"],["category","Sritis"],["city","Miestas"],["companyCode","Įmonės kodas"]].map(f).join("")}
@@ -1207,6 +1219,9 @@ function viewOverview(){
     <div class="cols">
       <section class="box panel"><div class="sect">Piltuvėlis<span>visi laikai</span></div><div class="funnel">${steps.map(([t,c,col],i)=>{const base=steps[0][1]||1,prev=i?steps[i-1][1]:0;return`<div class="frow"><span class="t2">${t}</span><div class="ftrack"><span style="width:${Math.max(c?1:0,c/base*100)}%;background:${col}"></span></div><span class="mono" style="text-align:right">${c}${i&&prev?`<span class="muted" style="font-size:11px"> ${Math.round(c/prev*100)}%</span>`:""}</span></div>`}).join("")}</div></section>
       <section class="box panel"><div class="sect">Šio mėnesio lyderiai<span>pagal pajamas</span></div>${leaders.length?`<table class="grid" style="font-size:13px"><tbody>${leaders.map(({id,s},i)=>`<tr style="cursor:default"><td style="width:24px"><span class="rank">${i+1}</span></td><td><span style="display:inline-flex;align-items:center;gap:8px">${avatar(id,22)}${esc(who(id))}</span></td><td class="r mono muted">${s.month} skamb.</td><td class="r mono" style="font-weight:500">${eur(s.rev)}</td></tr>`).join("")}</tbody></table>`:`<p class="muted" style="font-size:13px">Dar nėra duomenų.</p>`}</section></div>
+    ${(()=>{const end=new Date();end.setHours(23,59,59,999);const due=leads.filter(l=>l.status==="thinking"&&l.callbackAt&&ms(l.callbackAt)<=end.getTime()).sort((a,b)=>ms(a.callbackAt)-ms(b.callbackAt));
+      return`<section class="box panel" style="margin-top:16px"><div class="sect">Šiandien perskambinti<span>${due.length?pl(due.length,"kontaktas","kontaktai","kontaktų"):"nieko"}</span></div>
+      ${due.length?`<div class="cblist">${due.slice(0,8).map(l=>`<button class="cbrow" data-act="open-cb" data-id="${esc(l.id)}"><span class="dot" style="background:var(--s-thinking)"></span><b class="trunc">${esc(spokenName(l.name))}</b><span class="muted trunc">${esc(spokenCity(l.city)||l.city||"")}</span><span class="mono ${ms(l.callbackAt)<Date.now()?"late":""}">${esc(when(l.callbackAt))}</span></button>`).join("")}</div>`:`<p class="muted" style="font-size:13px">Kai kas nors pasakys „pagalvosiu“ ir pažymėsi, kada perskambinti, jie atsiras čia.</p>`}</section>`})()}
     <section class="box panel" style="margin-top:16px"><div class="sect">Skambučiai per 14 dienų<span class="mono">${hv!==null?`${esc(days[hv].slice(5).replace("-","."))}: ${byDay[hv]}`:`iš viso ${byDay.reduce((a,b)=>a+b,0)} · max ${max}`}</span></div>
       <div class="bars">${byDay.map((c,i)=>`<button data-act="bar" data-i="${i}" aria-label="${esc(days[i])}: ${c} skambučių"><span style="height:${c/max*100}%;opacity:${hv===null||hv===i?1:.25}"></span></button>`).join("")}</div>
       <div class="axis"><span>${esc(days[0].slice(5).replace("-","."))}</span><span>šiandien</span></div></section>
@@ -1304,6 +1319,16 @@ document.addEventListener("click",async e=>{
       try{await navigator.clipboard.writeText(S.reqText);toast("Nukopijuota. Įklijuok į pokalbį su Claude.")}
       catch{const t=$("reqbox");t?.focus();t?.select();toast("Pažymėjau tekstą, nukopijuok jį rankiniu būdu.")}break;
     case"csv":exportCsv();break;
+    case"backup":exportBackup();break;
+    case"logout":if(window.COLDLINE_WEB)window.COLDLINE_WEB.logout();break;
+    case"ai-search":{if(!ai||S.aiBusy)break;S.aiBusy=true;S.aiLog=["Pradedama paieška…"];render();
+      const say=t=>{S.aiLog=[...S.aiLog,t].slice(-8);render(true)};
+      try{await ai.search({industry:S.form.industry,city:S.form.city,revenue:S.form.revenue,needs:S.form.needs,count:Math.min(20,S.form.count)},e=>{
+        if(e.type==="search")say("Ieško: "+e.query);else if(e.type==="fetch")say("Skaito: "+host(e.url));
+        else if(e.type==="result")say(`Rasta ${e.found}, pridėta ${e.added} naujų.`);else if(e.type==="error")say("Klaida: "+e.message)})}
+      catch(err){say("Klaida: "+(err&&err.message||"nepavyko"))}
+      S.aiBusy=false;render();break}
+    case"open-cb":S.sel=id;S.scope="all";location.hash="";break;
     case"bar":S.hover=S.hover===Number(b.dataset.i)?null:Number(b.dataset.i);render();break;
     case"period":S.period=b.dataset.v;render();break;
     case"deal-open":S.dealOpen=id;render();break;
@@ -1329,6 +1354,7 @@ document.addEventListener("change",e=>{
   if(k.key==="sort"){S.sort=t.value;render()}
   else if(k.key==="who"){S.who=t.value;render()}
   else if(k.assign!==undefined)assign(k.assign,t.value);
+  else if(k.key==="import"&&t.files&&t.files[0]){const f=t.files[0];t.value="";f.text().then(importLeads).catch(()=>toast("Nepavyko perskaityti failo."))}
   else if(k.role!==undefined)saveMember(k.role,{role:t.value});
   else if(k.comm!==undefined)saveMember(k.comm,{commission:Math.max(0,Math.min(100,num(t.value)))});
   else if(k.goal!==undefined)saveMember(k.goal,{goal:Math.max(1,Math.round(num(t.value))||DEF_GOAL)});
@@ -1375,6 +1401,31 @@ document.addEventListener("submit",async e=>{
 
 async function copyText(t,msg){try{await navigator.clipboard.writeText(t);toast(msg)}catch{toast(t)}}
 setInterval(()=>{const el=document.getElementById("calltimer");if(el&&S.callStart)el.textContent=fmtDur(Date.now()-S.callStart)},1000);
+const LEAD_FIELDS=["name","companyCode","category","city","phone","email","website","revenue","revenueValue","employees","need","reason","source"];
+async function exportBackup(){
+  const data=JSON.stringify(leads.map(l=>Object.fromEntries([["id",l.id],...LEAD_FIELDS.filter(k=>l[k]!==undefined&&l[k]!=="").map(k=>[k,l[k]])])),null,1);
+  const filename=`coldline-kontaktai-${dayKey(Date.now())}.json`;
+  if(downloads){try{await downloads.save({filename,data,mimeType:"application/json"});return}catch(e){if(e?.code==="declined")return}}
+  try{await navigator.clipboard.writeText(data);toast("Kopija nukopijuota į iškarpinę.")}catch{toast("Nepavyko eksportuoti.")}
+}
+async function importLeads(text){
+  let arr;try{arr=JSON.parse(text);if(!Array.isArray(arr))arr=arr.leads}catch{}
+  if(!Array.isArray(arr)){toast("Tai ne Coldline kopija (reikia JSON sąrašo).");return}
+  const key=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\b(uab|mb|ii|ab|vsi|pi)\b/g,"").replace(/[^a-z0-9]/g,"");
+  const ph=s=>String(s||"").replace(/\D/g,"").slice(-8);
+  const seen=leads.map(l=>({id:l.id,c:l.companyCode,p:ph(l.phone),n:key(l.name)}));
+  let added=0,dup=0;const now=Date.now();
+  for(const [i,r] of arr.entries()){
+    if(!r||typeof r!=="object"||!String(r.name||"").trim()){continue}
+    const c=String(r.companyCode||""),p=ph(r.phone),n=key(r.name),rid=/^[\w.-]{1,100}$/.test(String(r.id||""))?String(r.id):"";
+    if(seen.some(x=>(rid&&x.id===rid)||(c&&x.c===c)||(p.length===8&&x.p===p)||(n.length>2&&x.n===n))){dup++;continue}
+    const l={id:rid||uid(),status:"new",attempts:0,assignee:"",fresh:true,createdBy:meId||"",createdAt:now-i,updatedAt:now};
+    for(const k of LEAD_FIELDS)if(r[k]!==undefined)l[k]=typeof r[k]==="number"?r[k]:String(r[k]).slice(0,2000);
+    if(!l.need)l.need="Svetainė";
+    if(await put("leads",l.id,l)){added++;seen.push({id:l.id,c,p,n})}
+  }
+  toast(`Importuota ${pl(added,"kontaktas","kontaktai","kontaktų")}${dup?`, praleista ${dup} jau esamų`:""}.`);
+}
 async function exportCsv(){
   const cell=v=>/[",\n;]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
   const head=["Pavadinimas","Statusas","Atsakingas","Telefonas","El. paštas","Sritis","Miestas","Pajamos","Reikia","Svetainė","Įmonės kodas","Bandymų","Paskutinis skambutis","Sandorio suma","Sandorio etapas","Šaltinis"];

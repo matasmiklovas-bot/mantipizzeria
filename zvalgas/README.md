@@ -1,34 +1,36 @@
-# Žvalgas
+# Coldline
 
-Komandos skambučių darbo vieta: AI randa Lietuvos įmones, kurioms reikia svetainės ar sistemos, o komanda joms skambina.
+Darbo vieta šaltiems skambučiams: įmonių eilė, pokalbio vedlys, sandoriai ir komandos rezultatai. Prisijungimas su Google, visa komanda mato tuos pačius duomenis.
 
-- **Skambinti** – eilė (nauji, perskambinti, neatsiliepę po 3 val.), didelis „Skambinti“ mygtukas, rezultatas vienu paspaudimu (klavišai 1–4), „Pagalvos“ su perskambinimo data, istorija ir komandos pastabos prie kiekvieno kontakto.
-- **Kontaktai** – visas sąrašas, filtrai, statuso keitimas, rankinis pridėjimas, JSON importas, CSV eksportas.
-- **Paieška** – Claude su `web_search` + `web_fetch` ieško įmonių pagal sritį, miestą, pajamas ir poreikį; rezultatai iš karto patenka į bendrą sąrašą (be dublikatų).
-- **Statistika** – skambučiai šiandien / per 7 d. pagal žmogų, pasiekiamumas, 14 dienų grafikas.
+Tas pats puslapis veikia ir kaip Claude artefaktas (`artifact/index.html`). Web versijoje `scripts/embed.mjs` prideda nedidelį adapterį (`src/client/shim.js`), kuris duomenis saugo Postgres per `/api/db/*`.
 
-Prisijungimas: vardas + bendras komandos slaptažodis (`APP_PASSWORD`). Duomenys – Postgres (Neon).
+## Paleidimas Vercel
 
-## Paleidimas Vercel (≈5 min.)
-
-1. **Vercel → Add New → Project →** šita repozitorija. **Root Directory: `zvalgas`**. Deploy.
+1. **Vercel → Add New → Project →** pasirink šitą repozitoriją. **Root Directory: `zvalgas`**. Spausk Deploy (pirmas kartas gali nepavykti, nes dar nėra nustatymų, tai normalu).
 2. Projekte **Storage → Create Database → Neon → Connect**. `DATABASE_URL` atsiras pats.
-3. **Settings → Environment Variables:** `APP_PASSWORD` (sugalvok) ir `ANTHROPIC_API_KEY` (console.anthropic.com, reikia papildyti kreditų). Tada **Deployments → Redeploy**.
-4. Atidaryk svetainę, prisijunk, **Kontaktai → Importuoti** – įkelk `zvalgas-kontaktai.json`.
+3. **Google prisijungimas:** [console.cloud.google.com](https://console.cloud.google.com) → *APIs & Services* → *OAuth consent screen* (External, užpildyk pavadinimą ir el. paštą, *Publish app*) → *Credentials* → *Create credentials* → *OAuth client ID* → *Web application*.
+   *Authorized redirect URIs:* `https://TAVO-PROJEKTAS.vercel.app/api/auth/callback`
+4. **Vercel → Settings → Environment Variables:**
+   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` iš 3 žingsnio
+   - `AUTH_SECRET` – bet koks ilgas atsitiktinis tekstas (pvz. `openssl rand -base64 32`)
+   - nebūtina: `ANTHROPIC_API_KEY` – įjungia „Ieškoti su AI“ (Kontaktai → Rasti naujų)
+   - nebūtina: `OWNER_EMAIL` – savininkas; jei nenurodyta, savininkas yra pirmas prisijungęs
+   - nebūtina: `ALLOWED_EMAILS` – kas gali prisijungti, pvz. `@imone.lt,jonas@gmail.com`; tuščia = bet kas su Google paskyra
+5. **Deployments → … → Redeploy.** Atidaryk nuorodą, prisijunk su Google (pirmas tampa savininku).
+6. **Kontaktai → Importuoti** ir įkelk kontaktų JSON (artefakte: Kontaktai → Kopija).
 
-Lentelės susikuria pačios pirmo užklausimo metu.
+Jei kažko trūksta, prisijungimo puslapis parodo, kurio nustatymo.
+
+## Teisės
+
+- Visi prisijungę mato ir redaguoja bendrus kontaktus, skambučius ir sandorius.
+- Trinti ir keisti kitų roles bei komisinius gali tik savininkas ir vadovai.
 
 ## Lokaliai
 
 ```bash
 cd zvalgas
-cp .env.example .env.local   # DATABASE_URL=postgres://… APP_PASSWORD=… ANTHROPIC_API_KEY=…
+cp .env.example .env.local   # užpildyk
 npm install
-npm run dev
+npm run dev                  # http://localhost:3000, Google redirect URI: http://localhost:3000/api/auth/callback
 ```
-
-## Ribos
-
-- AI paieška trunka 1–4 min. (`maxDuration = 300`) ir naudoja API kreditus. AI gali suklysti – žiūrėk šaltinį.
-- Pajamų duomenų AI dažnai negauna (rekvizitai.lt riboja automatinį skaitymą).
-- Vienas bendras slaptažodis: vardą įrašo pats žmogus, todėl tai ne apsauga nuo savų, tik nuo pašalinių.

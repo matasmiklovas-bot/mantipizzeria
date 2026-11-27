@@ -79,7 +79,7 @@ export interface SearchRequest {
 export type SearchEvent =
   | { type: "search"; query: string }
   | { type: "fetch"; url: string }
-  | { type: "result"; found: number; added: Lead[] }
+  | { type: "result"; found: number; added: number }
   | { type: "error"; message: string }
   | { type: "done" };
 

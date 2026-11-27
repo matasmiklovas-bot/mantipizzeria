@@ -1,9 +1,27 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { randomUUID } from "node:crypto";
 import { cleanLead } from "@/lib/api";
-import { unauthorized, userFrom } from "@/lib/auth";
-import { dbUrl, existingKeys, insertLeads } from "@/lib/db";
 import { withoutDuplicates } from "@/lib/dedupe";
+import { me, unauthorized } from "@/lib/session";
+import { dbUrl, list, putMany } from "@/lib/store";
 import { NEEDS, REVENUE_BRACKETS, type LeadInput, type SearchEvent, type SearchRequest } from "@/lib/types";
+
+async function existingKeys() {
+  const { docs } = await list("leads");
+  return docs.map((d) => ({ name: String(d.data.name ?? ""), phone: String(d.data.phone ?? ""), companyCode: String(d.data.companyCode ?? "") }));
+}
+
+async function insertLeads(items: LeadInput[], author: string): Promise<number> {
+  const now = Date.now();
+  await putMany(
+    "leads",
+    items.map((it, i) => {
+      const id = `ai-${randomUUID().slice(0, 12)}`;
+      return { id, data: { ...it, id, status: "new", attempts: 0, assignee: "", createdBy: author, createdAt: now - i, updatedAt: now, fresh: true } };
+    }),
+  );
+  return items.length;
+}
 
 export const maxDuration = 300;
 
@@ -106,9 +124,9 @@ function parseBody(body: unknown): SearchRequest | null {
   return {
     industry: clean(b.industry).slice(0, 200),
     city: clean(b.city).slice(0, 100),
-    revenue: (Array.isArray(b.revenue) ? b.revenue : []).filter((r): r is SearchRequest["revenue"][number] =>
-      revenueIds.includes(r as string),
-    ),
+    revenue: (Array.isArray(b.revenue) ? b.revenue : [])
+      .map((r) => REVENUE_BRACKETS.find((x) => x.id === r || x.label === r)?.id)
+      .filter((r): r is SearchRequest["revenue"][number] => !!r && revenueIds.includes(r)),
     needs: (Array.isArray(b.needs) ? b.needs : []).filter((n): n is SearchRequest["needs"][number] =>
       (NEEDS as readonly string[]).includes(n as string),
     ),
@@ -117,8 +135,9 @@ function parseBody(body: unknown): SearchRequest | null {
 }
 
 export async function POST(request: Request) {
-  const user = userFrom(request);
-  if (!user) return unauthorized();
+  const who = await me(request).catch(() => null);
+  if (!who) return unauthorized();
+  const user = who.id;
   if (!dbUrl()) {
     return Response.json({ error: "Nėra prijungtos duomenų bazės (DATABASE_URL)" }, { status: 503 });
   }

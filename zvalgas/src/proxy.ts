@@ -1,15 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { readSession, SESSION_COOKIE } from "@/lib/auth";
+import { readSession, SESSION_COOKIE } from "@/lib/session";
 
-// Pages only: API routes check the session themselves and answer 401.
+// Pages only. "/" checks the account again against the database; API routes answer 401 themselves.
 export function proxy(request: NextRequest) {
-  const user = readSession(request.cookies.get(SESSION_COOKIE)?.value);
-  const isLogin = request.nextUrl.pathname === "/login";
-  if (!user && !isLogin) return NextResponse.redirect(new URL("/login", request.url));
-  if (user && isLogin) return NextResponse.redirect(new URL("/", request.url));
+  if (request.nextUrl.pathname === "/" && !readSession(request.cookies.get(SESSION_COOKIE)?.value)) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
   return NextResponse.next();
 }
 
-export const config = {
-  matcher: ["/((?!api|_next|favicon.ico|icon|apple-icon).*)"],
-};
+export const config = { matcher: ["/"] };
