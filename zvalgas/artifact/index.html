@@ -1343,7 +1343,7 @@ function webAi(){return{web:true,
 /* ===== AI model choice ===== */
 const AIMODELS=[["haiku","Haiku","greitas, pigus"],["sonnet","Sonnet","geresnis"],["opus","Opus","protingiausias"]];
 function aiModel(){try{const m=localStorage.getItem("coldai-model");return AIMODELS.some(x=>x[0]===m)?m:"haiku"}catch{return"haiku"}}
-const modelPick=()=>`<div class="seg mpick" title="AI modelis">${AIMODELS.map(([k,t,n])=>`<button data-act="model" data-v="${k}" aria-pressed="${aiModel()===k}" title="${n}">${t}</button>`).join("")}</div>`;
+const modelPick=()=>window.COLDLINE_WEB&&!window.COLDLINE_WEB.models?"":`<div class="seg mpick" title="AI modelis">${AIMODELS.map(([k,t,n])=>`<button data-act="model" data-v="${k}" aria-pressed="${aiModel()===k}" title="${n}">${t}</button>`).join("")}</div>`;
 
 /* ===== AI call plan per company ===== */
 const briefSt={};let briefTimer=0;

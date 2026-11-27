@@ -43,7 +43,7 @@
       return()=>{const i=subs.indexOf(s);if(i>=0)subs.splice(i,1)}}
   }}
   const db={collection:c=>coll(c),doc:p=>{const [c,id]=String(p).split("/");return coll(c).doc(id)}};
-  let mePromise=null;const meGet=()=>mePromise||(mePromise=api("GET","/api/me"));
+  let mePromise=null;const meGet=()=>mePromise||(mePromise=api("GET","/api/me").then(m=>{window.COLDLINE_WEB.models=!!m.models;return m}));
   const user={id:async()=>(await meGet()).id,isOwner:async()=>!!(await meGet()).owner,
     profiles:async ids=>api("POST","/api/profiles",{ids})};
   const downloads={save:async({filename,data,mimeType})=>{

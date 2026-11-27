@@ -1,11 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getVercelOidcToken } from "@vercel/oidc";
-import { geminiOn } from "./gemini";
+import { freeErrorMessage, freeStream, freeText } from "./free";
+import { GeminiError, geminiErrorMessage, geminiOn, geminiStream, geminiText } from "./gemini";
 
 /**
- * Claude for every AI feature.
- * - On Vercel with no key: Vercel AI Gateway, signed in with the deployment's own OIDC token (no API key, free monthly credit).
- * - With ANTHROPIC_API_KEY set: straight to the Anthropic API.
+ * Which AI answers:
+ * - ANTHROPIC_API_KEY set: Claude, straight to the Anthropic API.
+ * - AI_GATEWAY=1 on Vercel: Claude through Vercel AI Gateway with the deployment's OIDC token (needs a card on the Vercel account).
+ * - Otherwise ("lite"): Gemini when GEMINI_API_KEY is set, and the free keyless model when Gemini is missing or fails.
+ *   Works with no setup at all.
  */
 export const MODELS = {
   haiku: { label: "Haiku", note: "greitas ir pigus", gateway: "anthropic/claude-haiku-5.5", direct: "claude-haiku-5-5" },
@@ -18,12 +21,51 @@ export const DEFAULT_MODEL: ModelKey = "haiku";
 export const modelKey = (v: unknown): ModelKey => (typeof v === "string" && v in MODELS ? (v as ModelKey) : DEFAULT_MODEL);
 
 const direct = () => !!process.env.ANTHROPIC_API_KEY;
+const gateway = () => process.env.AI_GATEWAY === "1" && (!!process.env.VERCEL || !!process.env.VERCEL_OIDC_TOKEN);
 
-/** Whether AI can run here at all. */
-export const aiAvailable = () => direct() || geminiOn() || !!process.env.VERCEL || !!process.env.VERCEL_OIDC_TOKEN;
+/** AI always runs: with no keys the free model answers. */
+export const aiAvailable = () => true;
 
-/** Gemini answers when its free key is set and no Anthropic key is. */
-export const geminiActive = () => !direct() && geminiOn();
+/** Claude (key or gateway) is in use, so the Haiku/Sonnet/Opus choice means something. */
+export const claudeActive = () => direct() || gateway();
+
+/** No Claude: Gemini if its key is set, otherwise (or when Gemini fails) the free model. */
+export const liteActive = () => !claudeActive();
+
+type Turn = { role: "user" | "assistant"; content: string };
+const NO_WEB = "\n\nInterneto paieškos dabar neturi: remkis tik pateiktais duomenimis ir savo žiniomis, o faktų apie konkrečias įmones neišgalvok.";
+
+/** Streams a lite answer. Falls back to the free model if Gemini fails before writing anything. */
+export async function liteStream(
+  system: string,
+  turns: Turn[],
+  opts: { search?: boolean; signal?: AbortSignal; onText?: (t: string) => void; onSearch?: (q: string) => void } = {},
+) {
+  if (geminiOn()) {
+    let wrote = false;
+    try {
+      return await geminiStream(system, turns, { ...opts, onText: (t) => ((wrote = true), opts.onText?.(t)) });
+    } catch (err) {
+      if (wrote || opts.signal?.aborted) throw err;
+      console.error("[ai:gemini→free]", err);
+    }
+  }
+  return freeStream(system + NO_WEB, turns, opts);
+}
+
+export async function liteText(system: string, prompt: string, opts: { signal?: AbortSignal } = {}) {
+  if (geminiOn()) {
+    try {
+      return await geminiText(system, prompt, opts);
+    } catch (err) {
+      if (opts.signal?.aborted) throw err;
+      console.error("[ai:gemini→free]", err);
+    }
+  }
+  return freeText(system, prompt, opts);
+}
+
+export const liteErrorMessage = (err: unknown) => (err instanceof GeminiError ? geminiErrorMessage(err) : freeErrorMessage(err));
 
 export function modelId(k: ModelKey): string {
   return direct() ? MODELS[k].direct : MODELS[k].gateway;

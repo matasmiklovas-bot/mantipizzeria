@@ -1,5 +1,4 @@
-import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, geminiActive } from "@/lib/ai";
-import { geminiErrorMessage, geminiText } from "@/lib/gemini";
+import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, liteActive, liteErrorMessage, liteText } from "@/lib/ai";
 import { json, me, unauthorized } from "@/lib/session";
 import { get, patch } from "@/lib/store";
 
@@ -41,15 +40,15 @@ export async function POST(request: Request) {
     `Kodėl skambinti: ${s(l.reason, 900)}`,
   ].join("\n");
 
-  if (geminiActive()) {
+  if (liteActive()) {
     try {
-      const text = await geminiText(SYSTEM, facts);
+      const text = await liteText(SYSTEM, facts);
       if (!text) return json({ error: "Tuščias atsakymas." }, 502);
       await patch("leads", id, { aiBrief: text.slice(0, 3000), aiBriefAt: Date.now() });
       return json({ brief: text });
     } catch (err) {
-      console.error("[brief:gemini]", err);
-      return json({ error: geminiErrorMessage(err) }, 502);
+      console.error("[brief:lite]", err);
+      return json({ error: liteErrorMessage(err) }, 502);
     }
   }
 

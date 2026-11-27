@@ -1,6 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, geminiActive, webSearch } from "@/lib/ai";
-import { geminiErrorMessage, geminiStream } from "@/lib/gemini";
+import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, liteActive, liteErrorMessage, liteStream, webSearch } from "@/lib/ai";
 import { me, unauthorized } from "@/lib/session";
 import { get, list } from "@/lib/store";
 
@@ -91,18 +90,18 @@ export async function POST(request: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       const send = (e: Record<string, unknown>) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
-      if (geminiActive()) {
+      if (liteActive()) {
         try {
           const context = await contextBlock(leadId);
-          await geminiStream(
+          await liteStream(
             `${SYSTEM}\n\nŠiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who.name}.\n\n${context}`,
             messages.map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: String(m.content) })),
             { search: true, signal: request.signal, onText: (t) => send({ type: "text", text: t }), onSearch: (q) => send({ type: "search", query: q }) },
           );
         } catch (err) {
           if (!request.signal.aborted) {
-            console.error("[chat:gemini]", err);
-            send({ type: "error", message: geminiErrorMessage(err) });
+            console.error("[chat:lite]", err);
+            send({ type: "error", message: liteErrorMessage(err) });
           }
         }
         send({ type: "done" });

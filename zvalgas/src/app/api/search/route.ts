@@ -1,8 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "node:crypto";
-import { aiClient, aiErrorMessage, modelId, modelKey, geminiActive, webSearch } from "@/lib/ai";
+import { aiClient, aiErrorMessage, modelId, modelKey, liteText, webSearch } from "@/lib/ai";
 import { fitsRevenue, readCompany, ruleReason, searchPage, type Found } from "@/lib/finder1551";
-import { geminiText } from "@/lib/gemini";
 import { cleanLead } from "@/lib/api";
 import { withoutDuplicates } from "@/lib/dedupe";
 import { me, unauthorized } from "@/lib/session";
@@ -184,10 +183,10 @@ export async function POST(request: Request) {
               }
             }
           }
-          if (picked.length && geminiActive()) {
+          if (picked.length) {
             try {
               const facts = picked.map((c, n) => `${n + 1}. ${c.name} | ${c.category} | ${c.city} | apyvarta: ${c.revenue || "nežinoma"} | darbuotojai: ${c.employees || "nežinoma"} | svetainė: ${c.website || "nėra"} | Facebook: ${c.facebook ? "yra" : "nenurodyta"} | siūlyti: ${c.need}`).join("\n");
-              const out = await geminiText(
+              const out = await liteText(
                 "Tu padedi lietuviui, kuris skambina mažoms įmonėms ir siūlo svetaines. Kiekvienai įmonei parašyk vieną konkretų sakinį lietuviškai, kodėl verta skambinti, remdamasis TIK pateiktais faktais. Nieko neišgalvok. Grąžink tik JSON masyvą su tekstais ta pačia tvarka.",
                 facts,
               );

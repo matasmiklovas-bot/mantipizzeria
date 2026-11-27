@@ -1,12 +1,19 @@
-import { aiAvailable, aiClient, aiErrorMessage, geminiActive, modelId, webSearch } from "@/lib/ai";
-import { geminiErrorMessage, geminiStream, geminiText } from "@/lib/gemini";
+import { aiAvailable, aiClient, aiErrorMessage, liteActive, modelId, webSearch } from "@/lib/ai";
+import { freeErrorMessage, freeText } from "@/lib/free";
+import { geminiErrorMessage, geminiOn, geminiStream, geminiText } from "@/lib/gemini";
 
 /** Owner diagnostics: is AI reachable from this deployment? Needs ?k=HEALTH_KEY; disabled when HEALTH_KEY is unset. */
 export async function GET(request: Request) {
   const key = process.env.HEALTH_KEY;
   if (!key || new URL(request.url).searchParams.get("k") !== key) return new Response("Not found", { status: 404 });
   const out: Record<string, unknown> = { available: aiAvailable(), direct: !!process.env.ANTHROPIC_API_KEY };
-  if (geminiActive()) {
+  if (liteActive()) {
+    try {
+      out.free = { ok: true, text: (await freeText("Atsakyk trumpai.", "Atsakyk vienu žodžiu: veikia")).slice(0, 40) };
+    } catch (err) {
+      out.free = { ok: false, error: freeErrorMessage(err), detail: String((err as Error)?.message ?? err).slice(0, 300) };
+    }
+    if (!geminiOn()) return Response.json(out, { headers: { "Cache-Control": "no-store" } });
     try {
       out.gemini = { ok: true, text: (await geminiText("Atsakyk trumpai.", "Atsakyk vienu žodžiu: veikia")).slice(0, 40) };
     } catch (err) {
