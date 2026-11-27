@@ -17,8 +17,6 @@ export function googleConfigured(): boolean {
 export function missingConfig(): string[] {
   const m: string[] = [];
   if (!(process.env.DATABASE_URL || process.env.POSTGRES_URL)) m.push("DATABASE_URL (Vercel → Storage → Neon)");
-  if (!process.env.GOOGLE_CLIENT_ID) m.push("GOOGLE_CLIENT_ID");
-  if (!process.env.GOOGLE_CLIENT_SECRET) m.push("GOOGLE_CLIENT_SECRET");
   if (!process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 16) m.push("AUTH_SECRET (bent 16 simbolių)");
   return m;
 }

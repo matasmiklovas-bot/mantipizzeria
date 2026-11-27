@@ -37,6 +37,9 @@ export async function db(): Promise<Sql> {
       avatar text not null default '',
       created_at timestamptz not null default now(),
       last_seen timestamptz not null default now())`;
+    await sql`alter table cl_users add column if not exists username text`;
+    await sql`alter table cl_users add column if not exists pass_hash text`;
+    await sql`create unique index if not exists cl_users_username on cl_users (username)`;
     await sql`create table if not exists cl_docs (
       col text not null,
       id text not null,
@@ -142,10 +145,26 @@ export async function profiles(ids: string[]) {
   return rows.map((r) => ({ id: String(r.id), name: String(r.name), avatar: String(r.avatar) }));
 }
 
-/** Owner: OWNER_EMAIL if set, otherwise whoever signed in first. */
+export async function findByUsername(username: string) {
+  const sql = await db();
+  const [r] = await sql`select id, pass_hash from cl_users where username = ${username}`;
+  return r ? { id: String(r.id), hash: r.pass_hash ? String(r.pass_hash) : "" } : null;
+}
+
+/** Creates a username/password account. Returns false if the name is taken. */
+export async function createPasswordUser(id: string, username: string, name: string, hash: string): Promise<boolean> {
+  const sql = await db();
+  const rows = await sql`insert into cl_users (id, email, name, avatar, username, pass_hash)
+    values (${id}, '', ${name}, '', ${username}, ${hash}) on conflict do nothing returning id`;
+  return rows.length === 1;
+}
+
+/** Owner: OWNER_EMAIL / OWNER_USERNAME if set, otherwise whoever joined first. */
 export async function isOwner(u: User): Promise<boolean> {
   const owner = (process.env.OWNER_EMAIL || "").trim().toLowerCase();
   if (owner) return u.email.toLowerCase() === owner;
+  const ownerName = (process.env.OWNER_USERNAME || "").trim().toLowerCase();
+  if (ownerName) return u.id === `u_${ownerName}`;
   const sql = await db();
   const [r] = await sql`select id from cl_users order by created_at asc, id asc limit 1`;
   return r?.id === u.id;

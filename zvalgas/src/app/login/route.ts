@@ -1,4 +1,4 @@
-import { missingConfig } from "@/lib/oauth";
+import { googleConfigured, missingConfig } from "@/lib/oauth";
 import { me } from "@/lib/session";
 import { loginHtml } from "./page-html";
 
@@ -16,7 +16,7 @@ const ERRORS: Record<string, string> = {
 export async function GET(request: Request) {
   if (await me(request).catch(() => null)) return Response.redirect(new URL("/", request.url), 302);
   const e = new URL(request.url).searchParams.get("e") ?? "";
-  return new Response(loginHtml({ error: ERRORS[e] ?? "", missing: missingConfig() }), {
+  return new Response(loginHtml({ error: ERRORS[e] ?? "", missing: missingConfig(), google: googleConfigured() }), {
     headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "DENY" },
   });
 }

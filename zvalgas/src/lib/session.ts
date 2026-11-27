@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { getUser, isOwner, type User } from "./store";
 
 export const SESSION_COOKIE = "cl_session";
@@ -57,6 +57,27 @@ export function allowed(email: string): boolean {
   if (!list.length) return true;
   const e = email.toLowerCase();
   return list.some((a) => (a.startsWith("@") ? e.endsWith(a) : e === a));
+}
+
+/* ----- passwords (scrypt) ----- */
+const SCRYPT = { N: 16384, r: 8, p: 1 };
+
+export function hashPassword(pw: string): string {
+  const salt = randomBytes(16);
+  const h = scryptSync(pw, salt, 32, SCRYPT);
+  return `scrypt$${salt.toString("base64url")}$${h.toString("base64url")}`;
+}
+
+export function checkPassword(pw: string, stored: string): boolean {
+  const [kind, salt, hash] = stored.split("$");
+  if (kind !== "scrypt" || !salt || !hash) return false;
+  const want = Buffer.from(hash, "base64url");
+  const got = scryptSync(pw, Buffer.from(salt, "base64url"), want.length, SCRYPT);
+  return want.length === got.length && timingSafeEqual(want, got);
+}
+
+export function sessionCookie(request: Request, userId: string): string {
+  return `${SESSION_COOKIE}=${createSession(userId)}; Max-Age=${SESSION_DAYS * 86400}; Path=/; HttpOnly; SameSite=Lax${secure(request) ? "; Secure" : ""}`;
 }
 
 export const secure = (request: Request) => new URL(request.url).protocol === "https:";
