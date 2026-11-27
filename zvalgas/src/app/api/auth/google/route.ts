@@ -3,6 +3,9 @@ import { googleConfigured, OAUTH_COOKIE, redirectUri, baseUrl } from "@/lib/oaut
 import { secure } from "@/lib/session";
 
 export async function GET(request: Request) {
+  // Google only knows one redirect URI: send other aliases of the deployment to the main address first.
+  const main = baseUrl(request);
+  if (new URL(request.url).host !== new URL(main).host) return Response.redirect(`${main}/api/auth/google`, 302);
   if (!googleConfigured()) return Response.redirect(`${baseUrl(request)}/login?e=config`, 302);
   const state = randomBytes(24).toString("base64url");
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
