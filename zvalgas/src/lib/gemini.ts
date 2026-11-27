@@ -41,13 +41,19 @@ export function geminiErrorMessage(e: unknown): string {
   return "Gemini neatsakė.";
 }
 
+const FALLBACK = "gemini-flash-lite-latest";
+
 async function call(path: string, payload: string, signal?: AbortSignal, m?: string) {
-  const r = await fetch(`${BASE}/${m || model()}:${path}`, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY ?? "" },
-    body: payload,
-    signal,
-  });
+  const go = (name: string) =>
+    fetch(`${BASE}/${name}:${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY ?? "" },
+      body: payload,
+      signal,
+    });
+  let r = await go(m || model());
+  // Busy model (503): try the lighter one once.
+  if (r.status === 503 && (m || model()) !== FALLBACK) r = await go(FALLBACK);
   if (!r.ok) {
     const j = (await r.json().catch(() => ({}))) as Chunk;
     throw new GeminiError(r.status, j.error?.message ?? r.statusText);

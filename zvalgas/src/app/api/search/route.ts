@@ -1,7 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "node:crypto";
-import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, geminiActive, webSearch } from "@/lib/ai";
-import { geminiErrorMessage, geminiStream } from "@/lib/gemini";
+import { aiClient, aiErrorMessage, modelId, modelKey, geminiActive, webSearch } from "@/lib/ai";
+import { fitsRevenue, readCompany, ruleReason, searchPage, type Found } from "@/lib/finder1551";
+import { geminiText } from "@/lib/gemini";
 import { cleanLead } from "@/lib/api";
 import { withoutDuplicates } from "@/lib/dedupe";
 import { me, unauthorized } from "@/lib/session";
@@ -28,6 +29,8 @@ async function insertLeads(items: LeadInput[], author: string): Promise<number> 
 export const maxDuration = 300;
 
 const MAX_ROUNDS = 6;
+
+const DEFAULT_KEYWORDS = ["kirpykla", "autoservisas", "statybos darbai", "santechnikas", "kavine", "baldu gamyba", "grozio salonas", "valymo paslaugos", "elektrikas", "stogu dengimas"];
 
 const SYSTEM = `Tu esi tyrėjas, kuris randa potencialius klientus Lietuvos laisvai samdomam svetainių ir sistemų kūrėjui.
 
@@ -142,7 +145,6 @@ export async function POST(request: Request) {
   if (!dbUrl()) {
     return Response.json({ error: "Nėra prijungtos duomenų bazės (DATABASE_URL)" }, { status: 503 });
   }
-  if (!aiAvailable()) return Response.json({ error: "AI šiame serveryje neįjungtas." }, { status: 503 });
 
   const raw = await request.json().catch(() => null);
   const req = parseBody(raw);
@@ -155,35 +157,62 @@ export async function POST(request: Request) {
     async start(controller) {
       const send = (e: SearchEvent) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
 
-      if (geminiActive()) {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        // Free path: read the public 1551.lt catalog directly; AI (if any) only writes the reasons.
         try {
           const known = await existingKeys();
-          const exclude = known.slice(-300).map((k) => k.name.slice(0, 120));
-          const prompt = `${buildPrompt(req, exclude)}
-
-Ieškok Google. Pabaigoje grąžink TIK JSON masyvą be jokio kito teksto, pvz.:
-[{"name":"","companyCode":"","category":"","city":"","phone":"","email":"","website":"","revenue":"","need":"Svetainė","reason":"","source":"https://..."}]
-"need" – viena iš: ${NEEDS.join(", ")}. Nežinomus laukus palik "". Kontaktų neišgalvok.`;
-          const { text } = await geminiStream(SYSTEM.replace(/Pabaigoje BŪTINAI iškviesk įrankį submit_leads[^\n]*/, ""), [{ role: "user", content: prompt }], {
-            search: true,
-            signal: request.signal,
-            onSearch: (q) => send({ type: "search", query: q }),
-          });
-          const a = text.indexOf("["), b = text.lastIndexOf("]");
-          let arr: unknown = [];
-          try {
-            arr = a >= 0 && b > a ? JSON.parse(text.slice(a, b + 1)) : [];
-          } catch {
-            arr = [];
+          const kw = req.industry || DEFAULT_KEYWORDS[Math.floor(Math.random() * DEFAULT_KEYWORDS.length)];
+          send({ type: "search", query: `1551.lt: ${kw}${req.city ? `, ${req.city}` : ""}` });
+          const picked: Found[] = [];
+          const t0 = Date.now();
+          let scanned = 0;
+          for (let page = 1; page <= 8 && picked.length < req.count && Date.now() - t0 < 200_000; page++) {
+            const urls = await searchPage(kw, req.city, page, request.signal);
+            if (!urls.length) break;
+            for (let i = 0; i < urls.length && picked.length < req.count; i += 6) {
+              const batch = await Promise.all(urls.slice(i, i + 6).map((u) => readCompany(u, request.signal).catch(() => null)));
+              for (const c of batch) {
+                if (!c) continue;
+                scanned++;
+                if (!(c.phone || c.email) || !fitsRevenue(c, req.revenue)) continue;
+                const rr = ruleReason(c, req.needs, `${kw.replace(/\+/g, " ")} ${req.city || c.city}`.trim().toLowerCase());
+                if (!rr) continue;
+                if (!withoutDuplicates([c], [...known, ...picked]).fresh.length) continue;
+                picked.push({ ...c, ...rr, category: c.category && c.category.length > 3 ? c.category : kw });
+                send({ type: "fetch", url: c.source });
+                if (picked.length >= req.count) break;
+              }
+            }
           }
-          const found = sanitize({ leads: arr });
-          const { fresh } = withoutDuplicates(found, known);
-          const added = await insertLeads(fresh, user);
-          send({ type: "result", found: found.length, added });
+          if (picked.length && geminiActive()) {
+            try {
+              const facts = picked.map((c, n) => `${n + 1}. ${c.name} | ${c.category} | ${c.city} | apyvarta: ${c.revenue || "nežinoma"} | darbuotojai: ${c.employees || "nežinoma"} | svetainė: ${c.website || "nėra"} | Facebook: ${c.facebook ? "yra" : "nenurodyta"} | siūlyti: ${c.need}`).join("\n");
+              const out = await geminiText(
+                "Tu padedi lietuviui, kuris skambina mažoms įmonėms ir siūlo svetaines. Kiekvienai įmonei parašyk vieną konkretų sakinį lietuviškai, kodėl verta skambinti, remdamasis TIK pateiktais faktais. Nieko neišgalvok. Grąžink tik JSON masyvą su tekstais ta pačia tvarka.",
+                facts,
+              );
+              const a = out.indexOf("["), b = out.lastIndexOf("]");
+              const arr = a >= 0 && b > a ? (JSON.parse(out.slice(a, b + 1)) as unknown[]) : [];
+              arr.forEach((t, n) => {
+                if (typeof t === "string" && t.trim() && picked[n]) picked[n].reason = `${t.trim().slice(0, 400)} (Pagal 1551.lt: svetainė ${picked[n].website ? "yra" : "nenurodyta"}.)`;
+              });
+            } catch (err) {
+              console.error("[search:reasons]", err);
+            }
+          }
+          const added = await insertLeads(
+            picked.map((c) => {
+              const lead: Partial<Found> = { ...c };
+              delete lead.facebook;
+              return lead as Found;
+            }),
+            user,
+          );
+          send({ type: "result", found: scanned, added });
         } catch (err) {
           if (!request.signal.aborted) {
-            console.error("[search:gemini]", err);
-            send({ type: "error", message: geminiErrorMessage(err) });
+            console.error("[search:1551]", err);
+            send({ type: "error", message: "Nepavyko perskaityti 1551.lt katalogo. Pabandyk dar kartą." });
           }
         }
         send({ type: "done" });
