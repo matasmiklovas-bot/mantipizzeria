@@ -7,7 +7,7 @@ export function loginHtml({ error, missing, google }: { error: string; missing: 
   return `<!DOCTYPE html>
 <html lang="lt"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Coldline</title>
+<title>Coldai</title>
 <meta name="theme-color" content="#0d1611"><meta name="robots" content="noindex">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -67,7 +67,7 @@ input:focus{border-color:#0e7a43;background:#fff;box-shadow:0 0 0 4px rgba(14,12
 </style></head>
 <body><main class="wrap">
 <section class="pitch">
-  <div class="brand"><img src="/icon.svg" alt="">Coldline</div>
+  <div class="brand"><img src="/icon.svg" alt="">Coldai</div>
   <h1>Skambink.<br>Susitark.<br><em>Parduok.</em></h1>
   <p class="lead">Įmonių eilė, pokalbio vedlys su atsakymais į prieštaravimus, sandoriai ir komandos rezultatai vienoje vietoje.</p>
   <div class="demo"><small>Tu sakai</small><p>Facebook gerai, jo nemeskit. Bet nauji žmonės ieško Google ir jūsų neranda.</p>
@@ -75,7 +75,7 @@ input:focus{border-color:#0e7a43;background:#fff;box-shadow:0 0 0 4px rgba(14,12
   <div class="stats"><div><b>1 bakstelėjimas</b>rezultatas</div><div><b>26 žingsniai</b>pokalbio vedlys</div><div><b>Gyvai</b>visa komanda</div></div>
 </section>
 <section class="card">
-  <div class="brand"><img src="/icon.svg" alt="">Coldline</div>
+  <div class="brand"><img src="/icon.svg" alt="">Coldai</div>
   <h2 id="t">Prisijunk</h2>
   <p class="sub" id="s">Įvesk savo vardą ir slaptažodį.</p>
   <div class="tabs" role="tablist"><button type="button" data-m="login" aria-pressed="true">Prisijungti</button><button type="button" data-m="register" aria-pressed="false">Sukurti paskyrą</button></div>

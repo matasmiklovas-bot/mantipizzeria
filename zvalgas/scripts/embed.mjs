@@ -14,8 +14,8 @@ const head = `<meta name="theme-color" content="#0d1611">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon.svg">
 <link rel="manifest" href="/manifest.webmanifest">`;
-if (!html.includes("<title>Coldline</title>")) throw new Error("title not found");
-html = html.replace("<title>Coldline</title>", `<title>Coldline</title>\n${head}`);
+if (!html.includes("<title>Coldai</title>")) throw new Error("title not found");
+html = html.replace("<title>Coldai</title>", `<title>Coldai</title>\n${head}`);
 
 const marker = "<script>\n/* ===== constants ===== */";
 if (!html.includes(marker)) throw new Error("app script marker not found");

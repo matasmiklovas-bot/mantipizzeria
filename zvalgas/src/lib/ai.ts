@@ -44,7 +44,7 @@ export function aiErrorMessage(err: unknown): string {
     const body = JSON.stringify(err.error ?? "");
     if (err.status === 402) return "Baigėsi nemokami AI kreditai šį mėnesį.";
     if (err.status === 403 && body.includes("customer_verification_required"))
-      return "Vercel prašo pridėti mokėjimo kortelę, kad įsijungtų nemokami AI kreditai (Vercel → Settings → Billing).";
+      return "AI dar neįjungtas: Vercel paskyroje reikia vieną kartą pridėti mokėjimo kortelę (vercel.com → AI Gateway). Tada veikia nemokami mėnesio kreditai.";
     if (err instanceof Anthropic.AuthenticationError) return "AI prisijungimas nepavyko.";
     if (err instanceof Anthropic.RateLimitError) return "Per daug užklausų. Pabandyk po minutės.";
     return `AI klaida (${err.status ?? "?"}).`;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coldline</title>
+<title>Coldai</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap&subset=latin-ext" rel="stylesheet">
@@ -550,12 +550,24 @@ label.btn{cursor:pointer}
 .aioff{display:flex;gap:12px;align-items:flex-start}.aioff p{margin-top:6px;font-size:14px;line-height:1.6}
 .aioff code{font-family:"Geist Mono",monospace;font-size:12.5px;background:var(--hover);padding:1px 5px;border-radius:5px}
 @media(max-width:767px){.chat{padding:0 12px}.ccomp{margin-bottom:10px}}
+/* ===== AI plan, model picker ===== */
+.mark{background:linear-gradient(145deg,#34d27a,#0a6a39 70%);color:#fff}
+.mpick button{min-width:0}
+.aibrief{margin-top:12px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh);padding:12px 16px 14px}
+.aibrief header{display:flex;align-items:center;gap:8px;font-size:14px}.aibrief header b{flex:1}
+.aib{margin-top:8px;font-size:14.5px;line-height:1.55}.aib p{margin:0 0 6px}.aib ul{margin:2px 0 8px 18px}.aib li{margin:2px 0}
+.aierr{margin-top:8px;font-size:13px;color:var(--danger)}
+.shim{margin-top:10px;display:grid;gap:8px}.shim i{display:block;height:11px;border-radius:6px;background:linear-gradient(90deg,var(--hover),var(--line),var(--hover));background-size:200% 100%;animation:shim 1.2s linear infinite}
+.shim i:nth-child(2){width:82%}.shim i:nth-child(3){width:64%}
+@keyframes shim{to{background-position:-200% 0}}
+@media(max-width:560px){.hide-xs{display:none}}
+.hero .crumbs button.t2{color:rgba(255,255,255,.72)}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="side" aria-label="Meniu">
-    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12a7 7 0 0 1 7-7"/><path d="M5 12a7 7 0 0 0 7 7"/><path d="M12 9a3 3 0 0 0 0 6"/><path d="M17 8v8M20 10v4"/></svg></span><span class="word">Coldline</span><span class="live" id="live"></span></div>
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M16.6 7.3A7 7 0 1 0 16.6 16.7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M18.6 8.6l.75 1.85 1.85.75-1.85.75-.75 1.85-.75-1.85-1.85-.75 1.85-.75z" fill="currentColor"/></svg></span><span class="word">Coldai</span><span class="live" id="live"></span></div>
     <nav class="nav" id="nav"></nav>
     <div class="sidefoot" id="sidefoot"></div>
   </aside>
@@ -1066,6 +1078,7 @@ function viewCall(){
       </section>
       ${l.reason?`<div class="whybox${S.whyOpen===l.id?" open":""}" data-act="why-toggle" data-id="${esc(l.id)}" title="Spausk, kad matytum visą"><span class="wicon">${icon("spark",15)}</span><div><span class="lbl">Kodėl skambinti</span><p>${esc(l.reason)}</p></div></div>`:""}
       ${convoHtml(l)}
+      ${briefHtml(l)}
       <dl class="brief facts">
         <div><dt>Pajamos</dt><dd>${l.revenue?esc(l.revenue):`<span class="muted">Neskelbiamos</span>`}</dd></div>
         ${l.employees?`<div><dt>Darbuotojai</dt><dd>${esc(l.employees)}</dd></div>`:""}
@@ -1094,6 +1107,7 @@ function viewCall(){
       </section>
     </article>${!wide?threadHtml(l,"below"):""}`;
   }
+  if(cur&&!cur.l.aiBrief)queueBrief(cur.l.id);
   return`<div class="call">
     <aside class="queue ${S.sheet?"sheet":""}">${S.sheet?`<button data-act="sheet-close" aria-label="Uždaryti" class="iconbtn" style="position:absolute;right:10px;top:12px">${icon("x")}</button>`:""}${list}</aside>
     <div class="center thin"><div class="mbar"><button data-act="sheet-open" style="display:inline-flex;align-items:center;gap:8px;font-weight:500">${icon("list",16)} Eilė <span class="mono muted">${q.queue.length}</span></button>${meId?`<span class="mono muted" style="margin-left:auto;font-size:12px">${myToday}/${goal}</span>`:""}</div>${center}</div>
@@ -1163,14 +1177,14 @@ function findPanel(){
   const F=S.form,chip=(arr,v)=>`<button class="chip" data-act="fchip" data-arr="${arr}" data-v="${esc(v)}" aria-pressed="${F[arr].includes(v)}">${esc(v)}</button>`;
   return`<section class="box in" style="padding:16px;margin-bottom:16px">
     <div class="sect">Rasti naujų įmonių<button class="iconbtn" data-act="find-close" aria-label="Uždaryti">${icon("x",16)}</button></div>
-    <p class="t2" style="font-size:13px;max-width:640px;margin-top:-6px">${ai?"Claude ieškos internete: tikrins katalogus, svetaines ir pajamas. Trunka 1–4 min. Rastos įmonės iškart atsiras sąraše, be dublikatų.":"Šis puslapis pats internete ieškoti negali. Paruošk užklausą ir įklijuok ją pokalbyje su Claude. Rastos įmonės atsiras čia."}</p>
+    <p class="t2" style="font-size:13px;max-width:640px;margin-top:-6px">${ai?"AI ieško internete pagal tavo filtrus: tikrina katalogus, svetaines ir pajamas. Trunka 1–4 min., rastos įmonės iškart atsiranda sąraše, be dublikatų. Pakeitęs filtrus spausk „Ieškoti su AI“.":"Šis puslapis pats internete ieškoti negali. Paruošk užklausą ir įklijuok ją pokalbyje su Claude. Rastos įmonės atsiras čia."}</p>
     <div style="margin-top:14px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
       <label class="field">Sritis<input class="inp" data-key="f.industry" value="${esc(F.industry)}" placeholder="Kirpyklos, autoservisai, statybos"></label>
       <label class="field">Miestas<input class="inp" data-key="f.city" value="${esc(F.city)}" placeholder="Visa Lietuva"></label></div>
     <div style="margin-top:14px"><span class="lbl" style="margin-bottom:6px">Metinės pajamos</span><div class="chips">${REVENUE.map(v=>chip("revenue",v)).join("")}</div></div>
     <div style="margin-top:12px"><span class="lbl" style="margin-bottom:6px">Ko trūksta</span><div class="chips">${NEEDS.map(v=>chip("needs",v)).join("")}</div></div>
-    <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><div class="seg">${[10,20,30,50].map(c=>`<button data-act="fcount" data-v="${c}" aria-pressed="${F.count===c}">${c}</button>`).join("")}</div>
-      ${ai?`<button class="btn go" data-act="ai-search" ${S.aiBusy?"disabled":""}>${icon("spark",15)} ${S.aiBusy?"Ieškoma…":"Ieškoti su AI"}</button>`:`<button class="btn ink" data-act="req">${icon("copy",15)} Nukopijuoti užklausą</button>`}</div>
+    <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><div class="seg">${(ai?[5,10,15,20]:[10,20,30,50]).map(c=>`<button data-act="fcount" data-v="${c}" aria-pressed="${F.count===c}">${c}</button>`).join("")}</div>
+      ${ai?`<span style="display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap">${modelPick()}${S.aiBusy?`<button class="btn" data-act="search-stop">${icon("x",15)} Stabdyti</button>`:""}<button class="btn go" data-act="ai-search" ${S.aiBusy?"disabled":""}>${icon("spark",15)} ${S.aiBusy?"Ieškoma…":"Ieškoti su AI"}</button></span>`:`<button class="btn ink" data-act="req">${icon("copy",15)} Nukopijuoti užklausą</button>`}</div>
     ${S.aiLog&&S.aiLog.length?`<ul class="ailog">${S.aiLog.map((t,i)=>`<li class="${i===S.aiLog.length-1&&S.aiBusy?"now":""}">${esc(t)}</li>`).join("")}</ul>`:""}
     ${S.reqText?`<textarea class="req in" readonly id="reqbox" style="margin-top:12px">${esc(S.reqText)}</textarea>`:""}
   </section>`;
@@ -1281,6 +1295,32 @@ function viewOverview(){
   </div></div>`;
 }
 
+/* ===== AI model choice ===== */
+const AIMODELS=[["haiku","Haiku","greitas, pigus"],["sonnet","Sonnet","geresnis"],["opus","Opus","protingiausias"]];
+function aiModel(){try{const m=localStorage.getItem("coldai-model");return AIMODELS.some(x=>x[0]===m)?m:"haiku"}catch{return"haiku"}}
+const modelPick=()=>`<div class="seg mpick" title="AI modelis">${AIMODELS.map(([k,t,n])=>`<button data-act="model" data-v="${k}" aria-pressed="${aiModel()===k}" title="${n}">${t}</button>`).join("")}</div>`;
+
+/* ===== AI call plan per company ===== */
+const briefSt={};let briefTimer=0;
+function queueBrief(id){
+  if(!ai||!window.COLDLINE_WEB||briefSt[id])return;
+  clearTimeout(briefTimer);briefTimer=setTimeout(()=>{const c=current(queues());if(c&&c.l.id===id&&!c.l.aiBrief)makeBrief(id,false)},900);
+}
+async function makeBrief(id,force){
+  const st=briefSt[id]=briefSt[id]||{};if(st.busy)return;st.busy=true;st.err="";render(true);
+  try{const r=await window.COLDLINE_WEB.brief(id,aiModel(),force);
+    if(r.brief){leads=leads.map(x=>x.id===id?{...x,aiBrief:r.brief,aiBriefAt:Date.now()}:x)}else st.err=r.error||"Nepavyko."}
+  catch(e){st.err=e&&e.message||"Nepavyko."}
+  st.busy=false;render(true);
+}
+function briefHtml(l){
+  if(!ai||!window.COLDLINE_WEB)return"";
+  const st=briefSt[l.id]||{},b=l.aiBrief;
+  return`<section class="aibrief" id="ab-${esc(l.id)}"><header><span class="cav">${icon("spark",13)}</span><b>AI planas šiam skambučiui</b>
+    <button class="mini-btn" data-act="brief-redo" data-id="${esc(l.id)}" ${st.busy?"disabled":""}>${st.busy?"Rašoma…":b?"Perrašyti":"Sugeneruoti"}</button></header>
+    ${b?`<div class="aib">${md(b)}</div>`:st.err?`<p class="aierr">${esc(st.err)}</p>`:`<div class="shim"><i></i><i></i><i></i></div>`}</section>`;
+}
+
 /* ===== Claude chat (web version) ===== */
 const CHATKEY=()=>"coldline-chat-"+(meId||"x");
 function chatState(){
@@ -1309,7 +1349,7 @@ function viewClaude(){
     :`<div class="cmsg ai"><span class="cav">${icon("spark",14)}</span><div class="cb">${(m.searches||[]).map(q=>`<span class="csearch">${icon("search",12)} ${esc(q)}</span>`).join("")}${m.content?md(m.content):c.busy&&i===c.msgs.length-1?`<span class="typing"><i></i><i></i><i></i></span>`:""}</div></div>`).join("");
   return`<div class="chat">
     <header class="chead"><span class="cav big">${icon("spark",18)}</span><div class="ctitle"><b>Claude</b><small>Pokalbiai, laiškai, prieštaravimai ir įmonių paieška</small></div>
-      ${c.msgs.length?`<button class="btn" data-act="chat-new">${icon("plus",15)} Naujas pokalbis</button>`:""}</header>
+      ${modelPick()}${c.msgs.length?`<button class="btn" data-act="chat-new" title="Naujas pokalbis">${icon("plus",15)}<span class="hide-xs">Naujas</span></button>`:""}</header>
     ${lead?`<div class="cctx">Kalbam apie <b>${esc(spokenName(lead.name))}</b><button class="iconbtn" data-act="chat-ctx-clear" aria-label="Nebekalbėti apie šią įmonę">${icon("x",14)}</button></div>`:""}
     <div class="cmsgs thin" id="cmsgs">${c.msgs.length?msgs:`<div class="cempty"><span class="cav huge">${icon("spark",26)}</span><h2>Kuo galiu padėti?</h2><p class="muted">Matau komandos sąrašą${lead?" ir atidarytą įmonę":""}, galiu ieškoti internete.</p>
       <div class="csugg">${sugg.map(([q,t])=>`<button data-act="chat-sugg" data-q="${esc(q)}"><b>${esc(t)}</b><span>${esc(q)}</span></button>`).join("")}</div></div>`}
@@ -1324,7 +1364,7 @@ async function chatSend(text){
   c.busy=true;c.err="";S.chatDraft="";S.chatScroll=true;
   const ta=document.querySelector("textarea[data-key=chat]");if(ta){ta.value="";ta.style.height="auto"}
   render();
-  try{await window.COLDLINE_WEB.chat(c.msgs.slice(0,-1).map(m=>({role:m.role,content:m.content})),c.leadId,e=>{
+  try{await window.COLDLINE_WEB.chat(c.msgs.slice(0,-1).map(m=>({role:m.role,content:m.content})),c.leadId,aiModel(),e=>{
     if(e.type==="text")a.content+=e.text;else if(e.type==="search")a.searches.push(e.query);else if(e.type==="error")c.err=e.message;
     S.chatScroll=true;render(true)})}
   catch(err){c.err=err&&err.message||"Nepavyko."}
@@ -1408,7 +1448,10 @@ document.addEventListener("click",async e=>{
     case"edit-close":S.editing=false;render();break;
     case"filter":S.filter=b.dataset.v;render();break;
     case"add-toggle":S.adding=!S.adding;S.finding=false;render();break;
-    case"find-toggle":S.finding=!S.finding;S.adding=false;render();break;
+    case"find-toggle":S.finding=!S.finding;S.adding=false;render();if(S.finding&&ai&&!S.aiBusy)runSearch();break;
+    case"model":try{localStorage.setItem("coldai-model",b.dataset.v)}catch{};render();break;
+    case"brief-redo":makeBrief(id,true);break;
+    case"search-stop":if(S.aiAbort)S.aiAbort.abort();break;
     case"find-open":S.finding=true;break;
     case"find-close":S.finding=false;render();break;
     case"menu":e.stopPropagation();S.menu=S.menu===id?null:id;render();break;
@@ -1427,13 +1470,7 @@ document.addEventListener("click",async e=>{
     case"chat-sugg":chatSend(b.dataset.q);break;
     case"why-toggle":S.whyOpen=S.whyOpen===id?null:id;render();break;
     case"logout":if(window.COLDLINE_WEB)window.COLDLINE_WEB.logout();break;
-    case"ai-search":{if(!ai||S.aiBusy)break;S.aiBusy=true;S.aiLog=["Pradedama paieška…"];render();
-      const say=t=>{S.aiLog=[...S.aiLog,t].slice(-8);render(true)};
-      try{await ai.search({industry:S.form.industry,city:S.form.city,revenue:S.form.revenue,needs:S.form.needs,count:Math.min(20,S.form.count)},e=>{
-        if(e.type==="search")say("Ieško: "+e.query);else if(e.type==="fetch")say("Skaito: "+host(e.url));
-        else if(e.type==="result")say(`Rasta ${e.found}, pridėta ${e.added} naujų.`);else if(e.type==="error")say("Klaida: "+e.message)})}
-      catch(err){say("Klaida: "+(err&&err.message||"nepavyko"))}
-      S.aiBusy=false;render();break}
+    case"ai-search":runSearch();break;
     case"open-cb":S.sel=id;S.scope="all";location.hash="";break;
     case"bar":S.hover=S.hover===Number(b.dataset.i)?null:Number(b.dataset.i);render();break;
     case"period":S.period=b.dataset.v;render();break;
@@ -1511,6 +1548,15 @@ document.addEventListener("submit",async e=>{
 async function copyText(t,msg){try{await navigator.clipboard.writeText(t);toast(msg)}catch{toast(t)}}
 setInterval(()=>{const el=document.getElementById("calltimer");if(el&&S.callStart)el.textContent=fmtDur(Date.now()-S.callStart)},1000);
 const LEAD_FIELDS=["name","companyCode","category","city","phone","email","website","revenue","revenueValue","employees","need","reason","source"];
+async function runSearch(){
+  if(!ai||S.aiBusy)return;S.aiBusy=true;S.aiLog=["Pradedama paieška…"];S.aiAbort=new AbortController();render();
+  const say=t=>{S.aiLog=[...S.aiLog,t].slice(-8);render(true)};let added=0;
+  try{await ai.search({industry:S.form.industry,city:S.form.city,revenue:S.form.revenue,needs:S.form.needs,count:Math.min(20,S.form.count),model:aiModel()},e=>{
+    if(e.type==="search")say("Ieško: "+e.query);else if(e.type==="fetch")say("Skaito: "+host(e.url));
+    else if(e.type==="result"){added=e.added;say(`Rasta ${e.found}, pridėta ${e.added} naujų.`)}else if(e.type==="error")say("Klaida: "+e.message)},S.aiAbort.signal)}
+  catch(err){say(err&&err.name==="AbortError"?"Sustabdyta.":"Klaida: "+(err&&err.message||"nepavyko"))}
+  S.aiBusy=false;S.aiAbort=null;render();if(added)toast(`Pridėta ${pl(added,"nauja įmonė","naujos įmonės","naujų įmonių")}.`);
+}
 async function exportBackup(){
   const data=JSON.stringify(leads.map(l=>Object.fromEntries([["id",l.id],...LEAD_FIELDS.filter(k=>l[k]!==undefined&&l[k]!=="").map(k=>[k,l[k]])])),null,1);
   const filename=`coldline-kontaktai-${dayKey(Date.now())}.json`;
