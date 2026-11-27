@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "node:crypto";
+import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, webSearch } from "@/lib/ai";
 import { cleanLead } from "@/lib/api";
 import { withoutDuplicates } from "@/lib/dedupe";
 import { me, unauthorized } from "@/lib/session";
@@ -25,7 +26,6 @@ async function insertLeads(items: LeadInput[], author: string): Promise<number> 
 
 export const maxDuration = 300;
 
-const MODEL = "claude-opus-5-5";
 const MAX_ROUNDS = 6;
 
 const SYSTEM = `Tu esi tyrėjas, kuris randa potencialius klientus Lietuvos laisvai samdomam svetainių ir sistemų kūrėjui.
@@ -141,17 +141,14 @@ export async function POST(request: Request) {
   if (!dbUrl()) {
     return Response.json({ error: "Nėra prijungtos duomenų bazės (DATABASE_URL)" }, { status: 503 });
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json(
-      { error: "Serveryje nenustatytas ANTHROPIC_API_KEY" },
-      { status: 500 },
-    );
-  }
+  if (!aiAvailable()) return Response.json({ error: "AI šiame serveryje neįjungtas." }, { status: 503 });
 
-  const req = parseBody(await request.json().catch(() => null));
+  const raw = await request.json().catch(() => null);
+  const req = parseBody(raw);
   if (!req) return Response.json({ error: "Blogi duomenys" }, { status: 400 });
+  const model = modelId(modelKey((raw as { model?: unknown } | null)?.model));
 
-  const client = new Anthropic();
+  const client = await aiClient();
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -169,22 +166,10 @@ export async function POST(request: Request) {
         for (let round = 0; round < MAX_ROUNDS; round++) {
           const s = client.beta.messages.stream(
             {
-              model: MODEL,
+              model,
               max_tokens: 32000,
-              betas: ["server-side-fallback-2026-07-01"],
-              fallbacks: "default",
-              output_config: { effort: "medium" },
               system: SYSTEM,
-              tools: [
-                {
-                  type: "web_search_20260209",
-                  name: "web_search",
-                  max_uses: 15,
-                  user_location: { type: "approximate", country: "LT" },
-                },
-                { type: "web_fetch_20260209", name: "web_fetch", max_uses: 20 },
-                submitTool,
-              ],
+              tools: [webSearch(12), { type: "web_fetch_20250910", name: "web_fetch", max_uses: 15 }, submitTool],
               tool_choice: { type: "auto" },
               messages,
             },
@@ -237,10 +222,7 @@ export async function POST(request: Request) {
           controller.close();
           return;
         }
-        let message = "Nepavyko atlikti paieškos.";
-        if (err instanceof Anthropic.AuthenticationError) message = "Neteisingas ANTHROPIC_API_KEY.";
-        else if (err instanceof Anthropic.RateLimitError) message = "Pasiektas API limitas. Pabandyk po minutės.";
-        else if (err instanceof Anthropic.APIError) message = `API klaida (${err.status ?? "?"}).`;
+        const message = aiErrorMessage(err);
         console.error("[search]", err);
         send({ type: "error", message });
         send({ type: "done" });

@@ -1,10 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, webSearch } from "@/lib/ai";
 import { me, unauthorized } from "@/lib/session";
 import { get, list } from "@/lib/store";
 
 export const maxDuration = 120;
 
-const MODEL = "claude-opus-5-5";
 const MAX_TURNS = 24;
 const MAX_CHARS = 6000;
 
@@ -77,17 +77,16 @@ function limited(id: string) {
 export async function POST(request: Request) {
   const who = await me(request).catch(() => null);
   if (!who) return unauthorized();
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: "Claude dar neprijungtas: Vercel'yje trūksta ANTHROPIC_API_KEY.", code: "no_key" }, { status: 503 });
-  }
+  if (!aiAvailable()) return Response.json({ error: "AI šiame serveryje neįjungtas.", code: "no_key" }, { status: 503 });
   if (limited(who.id)) return Response.json({ error: "Per daug klausimų per minutę. Palauk truputį." }, { status: 429 });
 
-  const body = (await request.json().catch(() => ({}))) as { messages?: unknown; leadId?: unknown };
+  const body = (await request.json().catch(() => ({}))) as { messages?: unknown; leadId?: unknown; model?: unknown };
+  const model = modelId(modelKey(body.model));
   const messages = cleanMessages(body.messages);
   if (!messages) return Response.json({ error: "Tuščias klausimas." }, { status: 400 });
   const leadId = typeof body.leadId === "string" && /^[\w.-]{1,100}$/.test(body.leadId) ? body.leadId : null;
 
-  const client = new Anthropic();
+  const client = await aiClient();
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -98,16 +97,14 @@ export async function POST(request: Request) {
         for (let round = 0; round < 4; round++) {
           const s2 = client.beta.messages.stream(
             {
-              model: MODEL,
+              model,
               max_tokens: 16000,
-              betas: ["server-side-fallback-2026-07-01"],
-              fallbacks: "default",
               output_config: { effort: "low" },
               system: [
                 { type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } },
                 { type: "text", text: `Šiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who.name}.\n\n${context}` },
               ],
-              tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3, user_location: { type: "approximate", country: "LT" } }],
+              tools: [webSearch(3)],
               messages: convo,
             },
             { signal: request.signal },
@@ -132,10 +129,7 @@ export async function POST(request: Request) {
         send({ type: "done" });
       } catch (err) {
         if (!request.signal.aborted) {
-          let message = "Nepavyko gauti atsakymo.";
-          if (err instanceof Anthropic.AuthenticationError) message = "Neteisingas ANTHROPIC_API_KEY.";
-          else if (err instanceof Anthropic.RateLimitError) message = "Pasiektas API limitas. Pabandyk po minutės.";
-          else if (err instanceof Anthropic.APIError) message = `Claude klaida (${err.status ?? "?"}).`;
+          const message = aiErrorMessage(err);
           console.error("[chat]", err);
           send({ type: "error", message });
           send({ type: "done" });
