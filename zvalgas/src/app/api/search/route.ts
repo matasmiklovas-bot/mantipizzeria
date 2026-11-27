@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "node:crypto";
-import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, webSearch } from "@/lib/ai";
+import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, geminiActive, webSearch } from "@/lib/ai";
+import { geminiErrorMessage, geminiStream } from "@/lib/gemini";
 import { cleanLead } from "@/lib/api";
 import { withoutDuplicates } from "@/lib/dedupe";
 import { me, unauthorized } from "@/lib/session";
@@ -148,13 +149,49 @@ export async function POST(request: Request) {
   if (!req) return Response.json({ error: "Blogi duomenys" }, { status: 400 });
   const model = modelId(modelKey((raw as { model?: unknown } | null)?.model));
 
-  const client = await aiClient();
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
       const send = (e: SearchEvent) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
 
+      if (geminiActive()) {
+        try {
+          const known = await existingKeys();
+          const exclude = known.slice(-300).map((k) => k.name.slice(0, 120));
+          const prompt = `${buildPrompt(req, exclude)}
+
+Ieškok Google. Pabaigoje grąžink TIK JSON masyvą be jokio kito teksto, pvz.:
+[{"name":"","companyCode":"","category":"","city":"","phone":"","email":"","website":"","revenue":"","need":"Svetainė","reason":"","source":"https://..."}]
+"need" – viena iš: ${NEEDS.join(", ")}. Nežinomus laukus palik "". Kontaktų neišgalvok.`;
+          const { text } = await geminiStream(SYSTEM.replace(/Pabaigoje BŪTINAI iškviesk įrankį submit_leads[^\n]*/, ""), [{ role: "user", content: prompt }], {
+            search: true,
+            signal: request.signal,
+            onSearch: (q) => send({ type: "search", query: q }),
+          });
+          const a = text.indexOf("["), b = text.lastIndexOf("]");
+          let arr: unknown = [];
+          try {
+            arr = a >= 0 && b > a ? JSON.parse(text.slice(a, b + 1)) : [];
+          } catch {
+            arr = [];
+          }
+          const found = sanitize({ leads: arr });
+          const { fresh } = withoutDuplicates(found, known);
+          const added = await insertLeads(fresh, user);
+          send({ type: "result", found: found.length, added });
+        } catch (err) {
+          if (!request.signal.aborted) {
+            console.error("[search:gemini]", err);
+            send({ type: "error", message: geminiErrorMessage(err) });
+          }
+        }
+        send({ type: "done" });
+        controller.close();
+        return;
+      }
+
+      const client = await aiClient();
       try {
         // Names already in the list, so the model doesn't return them again.
         const known = await existingKeys();

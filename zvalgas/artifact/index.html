@@ -937,7 +937,7 @@ async function connect(){
   if(!c){S.conn="none";render();return}
   let smp;[db,user,downloads,ai,smp]=await Promise.all([c.use("db"),c.use("user"),c.use("downloads"),c.use("ai"),c.use("sample")].map(p=>p.catch(()=>null)));
   aiApi=ai&&window.COLDLINE_WEB?webAi():typeof smp==="function"?sampleAi(smp):null;
-  if(aiApi&&!NAV.some(n=>n[0]==="claude"))NAV.splice(1,0,["claude","Claude","spark"]);
+  if(aiApi&&!NAV.some(n=>n[0]==="claude"))NAV.splice(1,0,["claude",aiApi.web?"AI":"Claude","spark"]);
   if(user){try{meId=await user.id();isOwner=await user.isOwner()}catch{}}
   if(!db){S.conn="none";render();return}
   let got=false;const timer=setTimeout(()=>{if(!got){S.conn="slow";render()}},10000);
@@ -1067,7 +1067,7 @@ function viewCall(){
       <div class="crumbs"><span style="display:inline-flex;align-items:center;gap:7px;color:${cur.tone};font-weight:500"><span class="dot" style="background:${cur.tone}"></span>${esc(cur.label)}</span>
         ${pos>=0?`<span class="mono">${pos+1}/${q.queue.length}</span>`:""}
         ${l.assignee?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(firstName(l.assignee))}</span>`:""}
-        ${aiApi?`<button class="push askai" data-act="ask-claude" data-id="${esc(l.id)}">${icon("spark",14)}Klausti Claude</button>`:""}<button class="${aiApi?"":"push "}t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
+        ${aiApi?`<button class="push askai" data-act="ask-claude" data-id="${esc(l.id)}">${icon("spark",14)}Klausti ${aiApi.web?"AI":"Claude"}</button>`:""}<button class="${aiApi?"":"push "}t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
       <h1 class="fname">${esc(spokenName(l.name))}</h1>${spokenName(l.name)!==l.name?`<p class="fmeta">${esc(l.name)}</p>`:""}
       ${tags.length?`<div class="htags">${tags.map(([i,t])=>`<span>${i}${esc(t)}</span>`).join("")}<span class="need">${esc(l.need||"Svetainė")}</span></div>`:""}
       ${S.editing?`</section>`+editForm(l):`
@@ -1393,13 +1393,13 @@ function viewClaude(){
   const msgs=c.msgs.map((m,i)=>m.role==="user"?`<div class="cmsg me"><div class="cb">${esc(m.content)}</div></div>`
     :`<div class="cmsg ai"><span class="cav">${icon("spark",14)}</span><div class="cb">${(m.searches||[]).map(q=>`<span class="csearch">${icon("search",12)} ${esc(q)}</span>`).join("")}${m.content?md(m.content):c.busy&&i===c.msgs.length-1?`<span class="typing"><i></i><i></i><i></i></span>`:""}</div></div>`).join("");
   return`<div class="chat">
-    <header class="chead"><span class="cav big">${icon("spark",18)}</span><div class="ctitle"><b>Claude</b><small>Pokalbiai, laiškai, prieštaravimai ir įmonių paieška</small></div>
+    <header class="chead"><span class="cav big">${icon("spark",18)}</span><div class="ctitle"><b>${aiApi.web?"AI pagalbininkas":"Claude"}</b><small>Pokalbiai, laiškai, prieštaravimai ir įmonių paieška</small></div>
       ${modelPick()}${c.msgs.length?`<button class="btn" data-act="chat-new" title="Naujas pokalbis">${icon("plus",15)}<span class="hide-xs">Naujas</span></button>`:""}</header>
     ${lead?`<div class="cctx">Kalbam apie <b>${esc(spokenName(lead.name))}</b><button class="iconbtn" data-act="chat-ctx-clear" aria-label="Nebekalbėti apie šią įmonę">${icon("x",14)}</button></div>`:""}
     <div class="cmsgs thin" id="cmsgs">${c.msgs.length?msgs:`<div class="cempty"><span class="cav huge">${icon("spark",26)}</span><h2>Kuo galiu padėti?</h2><p class="muted">Matau komandos sąrašą${lead?" ir atidarytą įmonę":""}${aiApi.web?", galiu ieškoti internete":""}.</p>
       <div class="csugg">${sugg.map(([q,t])=>`<button data-act="chat-sugg" data-q="${esc(q)}"><b>${esc(t)}</b><span>${esc(q)}</span></button>`).join("")}</div></div>`}
       ${c.err?`<div class="cerr">${esc(c.err)}</div>`:""}</div>
-    <form class="ccomp" data-act="chat-form"><textarea data-key="chat" rows="1" placeholder="Rašyk Claude…" enterkeyhint="send">${esc(S.chatDraft||"")}</textarea>
+    <form class="ccomp" data-act="chat-form"><textarea data-key="chat" rows="1" placeholder="${aiApi.web?"Rašyk AI…":"Rašyk Claude…"}" enterkeyhint="send">${esc(S.chatDraft||"")}</textarea>
       <button class="csend" ${c.busy?"disabled":""} aria-label="Siųsti">${icon("send",16)}</button></form>
   </div>`;
 }

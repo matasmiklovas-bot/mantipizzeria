@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getVercelOidcToken } from "@vercel/oidc";
+import { geminiOn } from "./gemini";
 
 /**
  * Claude for every AI feature.
@@ -19,7 +20,10 @@ export const modelKey = (v: unknown): ModelKey => (typeof v === "string" && v in
 const direct = () => !!process.env.ANTHROPIC_API_KEY;
 
 /** Whether AI can run here at all. */
-export const aiAvailable = () => direct() || !!process.env.VERCEL || !!process.env.VERCEL_OIDC_TOKEN;
+export const aiAvailable = () => direct() || geminiOn() || !!process.env.VERCEL || !!process.env.VERCEL_OIDC_TOKEN;
+
+/** Gemini answers when its free key is set and no Anthropic key is. */
+export const geminiActive = () => !direct() && geminiOn();
 
 export function modelId(k: ModelKey): string {
   return direct() ? MODELS[k].direct : MODELS[k].gateway;

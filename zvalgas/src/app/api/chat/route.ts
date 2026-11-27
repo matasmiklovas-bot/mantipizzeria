@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, webSearch } from "@/lib/ai";
+import { aiAvailable, aiClient, aiErrorMessage, modelId, modelKey, geminiActive, webSearch } from "@/lib/ai";
+import { geminiErrorMessage, geminiStream } from "@/lib/gemini";
 import { me, unauthorized } from "@/lib/session";
 import { get, list } from "@/lib/store";
 
@@ -8,7 +9,7 @@ export const maxDuration = 120;
 const MAX_TURNS = 24;
 const MAX_CHARS = 6000;
 
-const SYSTEM = `Tu esi Claude, įmontuotas į „Coldline“: tai Lietuvos komandos, kuri šaltais skambučiais parduoda svetaines, el. parduotuves, rezervacijų ir vidines sistemas mažoms įmonėms, darbo vieta.
+const SYSTEM = `Tu esi AI pagalbininkas, įmontuotas į „Coldai“: tai Lietuvos komandos, kuri šaltais skambučiais parduoda svetaines, el. parduotuves, rezervacijų ir vidines sistemas mažoms įmonėms, darbo vieta.
 
 Kaip rašyti:
 - Lietuviškai, paprastai ir žmogiškai, kaip kolega, ne kaip robotas. Trumpai: dažniausiai 2–6 sakiniai arba trumpas sąrašas.
@@ -86,12 +87,30 @@ export async function POST(request: Request) {
   if (!messages) return Response.json({ error: "Tuščias klausimas." }, { status: 400 });
   const leadId = typeof body.leadId === "string" && /^[\w.-]{1,100}$/.test(body.leadId) ? body.leadId : null;
 
-  const client = await aiClient();
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (e: Record<string, unknown>) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+      if (geminiActive()) {
+        try {
+          const context = await contextBlock(leadId);
+          await geminiStream(
+            `${SYSTEM}\n\nŠiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who.name}.\n\n${context}`,
+            messages.map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: String(m.content) })),
+            { search: true, signal: request.signal, onText: (t) => send({ type: "text", text: t }), onSearch: (q) => send({ type: "search", query: q }) },
+          );
+        } catch (err) {
+          if (!request.signal.aborted) {
+            console.error("[chat:gemini]", err);
+            send({ type: "error", message: geminiErrorMessage(err) });
+          }
+        }
+        send({ type: "done" });
+        controller.close();
+        return;
+      }
       try {
+        const client = await aiClient();
         const context = await contextBlock(leadId);
         const convo: Anthropic.Beta.BetaMessageParam[] = [...messages];
         for (let round = 0; round < 4; round++) {
