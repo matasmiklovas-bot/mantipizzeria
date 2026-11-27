@@ -58,8 +58,17 @@
       while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(line){try{onEvent(JSON.parse(line))}catch{}}}}
     tick();
   }};
+  async function chat(messages,leadId,onEvent){
+    const r=await fetch("/api/chat",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({messages,leadId})});
+    if(r.status===401){location.replace("/login");return}
+    if(!r.ok||!r.body){const e=await r.json().catch(()=>({}));throw new Error(e.error||"Claude neatsako")}
+    const rd=r.body.getReader(),dec=new TextDecoder();let buf="";
+    for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+      while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(line){try{onEvent(JSON.parse(line))}catch{}}}}
+  }
   window.COLDLINE_WEB={
     me:meGet,
+    chat,
     logout:async()=>{try{await api("POST","/api/auth/logout")}catch{}location.replace("/login")},
   };
   window.claude={use:async name=>{

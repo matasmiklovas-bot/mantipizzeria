@@ -517,6 +517,39 @@ label.btn{cursor:pointer}
   .whybox.open p{-webkit-line-clamp:unset}
   .cv{margin-top:12px}
 }
+/* ===== Claude chat ===== */
+.tabs{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr}
+.chat{height:100%;display:flex;flex-direction:column;max-width:880px;margin:0 auto;padding:0 16px}
+.chead{display:flex;align-items:center;gap:12px;padding:18px 2px 12px}
+.ctitle{flex:1;min-width:0}.ctitle b{display:block;font-size:20px;letter-spacing:-.03em}.ctitle small{color:var(--muted);font-size:13px}
+.cav{display:inline-grid;place-items:center;flex-shrink:0;width:28px;height:28px;border-radius:9px;color:#fff;background:linear-gradient(145deg,#2fbf6b,#0b6b3a);box-shadow:0 4px 12px -4px rgba(14,122,67,.6)}
+.cav.big{width:40px;height:40px;border-radius:12px}.cav.huge{width:56px;height:56px;border-radius:17px}
+.cctx{display:flex;align-items:center;gap:6px;align-self:flex-start;margin-bottom:8px;padding:2px 4px 2px 12px;border-radius:99px;background:var(--tint);border:1px solid color-mix(in srgb,var(--call) 22%,transparent);font-size:13px}
+.cmsgs{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:6px 2px 16px}
+.cmsg{display:flex;gap:10px;animation:rise .25s ease-out both}
+.cmsg.me{justify-content:flex-end}
+.cmsg.me .cb{max-width:78%;background:var(--ink);color:var(--on-ink);border-radius:18px 18px 5px 18px;padding:10px 14px;font-size:15px;line-height:1.5;white-space:pre-wrap}
+.cmsg.ai .cb{flex:1;min-width:0;font-size:15.5px;line-height:1.6;color:var(--text);padding-top:3px}
+.cmsg.ai .cb p{margin:0 0 8px}.cmsg.ai .cb ul{margin:4px 0 10px 18px}.cmsg.ai .cb li{margin:3px 0}
+.cmsg.ai .cb code{font-family:"Geist Mono",monospace;font-size:13px;background:var(--hover);padding:1px 5px;border-radius:5px}
+.csearch{display:inline-flex;align-items:center;gap:5px;margin:0 6px 8px 0;padding:3px 9px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}
+.typing{display:inline-flex;gap:4px;padding:8px 0}.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:pulse 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+.cempty{margin:auto;text-align:center;max-width:620px;padding:24px 0}
+.cempty h2{margin-top:14px;font-size:26px;letter-spacing:-.035em}.cempty p{margin-top:6px;font-size:14px}
+.csugg{margin-top:22px;display:grid;grid-template-columns:1fr;gap:10px;text-align:left}
+@media(min-width:640px){.csugg{grid-template-columns:1fr 1fr}}
+.csugg button{display:flex;flex-direction:column;gap:3px;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh);text-align:left}
+.csugg button:hover{border-color:var(--call)}.csugg b{font-size:14px}.csugg span{font-size:13px;color:var(--muted);line-height:1.45}
+.cerr{align-self:center;border-radius:12px;background:color-mix(in srgb,var(--danger) 10%,var(--surface));color:var(--danger);padding:9px 14px;font-size:13.5px}
+.ccomp{display:flex;align-items:flex-end;gap:8px;margin:0 0 16px;padding:8px 8px 8px 16px;border-radius:22px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh)}
+.ccomp:focus-within{border-color:var(--call);box-shadow:0 0 0 4px color-mix(in srgb,var(--call) 12%,transparent)}
+.ccomp textarea{flex:1;min-height:40px;max-height:180px;resize:none;border:0;outline:none;background:none;padding:9px 0;font:inherit;font-size:16px;line-height:1.45;color:var(--text)}
+.csend{display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;border-radius:14px;color:#fff;background:linear-gradient(180deg,#22b061,#0e8a49)}
+.askai{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:99px;background:color-mix(in srgb,var(--glow) 18%,transparent);border:1px solid color-mix(in srgb,var(--glow) 35%,transparent);color:#d7ffe6!important;font-weight:500}
+.crumbs .askai+button{margin-left:4px}
+.aioff{display:flex;gap:12px;align-items:flex-start}.aioff p{margin-top:6px;font-size:14px;line-height:1.6}
+.aioff code{font-family:"Geist Mono",monospace;font-size:12.5px;background:var(--hover);padding:1px 5px;border-radius:5px}
+@media(max-width:767px){.chat{padding:0 12px}.ccomp{margin-bottom:10px}}
 </style>
 </head>
 <body>
@@ -582,6 +615,7 @@ const ICON={
   target:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z",
 };
 const NAV=[["","Skambinti","phone"],["pardavimai","Pardavimai","euro"],["kontaktai","Kontaktai","list"],["komanda","Komanda","users"],["apzvalga","Apžvalga","chart"]];
+if(window.COLDLINE_WEB)NAV.splice(1,0,["claude","Claude","spark"]);
 
 /* Conversation guide. Each step: what you say, and what they might answer.
    {me} {name} {cat} {city} {problem} are filled in. Endings map to a call result. */
@@ -1020,7 +1054,7 @@ function viewCall(){
       <div class="crumbs"><span style="display:inline-flex;align-items:center;gap:7px;color:${cur.tone};font-weight:500"><span class="dot" style="background:${cur.tone}"></span>${esc(cur.label)}</span>
         ${pos>=0?`<span class="mono">${pos+1}/${q.queue.length}</span>`:""}
         ${l.assignee?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(firstName(l.assignee))}</span>`:""}
-        <button class="push t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
+        ${window.COLDLINE_WEB?`<button class="push askai" data-act="ask-claude" data-id="${esc(l.id)}">${icon("spark",14)}Klausti Claude</button>`:""}<button class="${window.COLDLINE_WEB?"":"push "}t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
       <h1 class="fname">${esc(spokenName(l.name))}</h1>${spokenName(l.name)!==l.name?`<p class="fmeta">${esc(l.name)}</p>`:""}
       ${tags.length?`<div class="htags">${tags.map(([i,t])=>`<span>${i}${esc(t)}</span>`).join("")}<span class="need">${esc(l.need||"Svetainė")}</span></div>`:""}
       ${S.editing?`</section>`+editForm(l):`
@@ -1247,6 +1281,56 @@ function viewOverview(){
   </div></div>`;
 }
 
+/* ===== Claude chat (web version) ===== */
+const CHATKEY=()=>"coldline-chat-"+(meId||"x");
+function chatState(){
+  const key=CHATKEY();
+  if(!S.chat||(S.chat.key!==key&&!S.chat.busy)){let msgs=[];try{msgs=JSON.parse(localStorage.getItem(key)||"[]")}catch{}S.chat={key,msgs:Array.isArray(msgs)?msgs.slice(-40):[],busy:false,err:"",leadId:S.chat?S.chat.leadId:null}}
+  return S.chat;
+}
+function saveChat(){try{localStorage.setItem(CHATKEY(),JSON.stringify(S.chat.msgs.slice(-40)))}catch{}}
+function md(t){
+  const lines=esc(t).split("\n"),out=[];let list=null;
+  const inline=x=>x.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/(https:\/\/[^\s<)]+)/g,'<a href="$1" target="_blank" rel="noreferrer" class="u">$1</a>');
+  for(const raw of lines){const ln=raw.trim();const m=ln.match(/^(?:[-•*]|\d+[.)])\s+(.*)$/);
+    if(m){if(!list){list=[];out.push(list)}list.push(inline(m[1]));continue}
+    list=null;if(!ln){out.push("");continue}
+    out.push(`<p>${inline(ln.replace(/^#{1,4}\s+/,""))}</p>`)}
+  return out.map(x=>Array.isArray(x)?`<ul>${x.map(i=>`<li>${i}</li>`).join("")}</ul>`:x).join("");
+}
+function viewClaude(){
+  const c=chatState(),lead=c.leadId?leads.find(l=>l.id===c.leadId):null;
+  if(!ai)return`<div class="scroll thin"><div class="page">${head("Claude","")}
+    <section class="box panel aioff"><span class="wicon">${icon("spark",16)}</span><div><b>Claude dar neprijungtas</b>
+    <p class="t2">Kad galėtum čia rašyti su Claude, reikia Anthropic API rakto. Savininkui: console.anthropic.com → API Keys → Create Key, papildyk sąskaitą kreditais, tada Vercel → coldline → Settings → Environment Variables įrašyk <code>ANTHROPIC_API_KEY</code> ir perdiek. Kiekvienas atsakymas kainuoja apie kelis centus.</p></div></section></div></div>`;
+  const sugg=lead?[["Ką žinai apie šią įmonę? Paieškok internete.","Ištirti įmonę"],["Kaip pradėti pokalbį su šia įmone? Duok 2–3 sakinius.","Pirmi sakiniai"],["Jie sako „turim Facebook, užtenka“. Ką atsakyti?","Prieštaravimas"],["Parašyk trumpą el. laišką po skambučio šiai įmonei.","Laiškas po skambučio"]]
+    :[["Kam iš sąrašo skambinti pirmiausia ir kodėl?","Kam skambinti"],["Klientas sako „brangu“. Kaip atsakyti žmogiškai?","„Brangu“"],["Parašyk trumpą el. laišką po skambučio, kai klientas sako „atsiųskit pasiūlymą“.","Laiškas"],["Duok 5 patarimus, kaip nesijaudinti skambinant.","Drąsa skambinti"]];
+  const msgs=c.msgs.map((m,i)=>m.role==="user"?`<div class="cmsg me"><div class="cb">${esc(m.content)}</div></div>`
+    :`<div class="cmsg ai"><span class="cav">${icon("spark",14)}</span><div class="cb">${(m.searches||[]).map(q=>`<span class="csearch">${icon("search",12)} ${esc(q)}</span>`).join("")}${m.content?md(m.content):c.busy&&i===c.msgs.length-1?`<span class="typing"><i></i><i></i><i></i></span>`:""}</div></div>`).join("");
+  return`<div class="chat">
+    <header class="chead"><span class="cav big">${icon("spark",18)}</span><div class="ctitle"><b>Claude</b><small>Pokalbiai, laiškai, prieštaravimai ir įmonių paieška</small></div>
+      ${c.msgs.length?`<button class="btn" data-act="chat-new">${icon("plus",15)} Naujas pokalbis</button>`:""}</header>
+    ${lead?`<div class="cctx">Kalbam apie <b>${esc(spokenName(lead.name))}</b><button class="iconbtn" data-act="chat-ctx-clear" aria-label="Nebekalbėti apie šią įmonę">${icon("x",14)}</button></div>`:""}
+    <div class="cmsgs thin" id="cmsgs">${c.msgs.length?msgs:`<div class="cempty"><span class="cav huge">${icon("spark",26)}</span><h2>Kuo galiu padėti?</h2><p class="muted">Matau komandos sąrašą${lead?" ir atidarytą įmonę":""}, galiu ieškoti internete.</p>
+      <div class="csugg">${sugg.map(([q,t])=>`<button data-act="chat-sugg" data-q="${esc(q)}"><b>${esc(t)}</b><span>${esc(q)}</span></button>`).join("")}</div></div>`}
+      ${c.err?`<div class="cerr">${esc(c.err)}</div>`:""}</div>
+    <form class="ccomp" data-act="chat-form"><textarea data-key="chat" rows="1" placeholder="Rašyk Claude…" enterkeyhint="send">${esc(S.chatDraft||"")}</textarea>
+      <button class="csend" ${c.busy?"disabled":""} aria-label="Siųsti">${icon("send",16)}</button></form>
+  </div>`;
+}
+async function chatSend(text){
+  const c=chatState();text=String(text||"").trim();if(!text||c.busy||!window.COLDLINE_WEB)return;
+  c.msgs.push({role:"user",content:text});const a={role:"assistant",content:"",searches:[]};c.msgs.push(a);
+  c.busy=true;c.err="";S.chatDraft="";S.chatScroll=true;
+  const ta=document.querySelector("textarea[data-key=chat]");if(ta){ta.value="";ta.style.height="auto"}
+  render();
+  try{await window.COLDLINE_WEB.chat(c.msgs.slice(0,-1).map(m=>({role:m.role,content:m.content})),c.leadId,e=>{
+    if(e.type==="text")a.content+=e.text;else if(e.type==="search")a.searches.push(e.query);else if(e.type==="error")c.err=e.message;
+    S.chatScroll=true;render(true)})}
+  catch(err){c.err=err&&err.message||"Nepavyko."}
+  if(!a.content){c.msgs.pop();if(!c.err)c.err="Atsakymo negauta. Bandyk dar kartą."}
+  c.busy=false;S.chatScroll=true;saveChat();render();
+}
 /* ===== render ===== */
 /* Rendering: the page is rebuilt as HTML but patched into the live DOM (morphdom), so the
    element under a finger is never replaced. Live-data renders wait while a finger is down. */
@@ -1275,7 +1359,8 @@ function paint(){
   const tl=$("tlist"),tAtBottom=!tl||tl.scrollHeight-tl.scrollTop-tl.clientHeight<40;
   renderShell();
   const r=route();
-  patch($("main"),connBanner()+(r==="kontaktai"?viewContacts():r==="pardavimai"?viewDeals():r==="komanda"?viewTeam():r==="apzvalga"?viewOverview():viewCall()));
+  patch($("main"),connBanner()+(r==="kontaktai"?viewContacts():r==="pardavimai"?viewDeals():r==="komanda"?viewTeam():r==="apzvalga"?viewOverview():r==="claude"?viewClaude():viewCall()));
+  const cm=$("cmsgs");if(cm&&S.chatScroll){cm.scrollTop=cm.scrollHeight;S.chatScroll=false}
   const tl2=$("tlist");if(tl2&&tAtBottom)tl2.scrollTop=tl2.scrollHeight;
   if(S.focus){const el=document.querySelector(S.focus);S.focus=null;if(el)el.focus({preventScroll:false})}
 }
@@ -1336,6 +1421,10 @@ document.addEventListener("click",async e=>{
       catch{const t=$("reqbox");t?.focus();t?.select();toast("Pažymėjau tekstą, nukopijuok jį rankiniu būdu.")}break;
     case"csv":exportCsv();break;
     case"backup":exportBackup();break;
+    case"ask-claude":{const c=chatState();if(c.leadId!==id){c.leadId=id}location.hash="#claude";break}
+    case"chat-new":{const c=chatState();c.msgs=[];c.err="";saveChat();render();break}
+    case"chat-ctx-clear":chatState().leadId=null;render();break;
+    case"chat-sugg":chatSend(b.dataset.q);break;
     case"why-toggle":S.whyOpen=S.whyOpen===id?null:id;render();break;
     case"logout":if(window.COLDLINE_WEB)window.COLDLINE_WEB.logout();break;
     case"ai-search":{if(!ai||S.aiBusy)break;S.aiBusy=true;S.aiLog=["Pradedama paieška…"];render();
@@ -1363,6 +1452,7 @@ document.addEventListener("input",e=>{
   else if(k==="custom"){S.custom=v;render()}
   else if(k==="q"){S.q=v;render()}
   else if(k.startsWith("f."))S.form[k.slice(2)]=v;
+  else if(k==="chat"){S.chatDraft=v;e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,180)+"px"}
   else if(k==="callname"){const n=v.trim().slice(0,40);try{localStorage.setItem("coldline-name",n)}catch{};if(meId&&team[meId])team[meId]={...team[meId],callName:n};
     render(true);clearTimeout(nameT);if(meId)nameT=setTimeout(()=>saveMember(meId,{callName:n}),700)}
 });
@@ -1387,9 +1477,11 @@ document.addEventListener("keydown",e=>{
   e.preventDefault();const s=map[e.key];
   if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;S.focus='form[data-act=deal-form] input[name=value]';render()}else logCall(c.l,s);
 });
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&e.target?.dataset?.key==="chat"){e.preventDefault();chatSend(S.chatDraft)}},true);
 document.addEventListener("submit",async e=>{
   e.preventDefault();const f=e.target,act=f.dataset.act;
   if(act==="note-form"){const c=current(queues());if(c)sendNote(c.l);return}
+  if(act==="chat-form"){chatSend(S.chatDraft);return}
   const d=Object.fromEntries(new FormData(f));for(const k in d)d[k]=String(d[k]).trim().slice(0,2000);
   if(act==="edit-form"){
     const c=current(queues());if(!c)return;
