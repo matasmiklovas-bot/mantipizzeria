@@ -35,11 +35,23 @@ async function get(url: string, signal?: AbortSignal): Promise<string> {
   return r.text();
 }
 
+/** Words people type for "anything" / "all of Lithuania": these mean no filter. */
+const ANY = /^(visk(as|a)|visi|visos|bet\s*k(as|ur|ą)|visur|vis[aą]\s*(lt|lietuv[aą])|lietuv[aą]|lt|visa|all|\*|-)$/;
+export const anyValue = (v: string) => ANY.test(v.trim().toLowerCase());
+
 export async function searchPage(keyword: string, city: string, page: number, signal?: AbortSignal): Promise<string[]> {
   const kw = slug(keyword) || "imones";
-  const c = slug(city).replace(/\+/g, " ");
-  const path = `/paieska/${kw}/${c ? encodeURIComponent(c) : ""}/${page > 1 ? `${page}/` : ""}`.replace(/\/\/$/, "/");
-  const html = await get(ORIGIN + path, signal);
+  // 1551.lt answers 403 to a space in the city; "vilniaus-r" redirects to the right place.
+  const c = anyValue(city) ? "" : slug(city).replace(/\+/g, "-");
+  const at = (cc: string) => `/paieska/${kw}/${cc ? `${encodeURIComponent(cc)}/` : ""}${page > 1 ? `${page}/` : ""}`;
+  let html: string;
+  try {
+    html = await get(ORIGIN + at(c), signal);
+  } catch (err) {
+    // A city the catalog doesn't accept: search all of Lithuania instead of failing.
+    if (!c || signal?.aborted) throw err;
+    html = await get(ORIGIN + at(""), signal);
+  }
   const out = new Set<string>();
   for (const m of html.matchAll(/class="tm-mcard-img" href="(\/[a-z0-9-]+-\d{3,}\/)"/g)) out.add(ORIGIN + m[1]);
   return [...out];
@@ -115,7 +127,8 @@ const BRACKETS: Record<RevenueId, [number, number]> = {
 };
 
 export function fitsRevenue(c: Found, ids: RevenueId[]) {
-  if (!ids.length) return true;
+  // Nothing or every bracket ticked means "any revenue", including companies that don't publish it.
+  if (!ids.length || ids.length >= REVENUE_BRACKETS.length) return true;
   if (!c.revenueValue) return false;
   return ids.some((id) => c.revenueValue! >= BRACKETS[id][0] && c.revenueValue! < BRACKETS[id][1]);
 }

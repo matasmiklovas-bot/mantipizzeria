@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "node:crypto";
 import { aiClient, aiErrorMessage, modelId, modelKey, liteText, webSearch } from "@/lib/ai";
-import { fitsRevenue, readCompany, ruleReason, searchPage, type Found } from "@/lib/finder1551";
+import { anyValue, fitsRevenue, readCompany, ruleReason, searchPage, type Found } from "@/lib/finder1551";
 import { cleanLead } from "@/lib/api";
 import { withoutDuplicates } from "@/lib/dedupe";
 import { me, unauthorized } from "@/lib/session";
@@ -160,13 +160,14 @@ export async function POST(request: Request) {
         // Free path: read the public 1551.lt catalog directly; AI (if any) only writes the reasons.
         try {
           const known = await existingKeys();
-          const kw = req.industry || DEFAULT_KEYWORDS[Math.floor(Math.random() * DEFAULT_KEYWORDS.length)];
-          send({ type: "search", query: `1551.lt: ${kw}${req.city ? `, ${req.city}` : ""}` });
+          const kw = req.industry && !anyValue(req.industry) ? req.industry : DEFAULT_KEYWORDS[Math.floor(Math.random() * DEFAULT_KEYWORDS.length)];
+          const city = anyValue(req.city) ? "" : req.city;
+          send({ type: "search", query: `1551.lt: ${kw}${city ? `, ${city}` : ", visa Lietuva"}` });
           const picked: Found[] = [];
           const t0 = Date.now();
           let scanned = 0;
           for (let page = 1; page <= 8 && picked.length < req.count && Date.now() - t0 < 200_000; page++) {
-            const urls = await searchPage(kw, req.city, page, request.signal);
+            const urls = await searchPage(kw, city, page, request.signal);
             if (!urls.length) break;
             for (let i = 0; i < urls.length && picked.length < req.count; i += 6) {
               const batch = await Promise.all(urls.slice(i, i + 6).map((u) => readCompany(u, request.signal).catch(() => null)));
@@ -174,7 +175,7 @@ export async function POST(request: Request) {
                 if (!c) continue;
                 scanned++;
                 if (!(c.phone || c.email) || !fitsRevenue(c, req.revenue)) continue;
-                const rr = ruleReason(c, req.needs, `${kw.replace(/\+/g, " ")} ${req.city || c.city}`.trim().toLowerCase());
+                const rr = ruleReason(c, req.needs, `${kw.replace(/\+/g, " ")} ${city || c.city}`.trim().toLowerCase());
                 if (!rr) continue;
                 if (!withoutDuplicates([c], [...known, ...picked]).fresh.length) continue;
                 picked.push({ ...c, ...rr, category: c.category && c.category.length > 3 ? c.category : kw });
