@@ -48,6 +48,8 @@ export async function db(): Promise<Sql> {
       updated_at timestamptz not null default now(),
       primary key (col, id))`;
     await sql`create table if not exists cl_versions (col text primary key, v bigint not null default 0)`;
+    // Server-only values (API keys). Never exposed through /api/db.
+    await sql`create table if not exists cl_secrets (k text primary key, v text not null, updated_at timestamptz not null default now())`;
   })().catch((e) => {
     g.__clSchema = undefined;
     throw e;
@@ -168,4 +170,17 @@ export async function isOwner(u: User): Promise<boolean> {
   const sql = await db();
   const [r] = await sql`select id from cl_users order by created_at asc, id asc limit 1`;
   return r?.id === u.id;
+}
+
+/* ----- server-only secrets ----- */
+export async function getSecret(k: string): Promise<string> {
+  const sql = await db();
+  const [r] = await sql`select v from cl_secrets where k = ${k}`;
+  return r ? String(r.v) : "";
+}
+
+export async function setSecret(k: string, v: string | null) {
+  const sql = await db();
+  if (v === null) await sql`delete from cl_secrets where k = ${k}`;
+  else await sql`insert into cl_secrets (k, v) values (${k}, ${v}) on conflict (k) do update set v = excluded.v, updated_at = now()`;
 }

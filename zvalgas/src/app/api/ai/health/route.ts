@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     } catch (err) {
       out.free = { ok: false, error: freeErrorMessage(err), detail: String((err as Error)?.message ?? err).slice(0, 300) };
     }
-    if (!geminiOn()) return Response.json(out, { headers: { "Cache-Control": "no-store" } });
+    if (!(await geminiOn())) return Response.json(out, { headers: { "Cache-Control": "no-store" } });
     try {
       out.gemini = { ok: true, text: (await geminiText("Atsakyk trumpai.", "Atsakyk vienu žodžiu: veikia")).slice(0, 40) };
     } catch (err) {

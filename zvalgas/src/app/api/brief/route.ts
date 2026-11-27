@@ -23,10 +23,17 @@ export async function POST(request: Request) {
   const who = await me(request).catch(() => null);
   if (!who) return unauthorized();
   if (!aiAvailable()) return json({ error: "AI neįjungtas." }, 503);
-  const body = (await request.json().catch(() => ({}))) as { leadId?: unknown; model?: unknown; force?: unknown };
+  const body = (await request.json().catch(() => ({}))) as { leadId?: unknown; model?: unknown; force?: unknown; text?: unknown };
   const id = typeof body.leadId === "string" && /^[\w.-]{1,100}$/.test(body.leadId) ? body.leadId : "";
   const l = id ? await get("leads", id) : null;
   if (!l) return json({ error: "Nerasta įmonė." }, 404);
+  // A plan the browser wrote itself (the server couldn't reach the AI): store it for the team.
+  if (typeof body.text === "string") {
+    const text = body.text.trim().slice(0, 3000);
+    if (!text) return json({ error: "Tuščias atsakymas." }, 400);
+    await patch("leads", id, { aiBrief: text, aiBriefAt: Date.now() });
+    return json({ brief: text });
+  }
   if (typeof l.aiBrief === "string" && l.aiBrief && body.force !== true) return json({ brief: l.aiBrief });
 
   const facts = [
@@ -47,8 +54,8 @@ export async function POST(request: Request) {
       await patch("leads", id, { aiBrief: text.slice(0, 3000), aiBriefAt: Date.now() });
       return json({ brief: text });
     } catch (err) {
-      console.error("[brief:lite]", err);
-      return json({ error: liteErrorMessage(err) }, 502);
+      console.error("[brief:lite]", err, liteErrorMessage(err));
+      return json({ client: { system: SYSTEM, prompt: facts } });
     }
   }
 

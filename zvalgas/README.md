@@ -13,7 +13,7 @@ Tas pats puslapis veikia ir kaip Claude artefaktas (`artifact/index.html`). Web 
 4. **Vercel → Settings → Environment Variables:**
    - nebūtina: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` iš 3 žingsnio (atsiras mygtukas „Tęsti su Google“)
    - `AUTH_SECRET` – bet koks ilgas atsitiktinis tekstas (pvz. `openssl rand -base64 32`)
-   - nebūtina: `ANTHROPIC_API_KEY` – įjungia „Ieškoti su AI“ (Kontaktai → Rasti naujų)
+   - nebūtina: `ANTHROPIC_API_KEY` – AI atsako Claude. Paprasčiau: po paleidimo programoje **Nustatymai → AI** įklijuok nemokamą Gemini raktą (aistudio.google.com/apikey, kortelės nereikia). Be jokio rakto AI veikia ribotai (nemokamas modelis, ~1 atsakymas per 45 s).
    - nebūtina: `OWNER_USERNAME` arba `OWNER_EMAIL` – savininkas; jei nenurodyta, savininkas yra pirmas užsiregistravęs
    - nebūtina: `ALLOWED_EMAILS` – kas gali prisijungti, pvz. `@imone.lt,jonas@gmail.com`; tuščia = bet kas su Google paskyra
 5. **Deployments → … → Redeploy.** Atidaryk nuorodą, spausk „Sukurti paskyrą“ (pirmas tampa savininku).

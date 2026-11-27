@@ -15,7 +15,7 @@ export class FreeAiError extends Error {
 
 export function freeErrorMessage(e: unknown): string {
   if (e instanceof FreeAiError) {
-    if (e.status === 429) return "Nemokamas AI dabar užimtas. Pabandyk po minutės.";
+    if (e.status === 429 || e.status === 402) return "Nemokamas AI leidžia 1 atsakymą per 45 s. Pastoviam AI savininkas gali įjungti nemokamą raktą: Nustatymai → AI.";
     return `Nemokamas AI neatsakė (${e.status}). Pabandyk dar kartą.`;
   }
   return "Nepavyko gauti atsakymo iš AI.";
@@ -28,10 +28,21 @@ async function post(system: string, turns: Turn[], stream: boolean, signal?: Abo
     private: true,
     messages: [{ role: "system", content: system }, ...turns],
   });
-  const go = () => fetch(URL_, { method: "POST", headers: { "content-type": "application/json" }, body: payload, signal });
+  // Give up if the model hasn't started answering in 20 s (the caller then hands the question to the browser).
+  const go = async () => {
+    const ctl = new AbortController();
+    const stop = () => ctl.abort();
+    signal?.addEventListener("abort", stop);
+    const timer = setTimeout(stop, 20_000);
+    try {
+      return await fetch(URL_, { method: "POST", headers: { "content-type": "application/json" }, body: payload, signal: ctl.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  };
   let r = await go();
   if (r.status === 429 || r.status >= 500) {
-    await new Promise((ok) => setTimeout(ok, 3000));
+    await new Promise((ok) => setTimeout(ok, 2000));
     r = await go();
   }
   if (!r.ok) throw new FreeAiError(r.status, (await r.text().catch(() => "")).slice(0, 300) || r.statusText);

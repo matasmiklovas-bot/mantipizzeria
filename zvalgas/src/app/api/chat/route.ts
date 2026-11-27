@@ -7,6 +7,7 @@ export const maxDuration = 120;
 
 const MAX_TURNS = 24;
 const MAX_CHARS = 6000;
+const CLIENT_NOTE = "\n\nInterneto paieškos dabar neturi: remkis tik pateiktais duomenimis ir savo žiniomis, o faktų apie konkrečias įmones neišgalvok.";
 
 const SYSTEM = `Tu esi AI pagalbininkas, įmontuotas į „Coldai“: tai Lietuvos komandos, kuri šaltais skambučiais parduoda svetaines, el. parduotuves, rezervacijų ir vidines sistemas mažoms įmonėms, darbo vieta.
 
@@ -91,17 +92,22 @@ export async function POST(request: Request) {
     async start(controller) {
       const send = (e: Record<string, unknown>) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
       if (liteActive()) {
+        let wrote = false;
+        const system = `${SYSTEM}\n\nŠiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who.name}.\n\n${await contextBlock(leadId).catch(() => "")}`;
+        const turns = messages.map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: String(m.content) }));
         try {
-          const context = await contextBlock(leadId);
-          await liteStream(
-            `${SYSTEM}\n\nŠiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who.name}.\n\n${context}`,
-            messages.map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: String(m.content) })),
-            { search: true, signal: request.signal, onText: (t) => send({ type: "text", text: t }), onSearch: (q) => send({ type: "search", query: q }) },
-          );
+          await liteStream(system, turns, {
+            search: true,
+            signal: request.signal,
+            onText: (t) => ((wrote = true), send({ type: "text", text: t })),
+            onSearch: (q) => send({ type: "search", query: q }),
+          });
         } catch (err) {
           if (!request.signal.aborted) {
             console.error("[chat:lite]", err);
-            send({ type: "error", message: liteErrorMessage(err) });
+            // The server's own IP can be refused by the free model; the browser then asks it directly.
+            if (!wrote) send({ type: "client", system: system + CLIENT_NOTE, messages: turns });
+            else send({ type: "error", message: liteErrorMessage(err) });
           }
         }
         send({ type: "done" });

@@ -43,7 +43,7 @@
       return()=>{const i=subs.indexOf(s);if(i>=0)subs.splice(i,1)}}
   }}
   const db={collection:c=>coll(c),doc:p=>{const [c,id]=String(p).split("/");return coll(c).doc(id)}};
-  let mePromise=null;const meGet=()=>mePromise||(mePromise=api("GET","/api/me").then(m=>{window.COLDLINE_WEB.models=!!m.models;return m}));
+  let mePromise=null;const meGet=()=>mePromise||(mePromise=api("GET","/api/me").then(m=>{window.COLDLINE_WEB.models=!!m.models;window.COLDLINE_WEB.aiFull=!!m.aiFull;return m}));
   const user={id:async()=>(await meGet()).id,isOwner:async()=>!!(await meGet()).owner,
     profiles:async ids=>api("POST","/api/profiles",{ids})};
   const downloads={save:async({filename,data,mimeType})=>{
@@ -58,18 +58,43 @@
       while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(line){try{onEvent(JSON.parse(line))}catch{}}}}
     tick();
   }};
+  /* Free AI straight from the browser, used when the server can't reach any model (its IP can be refused). */
+  const FREE="https://text.pollinations.ai/openai";
+  async function freeAsk(system,turns,onText){
+    const body=JSON.stringify({model:"openai",stream:!!onText,private:true,messages:[{role:"system",content:system},...turns]});
+    let r;for(let a=0;a<2;a++){r=await fetch(FREE,{method:"POST",headers:{"content-type":"application/json"},body});if(r.ok||a||(r.status!==429&&r.status<500))break;await new Promise(ok=>setTimeout(ok,3000))}
+    if(!r.ok)throw new Error(r.status===429||r.status===402?"Nemokamas AI leidžia 1 atsakymą per 45 s. Palauk minutę arba įjunk nemokamą raktą.":r.status===403?"Nemokamas AI šiuo metu atmeta užklausas. Įjunk nemokamą Gemini raktą – veiks visada.":"AI neatsakė ("+r.status+"). Pabandyk dar kartą.");
+    if(!onText){const j=await r.json().catch(()=>({}));const t=((j.choices||[])[0]||{}).message;return(t&&t.content||"").trim()}
+    const rd=r.body.getReader(),dec=new TextDecoder();let buf="",all="";
+    for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+      while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line.startsWith("data:"))continue;const d=line.slice(5).trim();if(d==="[DONE]")continue;
+        try{const t=((JSON.parse(d).choices||[])[0]||{}).delta;if(t&&t.content){all+=t.content;onText(t.content)}}catch{}}}
+    return all;
+  }
   async function chat(messages,leadId,model,onEvent){
     const r=await fetch("/api/chat",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({messages,leadId,model})});
     if(r.status===401){location.replace("/login");return}
     if(!r.ok||!r.body){const e=await r.json().catch(()=>({}));throw new Error(e.error||"Claude neatsako")}
-    const rd=r.body.getReader(),dec=new TextDecoder();let buf="";
+    const rd=r.body.getReader(),dec=new TextDecoder();let buf="",handoff=null;
     for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
-      while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(line){try{onEvent(JSON.parse(line))}catch{}}}}
+      while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;let e;try{e=JSON.parse(line)}catch{continue}
+        if(e.type==="client"){handoff=e;continue}if(handoff&&e.type==="done")continue;onEvent(e)}}
+    if(!handoff)return;
+    try{let any=false;await freeAsk(handoff.system,handoff.messages,t=>{any=true;onEvent({type:"text",text:t})});if(!any)throw new Error("AI grąžino tuščią atsakymą. Pabandyk dar kartą.")}
+    catch(err){onEvent({type:"error",message:err&&err.message||"AI nepasiekiamas. Patikrink internetą."})}
+    onEvent({type:"done"});
+  }
+  async function brief(leadId,model,force){
+    const post=b=>fetch("/api/brief",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(b)}).then(r=>r.json()).catch(()=>({error:"Nepavyko."}));
+    const r=await post({leadId,model,force});
+    if(!r.client)return r;
+    try{const text=await freeAsk(r.client.system,[{role:"user",content:r.client.prompt}]);if(!text)return{error:"AI grąžino tuščią atsakymą."};return post({leadId,text})}
+    catch(err){return{error:err&&err.message||"AI nepasiekiamas."}}
   }
   window.COLDLINE_WEB={
     me:meGet,
     chat,
-    brief:async(leadId,model,force)=>{const r=await fetch("/api/brief",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({leadId,model,force})});return r.json().catch(()=>({error:"Nepavyko."}))},
+    brief,
     logout:async()=>{try{await api("POST","/api/auth/logout")}catch{}location.replace("/login")},
   };
   window.claude={use:async name=>{

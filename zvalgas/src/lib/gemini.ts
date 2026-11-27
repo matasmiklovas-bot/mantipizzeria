@@ -4,7 +4,21 @@
  */
 const BASE = process.env.GEMINI_BASE || "https://generativelanguage.googleapis.com/v1beta/models";
 
-export const geminiOn = () => !!process.env.GEMINI_API_KEY;
+import { getSecret } from "./store";
+
+/** The key: GEMINI_API_KEY, or the one the owner pasted in Nustatymai (cached for a minute per instance). */
+let cached: { key: string; at: number } | null = null;
+export async function geminiKey(): Promise<string> {
+  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+  if (cached && Date.now() - cached.at < 60_000) return cached.key;
+  const key = await getSecret("gemini").catch(() => "");
+  cached = { key, at: Date.now() };
+  return key;
+}
+export const forgetGeminiKey = () => {
+  cached = null;
+};
+export const geminiOn = async () => !!(await geminiKey());
 const model = () => process.env.GEMINI_MODEL || "gemini-flash-latest";
 /** Model for Google Search grounding (the free tier allows it only on some models). */
 export const searchModel = () => process.env.GEMINI_SEARCH_MODEL || model();
@@ -33,7 +47,7 @@ export class GeminiError extends Error {
 
 export function geminiErrorMessage(e: unknown): string {
   if (e instanceof GeminiError) {
-    if (e.status === 400 && /API key/i.test(e.message)) return "Neteisingas GEMINI_API_KEY.";
+    if (e.status === 400 && /API key/i.test(e.message)) return "Neteisingas Gemini raktas.";
     if (e.status === 403) return "Gemini raktas neturi teisės. Patikrink raktą.";
     if (e.status === 429) return "Pasiektas nemokamas Gemini limitas. Pabandyk po minutės.";
     return `Gemini klaida (${e.status}).`;
@@ -43,11 +57,12 @@ export function geminiErrorMessage(e: unknown): string {
 
 const FALLBACK = "gemini-flash-lite-latest";
 
-async function call(path: string, payload: string, signal?: AbortSignal, m?: string) {
+async function call(path: string, payload: string, signal?: AbortSignal, m?: string, key?: string) {
+  const k = key ?? (await geminiKey());
   const go = (name: string) =>
     fetch(`${BASE}/${name}:${path}`, {
       method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY ?? "" },
+      headers: { "content-type": "application/json", "x-goog-api-key": k },
       body: payload,
       signal,
     });
@@ -106,8 +121,8 @@ export async function geminiStream(
   return { text: all, searches: [...seen] };
 }
 
-export async function geminiText(system: string, prompt: string, opts: { search?: boolean; signal?: AbortSignal } = {}) {
-  const r = await call("generateContent", body(system, [{ role: "user", content: prompt }], !!opts.search), opts.signal);
+export async function geminiText(system: string, prompt: string, opts: { search?: boolean; signal?: AbortSignal; key?: string } = {}) {
+  const r = await call("generateContent", body(system, [{ role: "user", content: prompt }], !!opts.search), opts.signal, undefined, opts.key);
   const j = (await r.json()) as Chunk;
   return textOf(j).trim();
 }

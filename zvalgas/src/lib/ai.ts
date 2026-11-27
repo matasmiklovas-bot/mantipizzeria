@@ -7,7 +7,8 @@ import { GeminiError, geminiErrorMessage, geminiOn, geminiStream, geminiText } f
  * Which AI answers:
  * - ANTHROPIC_API_KEY set: Claude, straight to the Anthropic API.
  * - AI_GATEWAY=1 on Vercel: Claude through Vercel AI Gateway with the deployment's OIDC token (needs a card on the Vercel account).
- * - Otherwise ("lite"): Gemini when GEMINI_API_KEY is set, and the free keyless model when Gemini is missing or fails.
+ * - Otherwise ("lite"): Gemini when GEMINI_API_KEY is set or the owner saved a key in Nustatymai,
+ *   and the free keyless model when Gemini is missing or fails.
  *   Works with no setup at all.
  */
 export const MODELS = {
@@ -41,7 +42,7 @@ export async function liteStream(
   turns: Turn[],
   opts: { search?: boolean; signal?: AbortSignal; onText?: (t: string) => void; onSearch?: (q: string) => void } = {},
 ) {
-  if (geminiOn()) {
+  if (await geminiOn()) {
     let wrote = false;
     try {
       return await geminiStream(system, turns, { ...opts, onText: (t) => ((wrote = true), opts.onText?.(t)) });
@@ -54,7 +55,7 @@ export async function liteStream(
 }
 
 export async function liteText(system: string, prompt: string, opts: { signal?: AbortSignal } = {}) {
-  if (geminiOn()) {
+  if (await geminiOn()) {
     try {
       return await geminiText(system, prompt, opts);
     } catch (err) {
@@ -90,7 +91,7 @@ export function aiErrorMessage(err: unknown): string {
     const body = JSON.stringify(err.error ?? "");
     if (err.status === 402) return "Baigėsi nemokami AI kreditai šį mėnesį.";
     if (err.status === 403 && body.includes("customer_verification_required"))
-      return "AI dar neįjungtas. Nemokamai ir be kortelės: aistudio.google.com/apikey → Create API key, tada Vercel → coldline → Settings → Environment Variables įrašyk GEMINI_API_KEY ir perdiek.";
+      return "AI dar neįjungtas. Savininkas gali jį įjungti per minutę: Nustatymai → AI.";
     if (err instanceof Anthropic.AuthenticationError) return "AI prisijungimas nepavyko.";
     if (err instanceof Anthropic.RateLimitError) return "Per daug užklausų. Pabandyk po minutės.";
     return `AI klaida (${err.status ?? "?"}).`;
