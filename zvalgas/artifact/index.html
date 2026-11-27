@@ -627,7 +627,6 @@ const ICON={
   target:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z",
 };
 const NAV=[["","Skambinti","phone"],["pardavimai","Pardavimai","euro"],["kontaktai","Kontaktai","list"],["komanda","Komanda","users"],["apzvalga","Apžvalga","chart"]];
-if(window.COLDLINE_WEB)NAV.splice(1,0,["claude","Claude","spark"]);
 
 /* Conversation guide. Each step: what you say, and what they might answer.
    {me} {name} {cat} {city} {problem} are filled in. Endings map to a call result. */
@@ -936,7 +935,9 @@ async function backfill(){
 async function connect(){
   const c=window.claude&&typeof window.claude.use==="function"?window.claude:null;
   if(!c){S.conn="none";render();return}
-  [db,user,downloads,ai]=await Promise.all([c.use("db"),c.use("user"),c.use("downloads"),c.use("ai")].map(p=>p.catch(()=>null)));
+  let smp;[db,user,downloads,ai,smp]=await Promise.all([c.use("db"),c.use("user"),c.use("downloads"),c.use("ai"),c.use("sample")].map(p=>p.catch(()=>null)));
+  aiApi=ai&&window.COLDLINE_WEB?webAi():typeof smp==="function"?sampleAi(smp):null;
+  if(aiApi&&!NAV.some(n=>n[0]==="claude"))NAV.splice(1,0,["claude","Claude","spark"]);
   if(user){try{meId=await user.id();isOwner=await user.isOwner()}catch{}}
   if(!db){S.conn="none";render();return}
   let got=false;const timer=setTimeout(()=>{if(!got){S.conn="slow";render()}},10000);
@@ -1066,7 +1067,7 @@ function viewCall(){
       <div class="crumbs"><span style="display:inline-flex;align-items:center;gap:7px;color:${cur.tone};font-weight:500"><span class="dot" style="background:${cur.tone}"></span>${esc(cur.label)}</span>
         ${pos>=0?`<span class="mono">${pos+1}/${q.queue.length}</span>`:""}
         ${l.assignee?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(firstName(l.assignee))}</span>`:""}
-        ${window.COLDLINE_WEB?`<button class="push askai" data-act="ask-claude" data-id="${esc(l.id)}">${icon("spark",14)}Klausti Claude</button>`:""}<button class="${window.COLDLINE_WEB?"":"push "}t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
+        ${aiApi?`<button class="push askai" data-act="ask-claude" data-id="${esc(l.id)}">${icon("spark",14)}Klausti Claude</button>`:""}<button class="${aiApi?"":"push "}t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
       <h1 class="fname">${esc(spokenName(l.name))}</h1>${spokenName(l.name)!==l.name?`<p class="fmeta">${esc(l.name)}</p>`:""}
       ${tags.length?`<div class="htags">${tags.map(([i,t])=>`<span>${i}${esc(t)}</span>`).join("")}<span class="need">${esc(l.need||"Svetainė")}</span></div>`:""}
       ${S.editing?`</section>`+editForm(l):`
@@ -1295,6 +1296,50 @@ function viewOverview(){
   </div></div>`;
 }
 
+/* ===== AI backends =====
+   Web version: the server (Vercel AI Gateway / API key, can search the web).
+   Claude artifact: the viewer's own Claude account through `sample` (no key, no card; cannot browse). */
+let aiApi=null;
+const TIER={haiku:"quick",sonnet:"default",opus:"complex"};
+const AI_RULES=`Tu esi Claude, įmontuotas į „Coldai“: Lietuvos komandos, kuri šaltais skambučiais parduoda svetaines, el. parduotuves, rezervacijų ir vidines sistemas mažoms įmonėms, darbo vietą.
+Rašyk lietuviškai, paprastai ir žmogiškai, kaip kolega. Trumpai: dažniausiai 2–6 sakiniai arba trumpas sąrašas. Jei prašo frazės skambučiui, duok tikslų tekstą, kurį galima pasakyti balsu.
+Būk tiesus: jei idėja silpna, taip ir pasakyk. Neišgalvok faktų apie įmones (telefonų, pajamų, el. paštų, klientų): naudok tik žemiau pateiktus duomenis, o jei ko nežinai, pasakyk. Nesiūlyk meluoti klientams ir nekurk netikrų atsiliepimų.`;
+const BRIEF_RULES=`Tu padedi lietuviui, kuris šaltu skambučiu parduoda svetaines ir paprastas sistemas mažoms įmonėms. Iš įmonės duomenų parašyk trumpą skambučio planą lietuviškai, paprasta šnekamąja kalba, be išgalvotų faktų. Formatas tiksliai toks (be įžangos):
+**Pradžia:** 1–2 sakiniai, ką pasakyti po pasisveikinimo, pritaikyti šiai įmonei.
+**Kabliukas:** vienas konkretus dalykas, kurį jie greičiausiai praranda dabar.
+**Jei sako…**
+- „<tikėtinas prieštaravimas>“ – <ką atsakyti, 1 sakinys>
+- „<tikėtinas prieštaravimas>“ – <ką atsakyti, 1 sakinys>
+- „<tikėtinas prieštaravimas>“ – <ką atsakyti, 1 sakinys>
+**Siūlyk:** ką konkrečiai siūlyti ir kokio susitikimo prašyti.
+Iš viso iki 110 žodžių.`;
+const leadFacts=l=>[`Įmonė: ${l.name||""}`,`Sritis: ${l.category||""}`,`Miestas: ${l.city||""}`,`Apyvarta: ${l.revenue||"nežinoma"}`,`Darbuotojai: ${l.employees||"nežinoma"}`,`Svetainė: ${l.website||"nėra"}`,`Ką siūlyti: ${l.need||"Svetainė"}`,`Kodėl skambinti: ${String(l.reason||"").slice(0,900)}`].join("\n");
+function aiContext(leadId){
+  const by={};for(const l of leads)by[l.status||"new"]=(by[l.status||"new"]||0)+1;
+  const top=leads.filter(l=>(l.status||"new")==="new").sort((a,b)=>revVal(b)-revVal(a)).slice(0,15);
+  const l=leadId&&leads.find(x=>x.id===leadId);
+  return [`Šiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who(meId)}.`,
+    `Sąraše ${leads.length} įmonių. Pagal statusą: ${Object.entries(by).map(([k,v])=>`${stat(k).short} ${v}`).join(", ")||"nėra"}.`,
+    top.length?`Neskambintos su didžiausia apyvarta:\n${top.map(x=>`- ${[x.name,x.city,x.category,x.revenue,x.need].filter(Boolean).join(" · ")}`).join("\n")}`:"",
+    l?`Šiuo metu atidaryta įmonė:\n${leadFacts(l)}\nTelefonas: ${l.phone||""}\nEl. paštas: ${l.email||""}\nStatusas: ${stat(l.status).short}`:""].filter(Boolean).join("\n\n");
+}
+function aiErr(e){const c=e&&e.code;
+  return c==="not_granted"?"Claude nenaudojamas: puslapiui neleista. Leisk, kai paklaus (perkrauk puslapį).":c==="rate_limited"?"Pasiektas tavo Claude limitas. Pabandyk vėliau.":c==="sampling_disabled"?"Claude šioje paskyroje neprieinamas.":c==="session_expired"?"Prisijunk prie Claude iš naujo.":c==="refused"?"Claude į tai neatsakys. Paklausk kitaip.":c==="cancelled"?"Sustabdyta.":"Claude neatsakė. Bandyk dar kartą."}
+function sampleAi(smp){return{web:false,
+  async chat(msgs,leadId,model,onEvent){
+    try{await smp([{role:"user",content:AI_RULES+"\n\n"+aiContext(leadId)},...msgs],{cache:false,modelTier:TIER[model]||"quick",onText:({delta})=>onEvent({type:"text",text:delta})})}
+    catch(e){onEvent({type:"error",message:aiErr(e)})}
+  },
+  async brief(leadId,model,force){
+    const l=leads.find(x=>x.id===leadId);if(!l)return{error:"Nerasta įmonė."};if(l.aiBrief&&!force)return{brief:l.aiBrief};
+    try{const {text}=await smp(BRIEF_RULES+"\n\n"+leadFacts(l),{modelTier:TIER[model]||"quick",cache:force?false:{gcTime:86400000}});
+      const cur=leads.find(x=>x.id===leadId)||l;await put("leads",leadId,{...cur,aiBrief:text.slice(0,3000),aiBriefAt:Date.now()});return{brief:text}}
+    catch(e){return{error:aiErr(e)}}
+  }}}
+function webAi(){return{web:true,
+  chat:(msgs,leadId,model,onEvent)=>window.COLDLINE_WEB.chat(msgs,leadId,model,onEvent),
+  brief:(leadId,model,force)=>window.COLDLINE_WEB.brief(leadId,model,force)}}
+
 /* ===== AI model choice ===== */
 const AIMODELS=[["haiku","Haiku","greitas, pigus"],["sonnet","Sonnet","geresnis"],["opus","Opus","protingiausias"]];
 function aiModel(){try{const m=localStorage.getItem("coldai-model");return AIMODELS.some(x=>x[0]===m)?m:"haiku"}catch{return"haiku"}}
@@ -1303,18 +1348,18 @@ const modelPick=()=>`<div class="seg mpick" title="AI modelis">${AIMODELS.map(([
 /* ===== AI call plan per company ===== */
 const briefSt={};let briefTimer=0;
 function queueBrief(id){
-  if(!ai||!window.COLDLINE_WEB||briefSt[id])return;
+  if(!aiApi||briefSt[id])return;
   clearTimeout(briefTimer);briefTimer=setTimeout(()=>{const c=current(queues());if(c&&c.l.id===id&&!c.l.aiBrief)makeBrief(id,false)},900);
 }
 async function makeBrief(id,force){
   const st=briefSt[id]=briefSt[id]||{};if(st.busy)return;st.busy=true;st.err="";render(true);
-  try{const r=await window.COLDLINE_WEB.brief(id,aiModel(),force);
+  try{const r=await aiApi.brief(id,aiModel(),force);
     if(r.brief){leads=leads.map(x=>x.id===id?{...x,aiBrief:r.brief,aiBriefAt:Date.now()}:x)}else st.err=r.error||"Nepavyko."}
   catch(e){st.err=e&&e.message||"Nepavyko."}
   st.busy=false;render(true);
 }
 function briefHtml(l){
-  if(!ai||!window.COLDLINE_WEB)return"";
+  if(!aiApi)return"";
   const st=briefSt[l.id]||{},b=l.aiBrief;
   return`<section class="aibrief" id="ab-${esc(l.id)}"><header><span class="cav">${icon("spark",13)}</span><b>AI planas šiam skambučiui</b>
     <button class="mini-btn" data-act="brief-redo" data-id="${esc(l.id)}" ${st.busy?"disabled":""}>${st.busy?"Rašoma…":b?"Perrašyti":"Sugeneruoti"}</button></header>
@@ -1340,10 +1385,10 @@ function md(t){
 }
 function viewClaude(){
   const c=chatState(),lead=c.leadId?leads.find(l=>l.id===c.leadId):null;
-  if(!ai)return`<div class="scroll thin"><div class="page">${head("Claude","")}
+  if(!aiApi)return`<div class="scroll thin"><div class="page">${head("Claude","")}
     <section class="box panel aioff"><span class="wicon">${icon("spark",16)}</span><div><b>Claude dar neprijungtas</b>
     <p class="t2">Kad galėtum čia rašyti su Claude, reikia Anthropic API rakto. Savininkui: console.anthropic.com → API Keys → Create Key, papildyk sąskaitą kreditais, tada Vercel → coldline → Settings → Environment Variables įrašyk <code>ANTHROPIC_API_KEY</code> ir perdiek. Kiekvienas atsakymas kainuoja apie kelis centus.</p></div></section></div></div>`;
-  const sugg=lead?[["Ką žinai apie šią įmonę? Paieškok internete.","Ištirti įmonę"],["Kaip pradėti pokalbį su šia įmone? Duok 2–3 sakinius.","Pirmi sakiniai"],["Jie sako „turim Facebook, užtenka“. Ką atsakyti?","Prieštaravimas"],["Parašyk trumpą el. laišką po skambučio šiai įmonei.","Laiškas po skambučio"]]
+  const sugg=lead?[[aiApi.web?"Ką žinai apie šią įmonę? Paieškok internete.":"Ką gali pasakyti apie šią įmonę iš turimų duomenų? Kuo jie gali būti suinteresuoti?",aiApi.web?"Ištirti įmonę":"Apie įmonę"],["Kaip pradėti pokalbį su šia įmone? Duok 2–3 sakinius.","Pirmi sakiniai"],["Jie sako „turim Facebook, užtenka“. Ką atsakyti?","Prieštaravimas"],["Parašyk trumpą el. laišką po skambučio šiai įmonei.","Laiškas po skambučio"]]
     :[["Kam iš sąrašo skambinti pirmiausia ir kodėl?","Kam skambinti"],["Klientas sako „brangu“. Kaip atsakyti žmogiškai?","„Brangu“"],["Parašyk trumpą el. laišką po skambučio, kai klientas sako „atsiųskit pasiūlymą“.","Laiškas"],["Duok 5 patarimus, kaip nesijaudinti skambinant.","Drąsa skambinti"]];
   const msgs=c.msgs.map((m,i)=>m.role==="user"?`<div class="cmsg me"><div class="cb">${esc(m.content)}</div></div>`
     :`<div class="cmsg ai"><span class="cav">${icon("spark",14)}</span><div class="cb">${(m.searches||[]).map(q=>`<span class="csearch">${icon("search",12)} ${esc(q)}</span>`).join("")}${m.content?md(m.content):c.busy&&i===c.msgs.length-1?`<span class="typing"><i></i><i></i><i></i></span>`:""}</div></div>`).join("");
@@ -1351,7 +1396,7 @@ function viewClaude(){
     <header class="chead"><span class="cav big">${icon("spark",18)}</span><div class="ctitle"><b>Claude</b><small>Pokalbiai, laiškai, prieštaravimai ir įmonių paieška</small></div>
       ${modelPick()}${c.msgs.length?`<button class="btn" data-act="chat-new" title="Naujas pokalbis">${icon("plus",15)}<span class="hide-xs">Naujas</span></button>`:""}</header>
     ${lead?`<div class="cctx">Kalbam apie <b>${esc(spokenName(lead.name))}</b><button class="iconbtn" data-act="chat-ctx-clear" aria-label="Nebekalbėti apie šią įmonę">${icon("x",14)}</button></div>`:""}
-    <div class="cmsgs thin" id="cmsgs">${c.msgs.length?msgs:`<div class="cempty"><span class="cav huge">${icon("spark",26)}</span><h2>Kuo galiu padėti?</h2><p class="muted">Matau komandos sąrašą${lead?" ir atidarytą įmonę":""}, galiu ieškoti internete.</p>
+    <div class="cmsgs thin" id="cmsgs">${c.msgs.length?msgs:`<div class="cempty"><span class="cav huge">${icon("spark",26)}</span><h2>Kuo galiu padėti?</h2><p class="muted">Matau komandos sąrašą${lead?" ir atidarytą įmonę":""}${aiApi.web?", galiu ieškoti internete":""}.</p>
       <div class="csugg">${sugg.map(([q,t])=>`<button data-act="chat-sugg" data-q="${esc(q)}"><b>${esc(t)}</b><span>${esc(q)}</span></button>`).join("")}</div></div>`}
       ${c.err?`<div class="cerr">${esc(c.err)}</div>`:""}</div>
     <form class="ccomp" data-act="chat-form"><textarea data-key="chat" rows="1" placeholder="Rašyk Claude…" enterkeyhint="send">${esc(S.chatDraft||"")}</textarea>
@@ -1359,12 +1404,12 @@ function viewClaude(){
   </div>`;
 }
 async function chatSend(text){
-  const c=chatState();text=String(text||"").trim();if(!text||c.busy||!window.COLDLINE_WEB)return;
+  const c=chatState();text=String(text||"").trim();if(!text||c.busy||!aiApi)return;
   c.msgs.push({role:"user",content:text});const a={role:"assistant",content:"",searches:[]};c.msgs.push(a);
   c.busy=true;c.err="";S.chatDraft="";S.chatScroll=true;
   const ta=document.querySelector("textarea[data-key=chat]");if(ta){ta.value="";ta.style.height="auto"}
   render();
-  try{await window.COLDLINE_WEB.chat(c.msgs.slice(0,-1).map(m=>({role:m.role,content:m.content})),c.leadId,aiModel(),e=>{
+  try{await aiApi.chat(c.msgs.slice(0,-1).map(m=>({role:m.role,content:m.content})),c.leadId,aiModel(),e=>{
     if(e.type==="text")a.content+=e.text;else if(e.type==="search")a.searches.push(e.query);else if(e.type==="error")c.err=e.message;
     S.chatScroll=true;render(true)})}
   catch(err){c.err=err&&err.message||"Nepavyko."}
