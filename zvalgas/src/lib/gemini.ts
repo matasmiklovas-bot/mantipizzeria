@@ -47,7 +47,7 @@ export class GeminiError extends Error {
 
 export function geminiErrorMessage(e: unknown): string {
   if (e instanceof GeminiError) {
-    if (e.status === 400 && /API key/i.test(e.message)) return "Neteisingas Gemini raktas.";
+    if ((e.status === 400 || e.status === 401) && /API key|credential|token/i.test(e.message)) return "Neteisingas Gemini raktas.";
     if (e.status === 403) return "Gemini raktas neturi teisės. Patikrink raktą.";
     if (e.status === 429) return "Pasiektas nemokamas Gemini limitas. Pabandyk po minutės.";
     return `Gemini klaida (${e.status}).`;
@@ -57,16 +57,34 @@ export function geminiErrorMessage(e: unknown): string {
 
 const FALLBACK = "gemini-flash-lite-latest";
 
+/* How the key is sent. Classic keys ("AIza…") go in x-goog-api-key; newer ones ("AQ.…") may need another form,
+   so a refused key is retried the other ways and the one that works is remembered. */
+type Auth = "header" | "bearer" | "query";
+const authFor = new Map<string, Auth>();
+const authOrder = (k: string): Auth[] => {
+  const known = authFor.get(k);
+  const all: Auth[] = k.startsWith("AQ.") ? ["header", "bearer", "query"] : ["header"];
+  return known ? [known] : all;
+};
+
 async function call(path: string, payload: string, signal?: AbortSignal, m?: string, key?: string) {
   const k = key ?? (await geminiKey());
-  const go = (name: string) =>
-    fetch(`${BASE}/${name}:${path}`, {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": k },
-      body: payload,
-      signal,
-    });
+  let auth: Auth = authOrder(k)[0];
+  const go = (name: string) => {
+    const sep = path.includes("?") ? "&" : "?";
+    const url = `${BASE}/${name}:${path}${auth === "query" ? `${sep}key=${encodeURIComponent(k)}` : ""}`;
+    const headers: Record<string, string> = { "content-type": "application/json" };
+    if (auth === "header") headers["x-goog-api-key"] = k;
+    if (auth === "bearer") headers.authorization = `Bearer ${k}`;
+    return fetch(url, { method: "POST", headers, body: payload, signal });
+  };
   let r = await go(m || model());
+  for (const next of authOrder(k).slice(1)) {
+    if (r.status !== 401 && r.status !== 403) break;
+    auth = next;
+    r = await go(m || model());
+  }
+  if (r.ok) authFor.set(k, auth);
   // Busy model (503): try the lighter one once.
   if (r.status === 503 && (m || model()) !== FALLBACK) r = await go(FALLBACK);
   if (!r.ok) {

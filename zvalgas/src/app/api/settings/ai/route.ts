@@ -27,7 +27,8 @@ export async function POST(request: Request) {
   if (!u.admin) return json({ error: "AI raktą keičia platformos administratorius." }, 403);
   const body = (await request.json().catch(() => ({}))) as { key?: unknown };
   const key = typeof body.key === "string" ? body.key.trim() : "";
-  if (!/^[\w-]{20,120}$/.test(key)) return json({ error: "Tai nepanašu į raktą. Nukopijuok visą raktą (prasideda „AIza“)." }, 400);
+  // Google keys look like "AIza…" (older) or "AQ.…" (newer).
+  if (!/^[\w.-]{20,200}$/.test(key)) return json({ error: "Tai nepanašu į raktą. Nukopijuok visą raktą (prasideda „AIza“ arba „AQ.“)." }, 400);
   try {
     await geminiText("Atsakyk vienu žodžiu.", "Ar veiki? Atsakyk: taip", { key });
   } catch (err) {
