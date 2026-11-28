@@ -8,6 +8,8 @@ const WAVE = Array.from({ length: 28 }, (_, i) => {
   return `<i style="--h:${h}%;--d:${(-i * 0.137).toFixed(2)}s;--t:${(0.9 + (i % 5) * 0.13).toFixed(2)}s"></i>`;
 }).join("");
 
+const MARK = `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c1c1e"/><stop offset="1" stop-color="#000"/></linearGradient><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#64d2ff"/><stop offset=".5" stop-color="#30d158"/><stop offset="1" stop-color="#a6f7c0"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#lb)"/><g fill="none" stroke="url(#lg)" stroke-linecap="round" stroke-width="4.4"><path d="M41.5 18.5a19 19 0 1 0 0 27"/><path d="M36.6 24.4a11 11 0 1 0 0 15.2"/></g><circle cx="27.5" cy="32" r="3.8" fill="#30d158"/></svg>`;
+
 /** What Coldai whispers during a call: cycles under the headline. */
 const LINES = [
   "Facebook gerai, bet nauji klientai ieško Google – ir jūsų neranda.",
@@ -56,7 +58,8 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none;font-family
 @keyframes speak{0%{transform:scaleY(.18)}100%{transform:scaleY(1)}}
 .wave.quiet i{animation-play-state:paused}
 
-.brand{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#a1a1a6}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#a1a1a6}
+.brand svg{width:30px;height:30px;border-radius:8px;box-shadow:0 0 0 .5px rgba(255,255,255,.14),0 8px 20px -8px rgba(48,209,88,.5)}
 h1{margin-top:12px;text-align:center;font-family:var(--display);font-size:clamp(38px,min(9vw,7.4vh),64px);line-height:1.02;letter-spacing:-.035em;font-weight:700}
 h1 span{background:linear-gradient(92deg,#64d2ff 0%,#30d158 50%,#a6f7c0 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .whisper{margin-top:18px;min-height:46px;max-width:380px;text-align:center;font-size:15px;line-height:1.5;color:#a1a1a6;transition:opacity .5s var(--ease),transform .5s var(--ease)}
@@ -119,7 +122,7 @@ input:focus+label,input:not(:placeholder-shown)+label{transform:translateY(-9px)
 <body><div class="aura"><i></i><i></i><i></i></div><div class="grain"></div>
 <main class="wrap"><div class="col">
   <div class="wave in" aria-hidden="true" id="wave">${WAVE}</div>
-  <div class="brand in d1">Coldai</div>
+  <div class="brand in d1">${MARK}Coldai</div>
   <h1 class="in d1">Skambink drąsiai.<br><span>Coldai pakužda.</span></h1>
   <p class="whisper in d2" id="wh" aria-live="polite"><b>„</b>${esc(LINES[0])}<b>“</b></p>
   <section class="card in d3" id="card">

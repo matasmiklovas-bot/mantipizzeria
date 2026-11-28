@@ -180,7 +180,7 @@ export async function POST(request: Request) {
                 if (!rr) continue;
                 if (!withoutDuplicates([c], [...known, ...picked]).fresh.length) continue;
                 picked.push({ ...c, ...rr, category: c.category && c.category.length > 3 ? c.category : kw });
-                send({ type: "fetch", url: c.source });
+                send({ type: "lead", name: c.name, city: c.city, phone: c.phone, revenue: c.revenue || "", category: c.category || kw });
                 if (picked.length >= req.count) break;
               }
             }
@@ -264,6 +264,7 @@ export async function POST(request: Request) {
           if (submit) {
             const found = sanitize(submit.input);
             const { fresh } = withoutDuplicates(found, await existingKeys(who.ws));
+            for (const l of fresh) send({ type: "lead", name: l.name, city: l.city || "", phone: l.phone || "", revenue: l.revenue || "", category: l.category || "" });
             const added = await insertLeads(who.ws, fresh, user);
             send({ type: "result", found: found.length, added });
             break;
