@@ -7,6 +7,9 @@ export const maxDuration = 120;
 
 const MAX_TURNS = 24;
 const MAX_CHARS = 6000;
+/** Google search costs seconds: use it only when the question is about finding or checking something online. */
+const wantsWeb = (q: string) =>
+  /internet|google|paiešk|paiesk|ieškok|ieskok|surask|rask |patikrink|ištirk|istirk|svetain|kas tai per|naujien|kaina rinkoje|konkurent|atsiliepim/i.test(q);
 const CLIENT_NOTE = "\n\nInterneto paieškos dabar neturi: remkis tik pateiktais duomenimis ir savo žiniomis, o faktų apie konkrečias įmones neišgalvok.";
 
 const SYSTEM = `Tu esi AI pagalbininkas, įmontuotas į „Coldai“: tai Lietuvos komandos, kuri šaltais skambučiais parduoda svetaines, el. parduotuves, rezervacijų ir vidines sistemas mažoms įmonėms, darbo vieta.
@@ -97,7 +100,7 @@ export async function POST(request: Request) {
         const turns = messages.map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: String(m.content) }));
         try {
           await liteStream(system, turns, {
-            search: true,
+            search: wantsWeb(turns[turns.length - 1]?.content ?? ""),
             signal: request.signal,
             onText: (t) => ((wrote = true), send({ type: "text", text: t })),
             onSearch: (q) => send({ type: "search", query: q }),

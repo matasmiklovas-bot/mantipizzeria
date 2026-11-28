@@ -30,12 +30,15 @@ type Chunk = {
   error?: { message?: string; status?: string };
 };
 
+/* Short sales answers don't need the model to "think" first: that only adds seconds before the first word.
+   If a model refuses the setting, it is sent without it from then on. */
+let thinkOff = true;
 function body(system: string, turns: Turn[], search: boolean) {
   return JSON.stringify({
     systemInstruction: { parts: [{ text: system }] },
     contents: turns.map((t) => ({ role: t.role === "assistant" ? "model" : "user", parts: [{ text: t.content }] })),
     ...(search ? { tools: [{ google_search: {} }] } : {}),
-    generationConfig: { maxOutputTokens: 8192 },
+    generationConfig: { maxOutputTokens: 8192, ...(thinkOff ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
   });
 }
 
@@ -84,7 +87,16 @@ async function call(path: string, payload: string, signal?: AbortSignal, m?: str
     auth = next;
     r = await go(m || model());
   }
-  if (r.ok) authFor.set(k, auth);
+  if (r.status !== 401 && r.status !== 403) authFor.set(k, auth); // the key got through this way
+  if (!r.ok && r.status === 400 && thinkOff) {
+    const t = await r.clone().text().catch(() => "");
+    if (/thinking/i.test(t)) {
+      thinkOff = false;
+      const j = JSON.parse(payload);
+      delete j.generationConfig?.thinkingConfig;
+      return call(path, JSON.stringify(j), signal, m, key);
+    }
+  }
   // Busy model (503): try the lighter one once.
   if (r.status === 503 && (m || model()) !== FALLBACK) r = await go(FALLBACK);
   if (!r.ok) {

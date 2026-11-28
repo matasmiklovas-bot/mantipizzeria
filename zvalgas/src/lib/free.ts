@@ -28,12 +28,12 @@ async function post(system: string, turns: Turn[], stream: boolean, signal?: Abo
     private: true,
     messages: [{ role: "system", content: system }, ...turns],
   });
-  // Give up if the model hasn't started answering in 20 s (the caller then hands the question to the browser).
+  // Give up if the model hasn't started answering in 12 s (the caller then hands the question to the browser).
   const go = async () => {
     const ctl = new AbortController();
     const stop = () => ctl.abort();
     signal?.addEventListener("abort", stop);
-    const timer = setTimeout(stop, 20_000);
+    const timer = setTimeout(stop, 12_000);
     try {
       return await fetch(URL_, { method: "POST", headers: { "content-type": "application/json" }, body: payload, signal: ctl.signal });
     } finally {
