@@ -36,34 +36,48 @@ export const liteActive = () => !claudeActive();
 type Turn = { role: "user" | "assistant"; content: string };
 const NO_WEB = "\n\nInterneto paieškos dabar neturi: remkis tik pateiktais duomenimis ir savo žiniomis, o faktų apie konkrečias įmones neišgalvok.";
 
+/* When Gemini refuses the key, don't spend seconds retrying it on every message: skip it for 2 minutes. */
+let geminiDownUntil = 0;
+const keyProblem = (err: unknown) => err instanceof GeminiError && [400, 401, 403].includes(err.status);
+const noteGemini = (err: unknown) => {
+  if (keyProblem(err)) geminiDownUntil = Date.now() + 120_000;
+};
+const geminiUsable = async () => Date.now() > geminiDownUntil && (await geminiOn());
+/* On Vercel the free model refuses the shared server IPs, so the browser asks it instead (much faster). */
+const serverFree = () => !process.env.VERCEL;
+
 /** Streams a lite answer. Falls back to the free model if Gemini fails before writing anything. */
 export async function liteStream(
   system: string,
   turns: Turn[],
   opts: { search?: boolean; signal?: AbortSignal; onText?: (t: string) => void; onSearch?: (q: string) => void } = {},
 ) {
-  if (await geminiOn()) {
+  if (await geminiUsable()) {
     let wrote = false;
     try {
       const r = await geminiStream(system, turns, { ...opts, model: opts.search ? undefined : chatModel(), onText: (t) => ((wrote = true), opts.onText?.(t)) });
       return { ...r, via: "gemini" as const };
     } catch (err) {
       if (wrote || opts.signal?.aborted) throw err;
+      noteGemini(err);
       console.error("[ai:gemini→free]", err);
     }
   }
+  if (!serverFree()) throw new Error("NO_SERVER_AI");
   return { ...(await freeStream(system + NO_WEB, turns, opts)), via: "free" as const };
 }
 
 export async function liteText(system: string, prompt: string, opts: { signal?: AbortSignal } = {}) {
-  if (await geminiOn()) {
+  if (await geminiUsable()) {
     try {
       return await geminiText(system, prompt, opts);
     } catch (err) {
       if (opts.signal?.aborted) throw err;
+      noteGemini(err);
       console.error("[ai:gemini→free]", err);
     }
   }
+  if (!serverFree()) throw new Error("NO_SERVER_AI");
   return freeText(system, prompt, opts);
 }
 

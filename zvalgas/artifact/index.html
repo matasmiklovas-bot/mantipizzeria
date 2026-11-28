@@ -1354,6 +1354,12 @@ async function loadAiSettings(){
   try{const r=await fetch("/api/settings/ai",{credentials:"same-origin"});S.aiSet=r.ok?await r.json():{error:"Nepavyko gauti AI būsenos."}}catch{S.aiSet={error:"Nėra ryšio."}}
   render();
 }
+async function aiTest(){
+  S.aiTesting=true;S.aiTest=null;render();
+  try{const r=await fetch("/api/settings/ai?test=1",{credentials:"same-origin"});const d=await r.json().catch(()=>({}));S.aiTest=d.test||{ok:false,error:d.error||"Gemini raktas nenustatytas."}}
+  catch{S.aiTest={ok:false,error:"Nėra ryšio."}}
+  S.aiTesting=false;render();
+}
 async function aiKey(method,key){
   S.aiKeyBusy=true;S.aiKeyErr="";render();
   try{const r=await fetch("/api/settings/ai",{method,credentials:"same-origin",headers:{"content-type":"application/json"},body:method==="POST"?JSON.stringify({key}):undefined});
@@ -1368,17 +1374,22 @@ function viewSettings(){
   const W=S.ws&&S.ws!=="loading"?S.ws:null;
   const a=S.aiSet&&S.aiSet!=="loading"?S.aiSet:null;
   const prov=a?a.provider:"";
+  const T=S.aiTest;
+  const testRow=a&&!a.error&&prov==="gemini"?`<div class="btnrow"><button class="btn" data-act="ai-test" ${S.aiTesting?"disabled":""}>${S.aiTesting?"Tikrinama…":"Patikrinti AI"}</button>
+      ${T?(T.ok?`<span class="small" style="color:var(--call);font-weight:600">${icon("check",14)} Gemini atsako (${(T.ms/1000).toLocaleString("lt-LT",{maximumFractionDigits:1})} s)</span>`
+        :`<span class="aierr" style="margin:0">Gemini neveikia: ${esc(T.error||"")}</span>`):""}</div>
+      ${T&&!T.ok&&T.detail?`<p class="muted small" style="font-family:var(--mono);word-break:break-word">Google: ${esc(String(T.status||""))} ${esc(T.detail)}</p>`:""}`:"";
   const aiState=!a?`<p class="muted">Tikrinama…</p>`:a.error?`<p class="aierr">${esc(a.error)}</p>`
     :`<div class="state ${prov==="free"?"warn":"ok"}"><span class="sdot"></span><div><b>${prov==="claude"?"Veikia: Claude":prov==="gemini"?"Veikia: Google Gemini":"Veikia ribotai: nemokamas AI"}</b>
       <small>${prov==="free"?"Be rakto AI atsako ne dažniau kaip kartą per ~45 s ir neieško internete. Su nemokamu Gemini raktu veiks pilnai.":prov==="gemini"?(a.fromEnv?"Raktas nustatytas serveryje.":`Raktas ${esc(a.saved)} išsaugotas. Gemini gali ieškoti Google.`):"Naudojamas Anthropic raktas."}</small></div></div>`;
   const keyForm=a&&!a.error&&prov!=="claude"&&!a.fromEnv?(a.canEdit?`
-      <ol class="steps"><li>Atidaryk <a class="u" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a> ir prisijunk su Google paskyra.</li><li>Spausk <b>Create API key</b>. Kortelės nereikia, tai nemokama.</li><li>Spausk <b>Copy key</b> ir įklijuok čia.</li></ol>
+      <ol class="steps" style="${prov==="gemini"?"display:none":""}"><li>Atidaryk <a class="u" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a> ir prisijunk su Google paskyra.</li><li>Spausk <b>Create API key</b>. Kortelės nereikia, tai nemokama.</li><li>Spausk <b>Copy key</b> ir įklijuok čia.</li></ol>
       <form class="keyrow" data-act="aikey-form"><input class="inp" data-key="aikey" value="${esc(S.aiKeyDraft||"")}" placeholder="${a.saved?"Naujas raktas":"Įklijuok raktą"}" autocomplete="off" spellcheck="false" autocapitalize="none">
         <button class="btn ink" ${S.aiKeyBusy?"disabled":""}>${S.aiKeyBusy?"Tikrinama…":"Patikrinti ir išsaugoti"}</button>${a.saved?`<button type="button" class="btn" data-act="aikey-del" ${S.aiKeyBusy?"disabled":""}>Pašalinti</button>`:""}</form>
       ${S.aiKeyErr?`<p class="aierr">${esc(S.aiKeyErr)}</p>`:""}`:`<p class="muted small">AI visoms komandoms įjungia platformos administratorius – tau nieko daryti nereikia.</p>`):"";
   const field=([k,t,ph])=>`<label class="field">${t}<input class="inp" name="${k}" data-key="set.${k}" value="${esc(S.setDraft&&S.setDraft[k]!=null?S.setDraft[k]:settings[k]||"")}" placeholder="${esc(ph)}" ${mgr?"":"disabled"}></label>`;
   return`<div class="scroll thin"><div class="page narrow">${head("Nustatymai","")}
-    ${web?`<section class="box panel sset"><div class="sh"><h2>AI</h2><p>Pokalbiai, skambučio planai ir priežastys, kodėl skambinti.</p></div><div class="sb">${aiState}${keyForm}</div></section>`:""}
+    ${web?`<section class="box panel sset"><div class="sh"><h2>AI</h2><p>Pokalbiai, skambučio planai ir priežastys, kodėl skambinti.</p></div><div class="sb">${aiState}${testRow}${keyForm}</div></section>`:""}
     <section class="box panel sset"><div class="sh"><h2>Tavo įmonė</h2><p>Šie duomenys įrašomi į laiškų ir SMS šablonus po skambučio.</p></div>
       <form class="sb setgrid" data-act="settings-form">${SETF.map(field).join("")}${mgr?`<div class="full"><button class="btn ink">Išsaugoti</button></div>`:`<p class="muted small full">Keisti gali savininkas arba vadovas.</p>`}</form></section>
     ${web?`<section class="box panel sset"><div class="sh"><h2>Komanda</h2><p>Kiekviena komanda turi savo kontaktus. Kolegos prisijungia tik per tavo kvietimo nuorodą.</p></div>
@@ -1640,6 +1651,7 @@ document.addEventListener("click",async e=>{
     case"deal-open-lead":S.dealOpen=null;S.sel=id;S.scope="all";location.hash="";break;
     case"distribute":b.disabled=true;await distribute();break;
     case"wipe":await wipe();break;
+    case"ai-test":aiTest();break;
     case"team-rotate":if(confirm("Sukurti naują kvietimo nuorodą? Sena nustos veikti."))teamPost({rotate:true},"Nauja nuoroda sukurta.");break;
     case"aikey-del":if(confirm("Pašalinti AI raktą? AI vėl veiks tik ribotai."))aiKey("DELETE");break;
   }

@@ -13,10 +13,23 @@ async function state() {
   };
 }
 
+/** ?test=1 asks Gemini one short question and reports exactly what Google answered. */
+async function test() {
+  const t0 = Date.now();
+  try {
+    const text = await geminiText("Atsakyk vienu žodžiu.", "Ar veiki? Atsakyk: taip");
+    return { ok: true, ms: Date.now() - t0, text: text.slice(0, 40) };
+  } catch (err) {
+    const e = err as { status?: number; message?: string };
+    return { ok: false, ms: Date.now() - t0, error: geminiErrorMessage(err), status: e.status ?? 0, detail: String(e.message ?? err).slice(0, 300) };
+  }
+}
+
 export async function GET(request: Request) {
   const u = await me(request).catch(() => null);
   if (!u) return unauthorized();
   const st = await state();
+  if (new URL(request.url).searchParams.get("test") === "1") return json({ ...st, saved: "", canEdit: u.admin, test: st.provider === "gemini" ? await test() : null });
   return json({ ...st, saved: u.admin ? st.saved : st.saved ? "nustatytas" : "", canEdit: u.admin });
 }
 
