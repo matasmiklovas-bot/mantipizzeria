@@ -90,14 +90,13 @@ async function call(path: string, payload: string, signal?: AbortSignal, m?: str
     r = await go(m || model());
   }
   if (r.status !== 401 && r.status !== 403) authFor.set(k, auth); // the key got through this way
-  if (!r.ok && r.status === 400 && thinkOff) {
-    const t = await r.clone().text().catch(() => "");
-    if (/thinking/i.test(t)) {
-      thinkOff = false;
-      const j = JSON.parse(payload);
-      delete j.generationConfig?.thinkingConfig;
-      return call(path, JSON.stringify(j), signal, m, key);
-    }
+  // Newer models refuse the "no thinking" setting, sometimes with only "Request contains an invalid argument":
+  // any 400 while it is on means retry without it, and stop sending it.
+  if (!r.ok && r.status === 400 && thinkOff && payload.includes("thinkingConfig")) {
+    thinkOff = false;
+    const j = JSON.parse(payload);
+    delete j.generationConfig?.thinkingConfig;
+    return call(path, JSON.stringify(j), signal, m, key);
   }
   // A model name this key can't use (404): fall back to the default model.
   if (r.status === 404 && m && m !== model()) r = await go(model());
