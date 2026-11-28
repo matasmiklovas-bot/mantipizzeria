@@ -52,12 +52,10 @@ export class GeminiError extends Error {
 
 export function geminiErrorMessage(e: unknown): string {
   if (e instanceof GeminiError) {
-    if ((e.status === 400 || e.status === 401) && /API key|credential|token/i.test(e.message)) return "Neteisingas Gemini raktas.";
-    if (e.status === 403) return "Gemini raktas neturi teisės. Patikrink raktą.";
-    if (e.status === 429) return "Pasiektas nemokamas Gemini limitas. Pabandyk po minutės.";
-    return `Gemini klaida (${e.status}).`;
+    if (e.status === 429) return "Per daug klausimų iš karto. Pabandyk po minutės.";
+    return "Coldai AI dabar nepasiekiamas. Pabandyk po minutės.";
   }
-  return "Gemini neatsakė.";
+  return "Coldai AI neatsakė. Pabandyk dar kartą.";
 }
 
 const FALLBACK = "gemini-flash-lite-latest";

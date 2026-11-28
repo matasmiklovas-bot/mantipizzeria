@@ -63,7 +63,7 @@
   async function freeAsk(system,turns,onText){
     const body=JSON.stringify({model:"openai",stream:!!onText,private:true,messages:[{role:"system",content:system},...turns]});
     let r;for(let a=0;a<2;a++){r=await fetch(FREE,{method:"POST",headers:{"content-type":"application/json"},body});if(r.ok||a||(r.status!==429&&r.status<500))break;await new Promise(ok=>setTimeout(ok,3000))}
-    if(!r.ok)throw new Error(r.status===429||r.status===402?"Nemokamas AI leidžia 1 atsakymą per 45 s. Palauk minutę arba įjunk nemokamą raktą.":r.status===403?"Nemokamas AI šiuo metu atmeta užklausas. Įjunk nemokamą Gemini raktą – veiks visada.":"AI neatsakė ("+r.status+"). Pabandyk dar kartą.");
+    if(!r.ok)throw new Error(r.status===429||r.status===402?"Per daug klausimų iš karto. Pabandyk po minutės.":"Coldai AI dabar nepasiekiamas. Pabandyk po minutės.");
     if(!onText){const j=await r.json().catch(()=>({}));const t=((j.choices||[])[0]||{}).message;return(t&&t.content||"").trim()}
     const rd=r.body.getReader(),dec=new TextDecoder();let buf="",all="";
     for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
@@ -80,7 +80,7 @@
       while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;let e;try{e=JSON.parse(line)}catch{continue}
         if(e.type==="client"){handoff=e;continue}if(handoff&&e.type==="done")continue;onEvent(e)}}
     if(!handoff)return;
-    try{let any=false;const t0=Date.now();let first=0;await freeAsk(handoff.system,handoff.messages,t=>{if(!first)first=Date.now()-t0;any=true;onEvent({type:"text",text:t})});if(!any)throw new Error("AI grąžino tuščią atsakymą. Pabandyk dar kartą.");onEvent({type:"meta",via:"browser",first})}
+    try{let any=false;const t0=Date.now();let first=0;await freeAsk(handoff.system,handoff.messages,t=>{if(!first)first=Date.now()-t0;any=true;onEvent({type:"text",text:t})});if(!any)throw new Error("Coldai AI neatsakė. Pabandyk dar kartą.");onEvent({type:"meta",via:"browser",first})}
     catch(err){onEvent({type:"error",message:err&&err.message||"AI nepasiekiamas. Patikrink internetą."})}
     onEvent({type:"done"});
   }
@@ -88,7 +88,7 @@
     const post=b=>fetch("/api/brief",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(b)}).then(r=>r.json()).catch(()=>({error:"Nepavyko."}));
     const r=await post({leadId,model,force});
     if(!r.client)return r;
-    try{const text=await freeAsk(r.client.system,[{role:"user",content:r.client.prompt}]);if(!text)return{error:"AI grąžino tuščią atsakymą."};return post({leadId,text})}
+    try{const text=await freeAsk(r.client.system,[{role:"user",content:r.client.prompt}]);if(!text)return{error:"Coldai AI neatsakė. Pabandyk dar kartą."};return post({leadId,text})}
     catch(err){return{error:err&&err.message||"AI nepasiekiamas."}}
   }
   window.COLDLINE_WEB={

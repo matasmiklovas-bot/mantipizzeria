@@ -15,8 +15,8 @@ export class FreeAiError extends Error {
 
 export function freeErrorMessage(e: unknown): string {
   if (e instanceof FreeAiError) {
-    if (e.status === 429 || e.status === 402) return "Nemokamas AI leidžia 1 atsakymą per 45 s. Pastoviam AI savininkas gali įjungti nemokamą raktą: Nustatymai → AI.";
-    return `Nemokamas AI neatsakė (${e.status}). Pabandyk dar kartą.`;
+    if (e.status === 429 || e.status === 402) return "Per daug klausimų iš karto. Pabandyk po minutės.";
+    return "Coldai AI dabar nepasiekiamas. Pabandyk po minutės.";
   }
   return "Nepavyko gauti atsakymo iš AI.";
 }

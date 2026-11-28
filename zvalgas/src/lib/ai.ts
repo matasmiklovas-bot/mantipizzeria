@@ -106,7 +106,7 @@ export function aiErrorMessage(err: unknown): string {
     const body = JSON.stringify(err.error ?? "");
     if (err.status === 402) return "Baigėsi nemokami AI kreditai šį mėnesį.";
     if (err.status === 403 && body.includes("customer_verification_required"))
-      return "AI dar neįjungtas. Savininkas gali jį įjungti per minutę: Nustatymai → AI.";
+      return "Coldai AI dabar nepasiekiamas. Pabandyk po minutės.";
     if (err instanceof Anthropic.AuthenticationError) return "AI prisijungimas nepavyko.";
     if (err instanceof Anthropic.RateLimitError) return "Per daug užklausų. Pabandyk po minutės.";
     return `AI klaida (${err.status ?? "?"}).`;
