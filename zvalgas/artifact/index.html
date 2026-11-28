@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coldai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+/* Coldai. Apple-style: system font, iOS colours, large titles, filled controls, springy motion.
+   Colour carries meaning only: green = call / won, red = declined, blue = callback, orange = no answer. */
+:root{
+  --bg:#f5f5f7;--side:rgba(242,242,247,.78);--surface:#fff;--sunk:#f2f2f7;--fill:rgba(120,120,128,.12);--fill-2:rgba(120,120,128,.2);
+  --hover:rgba(0,0,0,.04);--line:rgba(60,60,67,.12);--line-2:rgba(60,60,67,.22);
+  --text:#1d1d1f;--text-2:#3a3a3c;--muted:#86868b;--ink:#1d1d1f;--on-ink:#fff;
+  --call:#34c759;--call-ink:#248a3d;--call-hover:#2fb350;--call-soft:rgba(52,199,89,.14);--accent:#007aff;
+  --danger:#ff3b30;--danger-soft:rgba(255,59,48,.1);
+  --s-new:#8e8e93;--s-no_answer:#ff9500;--s-declined:#ff3b30;--s-thinking:#007aff;--s-interested:#34c759;
+  --d-meeting:#007aff;--d-proposal:#af52de;--d-won:#34c759;--d-lost:#8e8e93;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
+  --r:12px;--rl:20px;
+  --sh:0 1px 2px rgba(0,0,0,.04),0 2px 10px rgba(0,0,0,.035);
+  --sh-2:0 2px 6px rgba(0,0,0,.05),0 14px 36px -8px rgba(0,0,0,.12);
+  --pop:0 0 0 .5px rgba(0,0,0,.08),0 22px 50px -12px rgba(0,0,0,.3);
+  color-scheme:light;
+}
+:root[data-theme=dark]{
+  --bg:#000;--side:rgba(28,28,30,.72);--surface:#1c1c1e;--sunk:#2c2c2e;--fill:rgba(118,118,128,.24);--fill-2:rgba(118,118,128,.36);
+  --hover:rgba(255,255,255,.06);--line:rgba(84,84,88,.6);--line-2:rgba(118,118,128,.5);
+  --text:#f5f5f7;--text-2:#d1d1d6;--muted:#98989d;--ink:#f5f5f7;--on-ink:#000;
+  --call:#30d158;--call-ink:#30d158;--call-hover:#3ade68;--call-soft:rgba(48,209,88,.18);--accent:#0a84ff;
+  --danger:#ff453a;--danger-soft:rgba(255,69,58,.16);
+  --s-new:#8e8e93;--s-no_answer:#ff9f0a;--s-declined:#ff453a;--s-thinking:#0a84ff;--s-interested:#30d158;
+  --d-meeting:#0a84ff;--d-proposal:#bf5af2;--d-won:#30d158;--d-lost:#8e8e93;
+  --sh:none;--sh-2:0 0 0 .5px rgba(255,255,255,.08);--pop:0 0 0 .5px rgba(255,255,255,.12),0 24px 60px -10px rgba(0,0,0,.9);
+  color-scheme:dark;
+}
+
+/* base */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text)}
+body{font-family:var(--sans);font-size:15px;line-height:1.45;letter-spacing:-.011em;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+button,input,select,textarea{font:inherit;color:inherit;background:none;border:0;border-radius:0;letter-spacing:inherit}
+select option{background:var(--surface);color:var(--text)}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.4}
+a{color:inherit;text-decoration:none}
+::selection{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:2px}
+html{-webkit-tap-highlight-color:transparent}
+a,button,summary,label,select,input,textarea,[data-act]{touch-action:manipulation}
+.mono,.num,.tnum{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}.t2{color:var(--text-2)}.small{font-size:13px;line-height:1.5}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.thin{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
+.trunc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kbd{display:inline-block;min-width:20px;border-radius:6px;background:var(--fill);padding:0 6px;font-family:var(--mono);font-size:11px;line-height:18px;text-align:center;color:var(--muted)}
+button,a.go,.btn,.chip,.obtn,.qitem,.dcard,.nav a,.tabs a,.cv-reply,.csugg button,.onbl a{transition:transform .25s var(--ease),background-color .2s,border-color .2s,color .2s,box-shadow .25s var(--ease),opacity .2s}
+button:active:not(:disabled),a.go:active,.btn:active,.chip:active{transform:scale(.96)}
+.obtn:active:not(:disabled),.qitem:active,.dcard:active,.cv-reply:active,.csugg button:active{transform:scale(.98)}
+
+/* motion */
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes viewin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.92)}100%{opacity:1;transform:none}}
+@keyframes pulse{50%{opacity:.3}}
+@keyframes sheet{from{transform:translateY(100%)}to{transform:none}}
+@keyframes drawer{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes shim{to{background-position:-200% 0}}
+.in{animation:in .35s var(--ease) both}
+.view{height:100%;animation:viewin .45s var(--ease) both}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ===== shell ===== */
+.app{display:flex;height:100dvh;flex-direction:column}
+@media(min-width:768px){.app{flex-direction:row}}
+aside.side{display:none;width:72px;flex-shrink:0;flex-direction:column;background:var(--side);backdrop-filter:saturate(1.8) blur(30px);-webkit-backdrop-filter:saturate(1.8) blur(30px);border-right:.5px solid var(--line)}
+@media(min-width:768px){aside.side{display:flex}}
+@media(min-width:1180px){aside.side{width:240px}}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;height:76px;padding:0 16px;font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.025em}
+@media(min-width:1180px){.brand{justify-content:flex-start;padding:0 22px}}
+.mark{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;flex-shrink:0;box-shadow:0 6px 14px -6px rgba(0,0,0,.45);transition:transform .5s var(--spring)}
+.brand:hover .mark{transform:rotate(-8deg) scale(1.06)}
+.brand .word{display:none}
+@media(min-width:1180px){.brand .word{display:inline}}
+.brand .live{display:none;width:8px;height:8px;border-radius:50%;background:var(--line-2);flex-shrink:0;margin-left:auto}
+@media(min-width:1180px){.brand .live{display:block}}
+.brand .live.on{background:var(--call);box-shadow:0 0 0 3px var(--call-soft)}
+.nav{display:flex;flex-direction:column;padding:2px 12px;gap:2px}
+.nav a,.sidefoot>a,.sidefoot>button,.sidefoot .who{display:flex;align-items:center;justify-content:center;gap:12px;height:40px;padding:0 12px;border-radius:10px;color:var(--text);font-size:15px;font-weight:500}
+@media(min-width:1180px){.nav a,.sidefoot>a,.sidefoot>button,.sidefoot .who{justify-content:flex-start}}
+.nav a svg,.sidefoot svg{color:var(--call-ink)}
+.nav a:hover,.sidefoot>a:hover,.sidefoot>button:hover{background:var(--hover)}
+.nav a[aria-current=page],.sidefoot>a[aria-current=page]{background:var(--call);color:#fff;box-shadow:0 4px 12px -4px color-mix(in srgb,var(--call) 70%,transparent)}
+.nav a[aria-current=page] svg,.sidefoot>a[aria-current=page] svg{color:#fff}
+.nav .lab,.nav .cnt,.sidefoot .lab{display:none}
+@media(min-width:1180px){.nav .lab,.sidefoot .lab{display:inline}.nav .cnt{display:inline;margin-left:auto;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}.nav a[aria-current=page] .cnt{color:rgba(255,255,255,.85)}}
+.sidefoot{margin-top:auto;padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px}
+.sidefoot>a,.sidefoot>button{font-size:14.5px;height:38px}
+.sidefoot .who{font-size:14.5px;height:48px;margin-top:6px;border-top:.5px solid var(--line);border-radius:0;padding-top:6px}
+.sidefoot .who .out{display:none;margin-left:auto;width:32px;height:32px;place-items:center;border-radius:8px;color:var(--muted)}
+.sidefoot .who .out:hover{background:var(--hover);color:var(--text)}
+@media(min-width:1180px){.sidefoot .who .out{display:grid}}
+@media(max-width:1179px){.sidefoot .who{display:none}}
+.main{position:relative;min-width:0;min-height:0;flex:1;overflow:hidden}
+
+/* phone tab bar + "Daugiau" sheet */
+.tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border-top:.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom);
+  background:color-mix(in srgb,var(--surface) 80%,transparent);backdrop-filter:saturate(1.8) blur(24px);-webkit-backdrop-filter:saturate(1.8) blur(24px)}
+@media(min-width:768px){.tabs{display:none}}
+.tabs a,.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 5px;font-size:10.5px;font-weight:500;color:var(--muted)}
+.tabs [aria-current=page]{color:var(--call-ink)}
+.moresheet{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.28);display:flex;align-items:flex-end;animation:fade .25s both}
+@media(min-width:768px){.moresheet{display:none}}
+.msheet{width:100%;background:var(--surface);border-radius:22px 22px 0 0;padding:8px 10px calc(14px + env(safe-area-inset-bottom));box-shadow:var(--pop);display:flex;flex-direction:column;gap:2px;animation:sheet .45s var(--ease) both}
+.msheet::before{content:"";align-self:center;width:38px;height:5px;border-radius:3px;background:var(--fill-2);margin:2px 0 8px}
+.msheet a,.msheet button{display:flex;align-items:center;gap:14px;height:54px;padding:0 14px;border-radius:14px;font-size:17px;font-weight:500;text-align:left}
+.msheet a:active,.msheet button:active{background:var(--hover)}
+.msheet a[aria-current=page]{background:var(--sunk)}
+.msheet svg{color:var(--call-ink)}
+
+/* feedback */
+.banner{padding:10px 20px;font-size:13.5px;background:var(--surface);color:var(--text-2);border-bottom:.5px solid var(--line)}
+.banner.err{background:var(--danger);color:#fff}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:90;border-radius:999px;background:color-mix(in srgb,var(--ink) 92%,transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--on-ink);padding:12px 20px;font-size:14.5px;font-weight:500;box-shadow:var(--pop);max-width:calc(100vw - 32px);animation:toast .5s var(--spring) both}
+@keyframes toast{from{opacity:0;transform:translate(-50%,16px) scale(.9)}to{opacity:1;transform:translate(-50%,0)}}
+@media(min-width:768px){.toast{bottom:32px}}
+.avatar{display:inline-flex;flex-shrink:0;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-weight:600;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+
+/* page */
+.scroll{height:100%;overflow-y:auto}
+.page{max-width:1200px;margin:0 auto;padding:0 16px 96px}
+@media(min-width:768px){.page{padding:0 40px 80px}}
+.page.narrow{max-width:860px}
+.ph{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;padding:34px 0 22px}
+@media(max-width:767px){.ph{padding:22px 0 14px}}
+.ph h1{font-family:var(--display);font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.ph .meta{display:block;margin-top:4px;font-family:var(--sans);font-size:15px;font-weight:400;color:var(--muted);letter-spacing:-.01em}
+.lbl{display:block;font-size:13px;color:var(--muted)}
+.sect{font-size:17px;font-weight:600;letter-spacing:-.02em;margin-bottom:14px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sect span{font-weight:400;font-size:13.5px;color:var(--muted);letter-spacing:-.01em}
+.box{border-radius:var(--rl);background:var(--surface);box-shadow:var(--sh)}
+:root[data-theme=dark] .box{box-shadow:none}
+.panel{padding:20px 22px}
+.empty{display:grid;place-items:center;min-height:60vh;padding:64px 24px;text-align:center}
+.empty h2{font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-.03em}
+.none{padding:8px 6px 14px;font-size:13px;color:var(--muted)}
+
+/* controls: filled capsules, no borders */
+.btn{display:inline-flex;height:36px;align-items:center;justify-content:center;gap:7px;border-radius:999px;padding:0 16px;font-size:14.5px;font-weight:500;background:var(--fill);color:var(--text);white-space:nowrap}
+.btn:hover{background:var(--fill-2)}
+.btn.ink{background:var(--ink);color:var(--on-ink)}
+.btn.ink:hover{opacity:.86}
+.btn.go{background:var(--call);color:#fff;box-shadow:0 6px 16px -8px color-mix(in srgb,var(--call) 90%,transparent)}
+.btn.go:hover{background:var(--call-hover)}
+.btn.red{background:var(--danger-soft);color:var(--danger)}
+.btn.red:hover{background:color-mix(in srgb,var(--danger) 18%,transparent)}
+label.btn{cursor:pointer}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.iconbtn{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--muted);flex-shrink:0;background:var(--fill)}
+.iconbtn:hover{color:var(--text);background:var(--fill-2)}
+.mini-btn{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:500;color:var(--accent);background:transparent}
+.mini-btn:hover{background:var(--hover)}
+.linkbtn{display:inline-flex;align-items:center;gap:5px;font-weight:500;color:var(--accent)}
+.inp{height:42px;width:100%;border-radius:var(--r);background:var(--sunk);padding:0 13px;font-size:16px;color:var(--text);transition:box-shadow .2s,background .2s}
+@media(min-width:1024px){.inp{font-size:15px}}
+.inp:focus{outline:none;background:var(--surface);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--accent) 35%,transparent)}
+.inp:disabled{opacity:.6}
+.inp::placeholder,textarea::placeholder{color:var(--muted)}
+textarea.inp{height:auto;padding:11px 13px;line-height:1.55;resize:vertical}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--muted)}
+.seg{display:inline-flex;gap:0;padding:2px;border-radius:10px;background:var(--fill)}
+.seg button{height:30px;padding:0 13px;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap}
+.seg button[aria-pressed=true]{background:var(--surface);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.12),0 .5px 1px rgba(0,0,0,.1)}
+:root[data-theme=dark] .seg button[aria-pressed=true]{background:#636366}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{height:34px;border-radius:999px;padding:0 15px;font-size:14px;font-weight:500;color:var(--text);background:var(--fill)}
+.chip:hover{background:var(--fill-2)}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--on-ink)}
+.tagline{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-2);white-space:nowrap}
+.u{color:var(--accent)}
+.u:hover{text-decoration:underline;text-underline-offset:3px}
+.steps{margin:2px 0 14px 20px;font-size:15px;line-height:1.75;color:var(--text-2)}
+.steps b{color:var(--text);font-weight:600}
+
+/* ===== call ===== */
+.call{display:flex;height:100%}
+.queue{display:none;width:310px;flex-shrink:0;border-right:.5px solid var(--line);background:var(--surface);flex-direction:column;min-height:0}
+@media(min-width:1024px){.queue{display:flex}}
+.queue.sheet{display:flex;position:absolute;inset:0;z-index:30;width:auto;animation:fade .25s both}
+.qhead{padding:0 16px 10px}
+.qtop{display:flex;align-items:center;justify-content:space-between;height:68px}
+.qtop h1{font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-.03em}
+.goal{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:12px}
+.goal .track{flex:1;height:6px;border-radius:99px;background:var(--fill);overflow:hidden}
+.goal .track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#30d158,#34c759);transition:width .8s var(--ease)}
+.goal .mono{font-weight:600}
+.qtabs{display:grid;grid-template-columns:repeat(3,1fr);padding:2px;border-radius:10px;background:var(--fill)}
+.qtabs button{height:30px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text)}
+.qtabs button[aria-pressed=true]{background:var(--surface);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.12),0 .5px 1px rgba(0,0,0,.1)}
+:root[data-theme=dark] .qtabs button[aria-pressed=true]{background:#636366}
+.qtabs .n{font-size:11.5px;color:var(--muted);margin-left:4px;font-variant-numeric:tabular-nums}
+.qlist{flex:1;min-height:0;overflow-y:auto;list-style:none;padding:4px 0 16px}
+.qlist li{animation:in .4s var(--ease) both}
+.qlist li:nth-child(2){animation-delay:.02s}.qlist li:nth-child(3){animation-delay:.04s}.qlist li:nth-child(4){animation-delay:.06s}.qlist li:nth-child(5){animation-delay:.08s}.qlist li:nth-child(6){animation-delay:.1s}.qlist li:nth-child(7){animation-delay:.12s}.qlist li:nth-child(n+8){animation-delay:.14s}
+.qitem{display:grid;grid-template-columns:8px 1fr auto;column-gap:10px;row-gap:1px;margin:1px 8px;width:calc(100% - 16px);padding:11px 12px;border-radius:12px;text-align:left}
+.qitem:hover{background:var(--hover)}
+.qitem[aria-current=true]{background:var(--call-soft)}
+.qitem .dot{margin-top:7px}
+.qitem b{font-weight:600;font-size:15px}
+.qitem small{grid-column:2/4;font-size:13px;color:var(--muted)}
+.qitem .qrev{align-self:center;font-size:13px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.center{min-width:0;flex:1;overflow-y:auto}
+.mbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;height:52px;border-bottom:.5px solid var(--line);padding:0 16px;font-size:15px;
+  background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:saturate(1.8) blur(24px);-webkit-backdrop-filter:saturate(1.8) blur(24px)}
+@media(min-width:1024px){.mbar{display:none}}
+.focus{max-width:860px;margin:0 auto;padding:16px 14px 56px}
+@media(min-width:768px){.focus{padding:24px 32px 64px}}
+
+/* lead card */
+.hero{border-radius:24px;background:var(--surface);box-shadow:var(--sh-2);padding:20px 20px 16px;animation:rise .5s var(--ease) both}
+@media(min-width:768px){.hero{padding:24px 28px 20px}}
+.crumbs{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+.crumbs>span:first-child{font-weight:600}
+.crumbs .push{margin-left:auto}
+.crumbs button.t2{color:var(--accent);font-weight:500}
+.askai{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border-radius:999px;background:var(--fill);color:var(--text)!important;font-weight:500}
+.askai:hover{background:var(--fill-2)}
+.askai svg{color:var(--call-ink)}
+.crumbs .askai+button{margin-left:2px}
+.fname{margin-top:12px;font-family:var(--display);font-size:32px;font-weight:700;line-height:1.08;letter-spacing:-.035em;word-break:break-word}
+@media(min-width:768px){.fname{font-size:40px}}
+.fmeta{margin-top:4px;font-size:13px;color:var(--muted);letter-spacing:.02em}
+.htags{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.htags span{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;background:var(--fill);font-size:13px;color:var(--text-2)}
+.htags svg{opacity:.6}
+.htags .need{background:var(--call-soft);color:var(--call-ink);font-weight:600}
+.dial{margin-top:18px;display:flex;flex-direction:column;border-radius:18px;background:var(--sunk);overflow:hidden}
+@media(min-width:640px){.dial{flex-direction:row;align-items:stretch}}
+.dial .nr{flex:1;padding:13px 18px}
+.dial .nr .num{display:block;margin-top:1px;font-family:var(--display);font-size:30px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dial .copy{display:flex;align-items:center;justify-content:center;gap:7px;min-height:50px;padding:0 18px;color:var(--accent);font-size:14.5px;font-weight:500}
+.dial .copy:hover{background:var(--hover)}
+@media(min-width:640px){.dial .copy span{display:none}}
+.dial a.go{display:flex;align-items:center;justify-content:center;gap:10px;min-height:60px;margin:6px;padding:0 34px;border-radius:14px;background:var(--call);color:#fff;font-size:17px;font-weight:600;letter-spacing:-.01em;box-shadow:0 8px 20px -10px color-mix(in srgb,var(--call) 90%,transparent)}
+.dial a.go:hover{background:var(--call-hover)}
+.links{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;font-size:14.5px;color:var(--text-2)}
+.links a,.links span{display:inline-flex;align-items:center;gap:6px}
+.links a.u{color:var(--accent)}
+.hlink{display:inline-flex;align-items:center;gap:6px;margin-left:auto;height:32px;padding:0 14px;border-radius:999px;background:var(--fill);font-size:14px;font-weight:500;color:var(--text)}
+.hlink:hover{background:var(--fill-2)}
+.whybox{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:15px 18px;border-radius:20px;background:var(--surface);box-shadow:var(--sh);cursor:pointer;animation:rise .5s .04s var(--ease) both}
+.wicon{display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;border-radius:10px;background:var(--call-soft);color:var(--call-ink)}
+.whybox p{margin-top:2px;font-size:15px;line-height:1.55;color:var(--text)}
+@media(min-width:768px){.whybox p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.whybox.open p{-webkit-line-clamp:unset}}
+
+/* e-mail / SMS */
+.mailbox{margin-top:12px;display:grid;gap:12px;padding:18px 20px;border-radius:20px;background:var(--surface);box-shadow:var(--sh-2);animation:rise .4s var(--ease) both}
+.mailbox header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mailbox header b{font-size:17px;font-weight:600;letter-spacing:-.02em;margin-right:auto}
+.mailbox textarea{font-size:15px;line-height:1.6}
+
+/* conversation guide */
+.cv{margin-top:12px;border-radius:22px;background:var(--surface);box-shadow:var(--sh);overflow:hidden;animation:rise .5s .08s var(--ease) both}
+.cv>header,.outcome header{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;align-items:center;min-height:52px;padding:10px 12px 2px 20px;font-size:17px;font-weight:600;letter-spacing:-.02em}
+.cv-me{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--muted)}
+.cv-me input{width:100px;height:32px;padding:0 11px;border-radius:9px;background:var(--sunk);font-size:14px;color:var(--text)}
+.cv-me input:focus{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.cv-body{padding:4px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.cv-past{display:flex;flex-direction:column;gap:6px;padding:0 4px 4px}
+.cv-you{font-size:14px;line-height:1.5;color:var(--muted)}
+.cv-them{display:flex;justify-content:flex-end}
+.cv-them span{display:inline-block;max-width:80%;border-radius:18px 18px 5px 18px;background:var(--accent);color:#fff;padding:8px 14px;font-size:14px;font-weight:500;animation:pop .35s var(--spring) both}
+.cv-now{margin-top:4px;background:var(--sunk);border-radius:18px;padding:18px 18px 16px;animation:pop .4s var(--ease) both}
+.cv-now>.lbl:first-child{color:var(--call-ink);font-weight:700;text-transform:uppercase;letter-spacing:.07em;font-size:11px}
+.cv-now .lbl{display:block;margin-bottom:6px}
+.cv-say{font-family:var(--display);font-size:21px;line-height:1.38;letter-spacing:-.02em;color:var(--text);font-weight:600}
+@media(min-width:768px){.cv-say{font-size:23px}}
+.cv-tip{margin-top:10px;display:flex;gap:7px;align-items:flex-start;font-size:14px;line-height:1.45;color:var(--text-2)}
+.cv-tip svg{flex-shrink:0;margin-top:2px;color:var(--call-ink)}
+.cv-replies{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:560px){.cv-replies{grid-template-columns:1fr 1fr}}
+.cv-reply{position:relative;min-height:50px;padding:12px 38px 12px 16px;border-radius:14px;background:var(--surface);text-align:left;font-size:15px;font-weight:500;color:var(--text);box-shadow:var(--sh)}
+:root[data-theme=dark] .cv-reply{background:#3a3a3c}
+.cv-reply::after{content:"›";position:absolute;right:16px;top:50%;transform:translateY(-52%);font-size:22px;color:var(--muted);transition:transform .25s var(--ease),color .2s}
+.cv-reply:hover{box-shadow:var(--sh-2)}
+.cv-reply:hover::after{color:var(--call-ink);transform:translate(3px,-52%)}
+.cv-end{margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-radius:16px;padding:13px 14px 13px 16px;background:var(--surface);box-shadow:inset 4px 0 0 var(--tone)}
+.cv-end b{display:block;font-size:16px}
+.cv-end small{display:block;margin-top:2px;font-size:13px;color:var(--muted)}
+
+/* AI plan */
+.aibrief{margin-top:12px;border-radius:20px;background:var(--surface);box-shadow:var(--sh);padding:15px 20px 17px;animation:rise .5s .12s var(--ease) both}
+.aibrief header{display:flex;align-items:center;gap:10px;font-size:15px}.aibrief header b{flex:1;font-weight:600}
+.aib{margin-top:8px;font-size:15px;line-height:1.6}.aib p{margin:0 0 6px}.aib ul{margin:2px 0 8px 18px}.aib li{margin:2px 0}
+.aierr{margin-top:8px;font-size:14px;color:var(--danger)}
+.shim{margin-top:10px;display:grid;gap:8px}.shim i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,var(--fill),var(--fill-2),var(--fill));background-size:200% 100%;animation:shim 1.3s linear infinite}
+.shim i:nth-child(2){width:82%}.shim i:nth-child(3){width:64%}
+
+/* facts */
+.brief.facts{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:768px){.brief.facts{grid-template-columns:repeat(4,1fr)}}
+.brief.facts>div{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:16px;background:var(--surface);box-shadow:var(--sh)}
+.brief.facts>div:last-child:nth-child(odd){grid-column:1/-1}
+@media(min-width:768px){.brief.facts>div:last-child:nth-child(odd){grid-column:auto}}
+.brief dt{font-size:12.5px;color:var(--muted)}
+.brief dd{font-size:15px;font-weight:600;letter-spacing:-.015em;word-break:break-word}
+.brief dd .muted{font-weight:400}
+
+/* outcome */
+.outcome{margin-top:12px;border-radius:22px;background:var(--surface);box-shadow:var(--sh-2)}
+.outcome .pad{padding:4px 16px 16px}
+.live-call{display:inline-flex;align-items:center;gap:7px;color:var(--call-ink);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--call);animation:pulse 1.2s ease-in-out infinite;box-shadow:0 0 0 4px var(--call-soft)}
+textarea.note{width:100%;resize:vertical;border-radius:14px;background:var(--sunk);padding:12px 14px;font-size:16px;line-height:1.5;color:var(--text)}
+@media(min-width:1024px){textarea.note{font-size:15px}}
+textarea.note:focus{outline:none;box-shadow:0 0 0 3.5px color-mix(in srgb,var(--accent) 35%,transparent)}
+.obtns{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:640px){.obtns{grid-template-columns:repeat(4,1fr)}}
+.obtn{display:flex;align-items:center;justify-content:space-between;gap:8px;height:62px;padding:0 16px;font-size:16px;font-weight:600;border-radius:16px;background:var(--sunk)}
+.obtn span{display:inline-flex;align-items:center;gap:10px}
+.obtn .dot{width:11px;height:11px;box-shadow:0 0 0 4px color-mix(in srgb,var(--tone) 20%,transparent)}
+.obtn:hover{background:color-mix(in srgb,var(--tone) 12%,var(--sunk))}
+.obtn .kbd{display:none}
+@media(min-width:768px){.obtn .kbd{display:inline-block}}
+.sub{margin-top:12px}
+.skip{display:flex;justify-content:flex-end;margin-top:10px}
+.skip button{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--accent)}
+.dealform{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+@media(min-width:640px){.dealform{grid-template-columns:1fr 1fr 1fr}}
+.dealform .full{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+
+/* history */
+.thread{display:flex;flex-direction:column;min-height:0;background:var(--surface)}
+.thread.side{width:360px;flex-shrink:0;border-left:.5px solid var(--line)}
+.thread.below{height:520px;border-top:.5px solid var(--line)}
+.thead{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 20px;font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.03em}
+.thead .mono{font-family:var(--sans);font-size:14px;font-weight:500}
+.tlist{flex:1;min-height:0;overflow-y:auto;padding:4px 20px 14px;list-style:none;display:flex;flex-direction:column;gap:16px}
+.titem{display:grid;grid-template-columns:26px 1fr;gap:10px;animation:in .35s var(--ease) both}
+.titem .h{display:flex;align-items:baseline;gap:8px;font-size:14px}
+.titem .h b{font-weight:600}
+.titem .ev{margin-top:2px;font-size:14px;color:var(--text-2);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.titem .msg{margin-top:6px;white-space:pre-wrap;font-size:14.5px;line-height:1.5;color:var(--text);background:var(--sunk);border-radius:5px 16px 16px 16px;padding:9px 13px}
+.composer{padding:10px 12px 12px}
+.composer div{display:flex;align-items:flex-end;gap:8px;border-radius:22px;background:var(--sunk);padding:5px 5px 5px 8px}
+.composer div:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.composer textarea{flex:1;max-height:128px;min-height:34px;resize:none;padding:7px 6px;font-size:16px}
+@media(min-width:1024px){.composer textarea{font-size:14.5px}}
+.composer textarea:focus{outline:none}
+.send{display:grid;place-items:center;width:34px;height:34px;flex-shrink:0;border-radius:50%;background:var(--accent);color:#fff}
+
+/* ===== contacts ===== */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
+.search{display:flex;align-items:center;gap:8px;flex:1 1 260px;min-width:0;height:40px;border-radius:12px;background:var(--fill);padding:0 12px;color:var(--muted)}
+.search:focus-within{box-shadow:0 0 0 3.5px color-mix(in srgb,var(--accent) 30%,transparent)}
+.search input{flex:1;min-width:0;height:100%;font-size:16px;color:var(--text)}
+@media(min-width:1024px){.search input{font-size:15px}}
+.search input:focus{outline:none}
+.sel{height:40px;border-radius:12px;background:var(--fill);padding:0 12px;font-size:14.5px;font-weight:500;color:var(--text)}
+.statusbar{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none}
+.statusbar button{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 15px;border-radius:999px;font-size:14px;font-weight:500;color:var(--text);background:var(--fill);white-space:nowrap}
+.statusbar button:hover{background:var(--fill-2)}
+.statusbar button[aria-pressed=true]{background:var(--ink);color:var(--on-ink)}
+.statusbar .n{font-size:12.5px;opacity:.6;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto;background:var(--surface);border-radius:var(--rl);box-shadow:var(--sh)}
+.grid{width:100%;border-collapse:collapse;font-size:15px}
+.grid th{position:sticky;top:0;z-index:1;background:var(--surface);text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:14px 10px 10px;border-bottom:.5px solid var(--line);white-space:nowrap}
+.grid td{padding:12px 10px;border-bottom:.5px solid var(--line);vertical-align:middle}
+.grid tr:last-child td{border-bottom:0}
+.grid td:first-child,.grid th:first-child{padding-left:20px}
+.grid td:last-child,.grid th:last-child{padding-right:16px}
+.grid tbody tr{cursor:pointer;animation:in .35s var(--ease) both}
+.grid tbody tr:hover td{background:var(--hover)}
+.grid .r{text-align:right}
+.grid td.mono{font-variant-numeric:tabular-nums}
+.hide-s,.hide-m{display:none}
+@media(min-width:900px){.hide-s{display:table-cell}}
+@media(min-width:1360px){.hide-m{display:table-cell}}
+@media(max-width:899px){.grid td:first-child{max-width:190px!important}.grid td,.grid th{padding-left:8px;padding-right:8px}}
+@media(max-width:639px){
+  .tablewrap:has(.leads){overflow:visible}
+  .leads thead{display:none}
+  .leads,.leads tbody{display:block}
+  .leads tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px 12px;padding:13px 16px;border-bottom:.5px solid var(--line)}
+  .leads tbody tr:last-child{border-bottom:0}
+  .leads td{border:0!important;padding:0!important;background:none!important}
+  .leads td.hide-s,.leads td.hide-m{display:none}
+  .leads td:first-child{max-width:none!important;grid-column:1;grid-row:1}
+  .leads td.st{grid-column:2;grid-row:1/3}
+  .leads td.mono{grid-column:1;grid-row:2;font-size:14px;color:var(--text-2)}
+}
+.pick{position:relative;display:inline-block}
+.pick>button{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:999px;background:var(--fill);font-size:13px;font-weight:500;color:var(--text);white-space:nowrap}
+.pick>button:hover{background:var(--fill-2)}
+.menu{position:absolute;right:0;z-index:30;margin-top:6px;width:250px;border-radius:16px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);padding:6px;box-shadow:var(--pop);list-style:none;transform-origin:top right;animation:pop .3s var(--spring) both}
+.menu button{display:flex;width:100%;align-items:center;gap:10px;border-radius:10px;padding:10px 11px;text-align:left;font-size:15px;color:var(--text)}
+.menu button:hover{background:var(--accent);color:#fff}
+.mini{height:32px;width:70px;border-radius:9px;background:var(--sunk);padding:0 9px;font-size:14px;text-align:right;color:var(--text);font-variant-numeric:tabular-nums}
+.mini:focus{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+form.add{display:grid;gap:10px;padding:18px;margin-bottom:16px}
+@media(min-width:640px){form.add{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){form.add{grid-template-columns:repeat(4,1fr)}}
+form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+@media(min-width:640px){form.add .acts{grid-column:1/-1}}
+.req{width:100%;min-height:180px;border-radius:14px;background:var(--sunk);padding:12px;font-family:var(--mono);font-size:12.5px;line-height:1.6;resize:vertical;color:var(--text)}
+.ailog{margin-top:12px;list-style:none;border-radius:14px;background:var(--sunk);padding:10px 14px;font-size:14px;line-height:1.75;color:var(--text-2);max-height:180px;overflow:auto}
+.ailog li{animation:in .3s var(--ease) both}
+.ailog li.now{color:var(--call-ink);font-weight:500}
+.ailog li.now::after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;border-radius:50%;background:var(--call);animation:pulse 1s infinite}
+
+/* ===== metrics ===== */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:900px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{border-radius:var(--rl);background:var(--surface);box-shadow:var(--sh);padding:18px 20px 16px;animation:rise .55s var(--ease) both}
+.kpi:nth-child(2){animation-delay:.05s}.kpi:nth-child(3){animation-delay:.1s}.kpi:nth-child(4){animation-delay:.15s}
+.kpi .lbl{font-size:13.5px;font-weight:500}
+.kpi .v{display:block;margin-top:8px;font-family:var(--display);font-size:36px;font-weight:700;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+@media(max-width:767px){.kpi .v{font-size:28px}}
+.kpi .v .muted{font-size:18px!important;font-weight:600}
+.kpi small{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
+.kpi:first-child{background:linear-gradient(160deg,#34c759,#1f9e4a);color:#fff;box-shadow:0 14px 30px -14px rgba(52,199,89,.7)}
+.kpi:first-child .lbl,.kpi:first-child small{color:rgba(255,255,255,.82)}
+.cols{display:grid;gap:12px;margin-top:12px}
+@media(min-width:960px){.cols{grid-template-columns:1fr 1fr}}
+.cols .box,.box.panel+.box.panel{animation:rise .55s .12s var(--ease) both}
+.funnel{display:flex;flex-direction:column;gap:11px}
+.frow{display:grid;grid-template-columns:104px 1fr 76px;align-items:center;gap:12px;font-size:14px}
+.ftrack{height:24px;border-radius:8px;overflow:hidden;background:var(--fill)}
+.ftrack span{display:block;height:100%;border-radius:8px;transform-origin:left;animation:grow .9s var(--ease) both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:none}}
+.bars{height:160px;display:flex;align-items:flex-end;gap:6px}
+.bars button{flex:1;height:100%;display:flex;align-items:flex-end}
+.bars span{display:block;width:100%;min-height:3px;background:color-mix(in srgb,var(--call) 45%,var(--fill));border-radius:7px;transform-origin:bottom;animation:growy .8s var(--ease) both}
+@keyframes growy{from{transform:scaleY(0)}to{transform:none}}
+.bars button:last-child span{background:var(--call)}
+.axis{margin-top:8px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.rank{font-size:13px;color:var(--muted);width:18px;display:inline-block;font-variant-numeric:tabular-nums}
+.cblist{display:flex;flex-direction:column;gap:2px}
+.cbrow{display:grid;grid-template-columns:10px minmax(0,1.4fr) minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 10px;border-radius:12px;text-align:left;font-size:15px}
+.cbrow:hover{background:var(--hover)}
+.cbrow b{font-weight:600}
+.cbrow .late{color:var(--danger)}
+
+/* deals board */
+.board{display:grid;gap:12px;margin-top:14px}
+@media(min-width:1000px){.board{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.col{background:var(--fill);border-radius:var(--rl);padding:12px 10px 4px;min-height:120px}
+:root[data-theme=dark] .col{background:#141416}
+.col h3{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:2px 6px 12px;font-size:15px;font-weight:600}
+.col h3 span{white-space:nowrap;font-weight:400;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dcard{display:block;width:100%;text-align:left;border-radius:14px;box-shadow:var(--sh);background:var(--surface);padding:13px 14px;margin-bottom:8px;animation:rise .45s var(--ease) both}
+.dcard:hover{box-shadow:var(--sh-2);transform:translateY(-1px)}
+.dcard .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.dcard .top b{font-weight:600;font-size:15px}
+.dcard .top .mono{font-weight:600}
+.dcard .bot{margin-top:6px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.dcard .bot svg{vertical-align:-2px}
+.drawer{position:absolute;inset:0;z-index:50;display:flex;justify-content:flex-end;background:rgba(0,0,0,.25);animation:fade .25s both}
+.drawer .pane{width:min(460px,100%);height:100%;overflow-y:auto;background:var(--surface);box-shadow:var(--pop);animation:drawer .45s var(--ease) both}
+.drawer .phd{display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 22px;border-bottom:.5px solid var(--line)}
+.drawer .phd b{font-family:var(--display);font-size:22px;font-weight:700!important;letter-spacing:-.03em}
+.ledger{border-radius:14px;background:var(--sunk);font-size:14.5px;overflow:hidden;font-variant-numeric:tabular-nums}
+.ledger div{display:flex;justify-content:space-between;padding:10px 14px;border-top:.5px solid var(--line)}
+.ledger div:first-child{border-top:0}
+.ledger .tot{font-weight:600}
+
+/* ===== settings (inset grouped) ===== */
+.sset{display:grid;gap:14px;margin-bottom:16px;padding:22px 24px;animation:rise .5s var(--ease) both}
+.sset:nth-of-type(2){animation-delay:.05s}.sset:nth-of-type(3){animation-delay:.1s}.sset:nth-of-type(4){animation-delay:.15s}
+@media(min-width:900px){.sset{grid-template-columns:240px 1fr;gap:28px}}
+.sset .sh h2{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-.025em}
+.sset .sh p{margin-top:4px;font-size:14px;line-height:1.55;color:var(--muted)}
+.sset .sb{min-width:0;display:flex;flex-direction:column;gap:12px}
+.sset.danger .sh h2{color:var(--danger)}
+.setgrid{display:grid!important;grid-template-columns:1fr;gap:12px}
+@media(min-width:640px){.setgrid{grid-template-columns:1fr 1fr}}
+.setgrid .full{grid-column:1/-1;display:flex;justify-content:flex-end}
+.keyrow{display:flex;flex-wrap:wrap;gap:8px}
+.keyrow .inp{flex:1 1 240px}
+.invite{display:flex;align-items:center;gap:10px;padding:6px 6px 6px 14px;border-radius:14px;background:var(--sunk)}
+.invite .mono{flex:1;min-width:0;font-size:14px;font-weight:500;color:var(--accent)}
+
+/* getting started */
+.onb{max-width:540px;text-align:left}.onb h2{font-size:40px}.onb>p{margin-top:6px;font-size:16px}
+.onbl{margin-top:24px;list-style:none;display:grid;gap:10px;counter-reset:s}
+.onbl li{animation:rise .5s var(--ease) both}.onbl li:nth-child(2){animation-delay:.07s}.onbl li:nth-child(3){animation-delay:.14s}
+.onbl a{position:relative;display:block;padding:16px 18px 16px 62px;border-radius:18px;background:var(--surface);box-shadow:var(--sh)}
+.onbl a:hover{box-shadow:var(--sh-2);transform:translateY(-1px)}
+.onbl a::before{counter-increment:s;content:counter(s);position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--call);color:#fff;font-weight:700;font-size:14px}
+.onbl b{display:block;font-size:16px;font-weight:600}.onbl span{display:block;margin-top:2px;font-size:14px;color:var(--muted);line-height:1.45}
+
+/* ===== Coldai chat ===== */
+.chat{height:100%;display:flex;flex-direction:column;max-width:820px;margin:0 auto;padding:0 16px}
+.chead{display:flex;align-items:center;gap:12px;padding:22px 2px 10px}
+.ctitle{flex:1;min-width:0}.ctitle b{display:block;font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1.15}.ctitle small{color:var(--muted);font-size:13.5px}
+.cav{display:inline-grid;place-items:center;flex-shrink:0;width:30px;height:30px;border-radius:9px;background:#0b0b0c}
+.cav svg{width:78%;height:78%}
+.cav.big{width:44px;height:44px;border-radius:13px}.cav.huge{width:72px;height:72px;border-radius:20px;box-shadow:0 18px 36px -14px rgba(0,0,0,.55),0 0 0 .5px rgba(255,255,255,.08)}
+.cctx{display:flex;align-items:center;gap:6px;align-self:flex-start;margin-bottom:8px;padding:2px 4px 2px 14px;border-radius:999px;background:var(--fill);font-size:13.5px}
+.cmsgs{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:18px;padding:8px 2px 18px}
+.cmsg{display:flex;gap:12px;animation:in .35s var(--ease) both}
+.cmsg.me{justify-content:flex-end}
+.cmsg.me .cb{max-width:76%;background:var(--fill);color:var(--text);border-radius:22px;padding:10px 16px;font-size:16px;line-height:1.5;white-space:pre-wrap}
+.cmsg.ai .cb{flex:1;min-width:0;font-size:16px;line-height:1.65;color:var(--text);padding-top:3px}
+.cmsg.ai .cb p{margin:0 0 10px}.cmsg.ai .cb ul{margin:4px 0 10px 20px}.cmsg.ai .cb li{margin:4px 0}
+.cmsg.ai .cb code{font-family:var(--mono);font-size:13.5px;background:var(--fill);padding:1px 5px;border-radius:5px}
+.csearch{display:inline-flex;align-items:center;gap:5px;margin:0 6px 8px 0;padding:3px 10px;border-radius:999px;background:var(--fill);color:var(--text-2);font-size:12.5px}
+.typing{display:inline-flex;gap:5px;padding:9px 0}.typing i{width:8px;height:8px;border-radius:50%;background:var(--muted);animation:dots 1.2s ease-in-out infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dots{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:none;opacity:1}}
+.cempty{margin:auto;text-align:center;max-width:640px;padding:24px 0}
+.cempty .cav.huge{animation:pop .6s var(--spring) both}
+.cempty h2{margin-top:18px;font-family:var(--display);font-size:34px;font-weight:700;letter-spacing:-.035em}.cempty p{margin-top:6px;font-size:15.5px}
+.csugg{margin-top:26px;display:grid;grid-template-columns:1fr;gap:10px;text-align:left}
+@media(min-width:640px){.csugg{grid-template-columns:1fr 1fr}}
+.csugg button{display:flex;flex-direction:column;gap:3px;padding:15px 17px;border-radius:18px;background:var(--surface);box-shadow:var(--sh);text-align:left;animation:rise .5s var(--ease) both}
+.csugg button:nth-child(2){animation-delay:.05s}.csugg button:nth-child(3){animation-delay:.1s}.csugg button:nth-child(4){animation-delay:.15s}
+.csugg button:hover{box-shadow:var(--sh-2);transform:translateY(-1px)}.csugg b{font-size:15px;font-weight:600}.csugg span{font-size:13.5px;color:var(--muted);line-height:1.45}
+.cerr{align-self:center;max-width:100%;border-radius:14px;background:var(--danger-soft);color:var(--danger);padding:10px 15px;font-size:14px;line-height:1.5;text-align:center}
+.ccomp{display:flex;align-items:flex-end;gap:8px;margin:0 0 18px;padding:7px 7px 7px 18px;border-radius:28px;background:var(--surface);box-shadow:var(--sh-2),0 0 0 .5px var(--line)}
+.ccomp:focus-within{box-shadow:var(--sh-2),0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent)}
+.ccomp textarea{flex:1;min-height:42px;max-height:180px;resize:none;border:0;outline:none;background:none;padding:10px 0;font-size:16px;line-height:1.45;color:var(--text)}
+.csend{display:grid;place-items:center;width:42px;height:42px;flex-shrink:0;border-radius:50%;color:var(--on-ink);background:var(--ink)}
+.csend:disabled{opacity:.25}
+.aioff{display:flex;gap:12px;align-items:flex-start}.aioff p{margin-top:6px;font-size:15px;line-height:1.6}
+.mpick button{min-width:0}
+@media(max-width:767px){.chat{padding:0 12px}.ccomp{margin-bottom:10px}.chead{padding-top:16px}}
+@media(max-width:560px){.hide-xs{display:none}}
+
+/* touch: bigger targets */
+@media(pointer:coarse){
+  .btn,.seg button,.qtabs button,.chip,.sel,.search,.pick>button,.statusbar button{min-height:44px}
+  .inp{height:48px}.mini{height:42px;width:74px}
+  .nav a{height:46px}
+  .qitem{padding:14px 16px}.obtn{height:66px}
+  .menu button{padding:13px 12px}
+  .iconbtn{width:44px;height:44px}
+  .grid td{padding:14px 10px}
+  .skip button{min-height:44px;padding:0 6px}
+  .cv-me input{height:42px;width:110px;font-size:16px}
+}
+
+/* ===== round 2: goal ring, finder, palette, celebration ===== */
+.goal{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.goal b{display:block;font-size:17px;font-weight:700;letter-spacing:-.02em}.goal b .muted{font-weight:500}
+.goal small{display:block;font-size:12.5px;color:var(--muted)}
+.ring{transform:rotate(-90deg);flex-shrink:0;overflow:visible}
+.ring circle{fill:none}
+.ring .rb{stroke:var(--call-soft)}
+.ring .rf{stroke:url(#cm-g);stroke-linecap:round;transition:stroke-dashoffset 1.1s var(--ease)}
+.ring.full .rf{filter:drop-shadow(0 0 4px rgba(48,209,88,.6))}
+.mring{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600}
+.dial a.go.live{animation:breathe 1.8s ease-in-out infinite}
+@keyframes breathe{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--call) 18%,transparent),0 8px 20px -10px var(--call)}}
+.confetti{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:120}
+html.theming,html.theming *{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease)!important}
+.sidefoot .kbd{font-size:10.5px}
+@media(max-width:1179px){.sidefoot .kbd{display:none!important}}
+
+/* finder */
+.finder{padding:20px 22px;margin-bottom:16px;animation:rise .45s var(--ease) both}
+.fhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.fhead h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.03em}
+.fhead p{margin-top:3px;font-size:14px;color:var(--muted)}
+.fform{margin-top:16px;display:grid;gap:8px}
+@media(min-width:900px){.fform{grid-template-columns:1fr 1fr;column-gap:16px}.fform .field:nth-of-type(1){grid-column:1;grid-row:1}.fform .qrow:nth-of-type(1){grid-column:1;grid-row:2}.fform .field:nth-of-type(2){grid-column:2;grid-row:1}.fform .qrow:nth-of-type(2){grid-column:2;grid-row:2}.fform .fmore,.fform .fgo{grid-column:1/-1}}
+.qrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 6px}
+.qchip{flex-shrink:0;height:30px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:500;color:var(--text-2);background:transparent;box-shadow:inset 0 0 0 1px var(--line-2)}
+.qchip:hover{background:var(--hover)}
+.qchip.on{background:var(--call);color:#fff;box-shadow:none}
+.fmore{margin-top:4px;border-radius:14px;background:var(--sunk);padding:0 14px}
+.fmore summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;height:44px;font-size:14.5px;font-weight:500;color:var(--accent)}
+.fmore summary::-webkit-details-marker{display:none}
+.fmore[open]{padding-bottom:14px}.fmore .lbl{margin-bottom:6px}
+.fbadge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:#fff;font-size:12px;font-weight:600}
+.fgo{margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn.big{height:46px;padding:0 26px;font-size:16px;font-weight:600}
+.fres{margin-top:16px;border-top:.5px solid var(--line);padding-top:14px}
+.fstat{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14.5px;min-height:36px}
+.fstat b{font-size:16px}
+.fstat .btn{margin-left:auto}
+.scan{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--call-soft);border-top-color:var(--call);animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fcards{list-style:none;margin-top:12px;display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.fcards li{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:14px;background:var(--sunk);animation:pop .45s var(--spring) both;min-width:0}
+.fcards b{font-size:15px;font-weight:600}.fcards span{font-size:13px;color:var(--muted)}.fcards .fph{color:var(--text-2);font-variant-numeric:tabular-nums}
+
+/* ⌘K palette */
+.palbg{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.28);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;justify-content:center;align-items:flex-start;padding:12vh 16px 16px;animation:fade .2s both}
+.pal{width:min(600px,100%);border-radius:20px;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:saturate(1.8) blur(40px);-webkit-backdrop-filter:saturate(1.8) blur(40px);box-shadow:var(--pop);overflow:hidden;animation:pop .35s var(--spring) both}
+.palq{display:flex;align-items:center;gap:12px;height:60px;padding:0 18px;border-bottom:.5px solid var(--line);color:var(--muted)}
+.palq input{flex:1;min-width:0;height:100%;font-size:19px;color:var(--text)}
+.palq input:focus{outline:none}
+.palr{list-style:none;padding:6px;max-height:50vh;overflow:auto}
+.palr button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:12px;text-align:left}
+.palr button[aria-selected=true],.palr button:hover{background:var(--accent);color:#fff}
+.palr button[aria-selected=true] small,.palr button:hover small,.palr button[aria-selected=true] .palst,.palr button:hover .palst{color:rgba(255,255,255,.85)}
+.palr .trunc{flex:1;min-width:0}.palr b{display:block;font-size:15.5px;font-weight:600}.palr small{display:block;font-size:13px;color:var(--muted)}
+.palst{font-size:13px;color:var(--muted);flex-shrink:0}
+.palnone{padding:22px;text-align:center;color:var(--muted)}
+.palfoot{display:flex;gap:16px;padding:10px 16px;border-top:.5px solid var(--line);font-size:12.5px;color:var(--muted)}
+.palfoot .kbd{margin-right:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" aria-label="Meniu">
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="34" height="34"><defs><linearGradient id="mk-b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c1c1e"/><stop offset="1" stop-color="#000"/></linearGradient><linearGradient id="mk-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#64d2ff"/><stop offset=".5" stop-color="#30d158"/><stop offset="1" stop-color="#a6f7c0"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#mk-b)"/><g fill="none" stroke="url(#mk-g)" stroke-linecap="round" stroke-width="4.4"><path d="M41.5 18.5a19 19 0 1 0 0 27"/><path d="M36.6 24.4a11 11 0 1 0 0 15.2"/></g><circle cx="27.5" cy="32" r="3.8" fill="#30d158"/></svg></span><span class="word">Coldai</span><span class="live" id="live"></span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidefoot" id="sidefoot"></div>
+  </aside>
+  <main class="main" id="main"></main>
+  <nav class="tabs" id="tabs" aria-label="Meniu"></nav>
+</div>
+<div id="more"></div>
+<div id="pal"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="cm-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#64d2ff"/><stop offset=".5" stop-color="#30d158"/><stop offset="1" stop-color="#a6f7c0"/></linearGradient></defs></svg>
+<div id="toast"></div>
+<script>
+/*! morphdom 2.7.4 | MIT License | (c) Patrick Steele-Idem */
+(function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?module.exports=factory():typeof define==="function"&&define.amd?define(factory):(global=global||self,global.morphdom=factory())})(this,function(){"use strict";var DOCUMENT_FRAGMENT_NODE=11;function morphAttrs(fromNode,toNode){var toNodeAttrs=toNode.attributes;var attr;var attrName;var attrNamespaceURI;var attrValue;var fromValue;if(toNode.nodeType===DOCUMENT_FRAGMENT_NODE||fromNode.nodeType===DOCUMENT_FRAGMENT_NODE){return}for(var i=toNodeAttrs.length-1;i>=0;i--){attr=toNodeAttrs[i];attrName=attr.name;attrNamespaceURI=attr.namespaceURI;attrValue=attr.value;if(attrNamespaceURI){attrName=attr.localName||attrName;fromValue=fromNode.getAttributeNS(attrNamespaceURI,attrName);if(fromValue!==attrValue){if(attr.prefix==="xmlns"){attrName=attr.name}fromNode.setAttributeNS(attrNamespaceURI,attrName,attrValue)}}else{fromValue=fromNode.getAttribute(attrName);if(fromValue!==attrValue){fromNode.setAttribute(attrName,attrValue)}}}var fromNodeAttrs=fromNode.attributes;for(var d=fromNodeAttrs.length-1;d>=0;d--){attr=fromNodeAttrs[d];attrName=attr.name;attrNamespaceURI=attr.namespaceURI;if(attrNamespaceURI){attrName=attr.localName||attrName;if(!toNode.hasAttributeNS(attrNamespaceURI,attrName)){fromNode.removeAttributeNS(attrNamespaceURI,attrName)}}else{if(!toNode.hasAttribute(attrName)){fromNode.removeAttribute(attrName)}}}}var range;var NS_XHTML="http://www.w3.org/1999/xhtml";var doc=typeof document==="undefined"?undefined:document;var HAS_TEMPLATE_SUPPORT=!!doc&&"content"in doc.createElement("template");var HAS_RANGE_SUPPORT=!!doc&&doc.createRange&&"createContextualFragment"in doc.createRange();function createFragmentFromTemplate(str){var template=doc.createElement("template");template.innerHTML=str;return template.content.childNodes[0]}function createFragmentFromRange(str){if(!range){range=doc.createRange();range.selectNode(doc.body)}var fragment=range.createContextualFragment(str);return fragment.childNodes[0]}function createFragmentFromWrap(str){var fragment=doc.createElement("body");fragment.innerHTML=str;return fragment.childNodes[0]}function toElement(str){str=str.trim();if(HAS_TEMPLATE_SUPPORT){return createFragmentFromTemplate(str)}else if(HAS_RANGE_SUPPORT){return createFragmentFromRange(str)}return createFragmentFromWrap(str)}function compareNodeNames(fromEl,toEl){var fromNodeName=fromEl.nodeName;var toNodeName=toEl.nodeName;var fromCodeStart,toCodeStart;if(fromNodeName===toNodeName){return true}fromCodeStart=fromNodeName.charCodeAt(0);toCodeStart=toNodeName.charCodeAt(0);if(fromCodeStart<=90&&toCodeStart>=97){return fromNodeName===toNodeName.toUpperCase()}else if(toCodeStart<=90&&fromCodeStart>=97){return toNodeName===fromNodeName.toUpperCase()}else{return false}}function createElementNS(name,namespaceURI){return!namespaceURI||namespaceURI===NS_XHTML?doc.createElement(name):doc.createElementNS(namespaceURI,name)}function moveChildren(fromEl,toEl){var curChild=fromEl.firstChild;while(curChild){var nextChild=curChild.nextSibling;toEl.appendChild(curChild);curChild=nextChild}return toEl}function syncBooleanAttrProp(fromEl,toEl,name){if(fromEl[name]!==toEl[name]){fromEl[name]=toEl[name];if(fromEl[name]){fromEl.setAttribute(name,"")}else{fromEl.removeAttribute(name)}}}var specialElHandlers={OPTION:function(fromEl,toEl){var parentNode=fromEl.parentNode;if(parentNode){var parentName=parentNode.nodeName.toUpperCase();if(parentName==="OPTGROUP"){parentNode=parentNode.parentNode;parentName=parentNode&&parentNode.nodeName.toUpperCase()}if(parentName==="SELECT"&&!parentNode.hasAttribute("multiple")){if(fromEl.hasAttribute("selected")&&!toEl.selected){fromEl.setAttribute("selected","selected");fromEl.removeAttribute("selected")}parentNode.selectedIndex=-1}}syncBooleanAttrProp(fromEl,toEl,"selected")},INPUT:function(fromEl,toEl){syncBooleanAttrProp(fromEl,toEl,"checked");syncBooleanAttrProp(fromEl,toEl,"disabled");if(fromEl.value!==toEl.value){fromEl.value=toEl.value}if(!toEl.hasAttribute("value")){fromEl.removeAttribute("value")}},TEXTAREA:function(fromEl,toEl){var newValue=toEl.value;if(fromEl.value!==newValue){fromEl.value=newValue}var firstChild=fromEl.firstChild;if(firstChild){var oldValue=firstChild.nodeValue;if(oldValue==newValue||!newValue&&oldValue==fromEl.placeholder){return}firstChild.nodeValue=newValue}},SELECT:function(fromEl,toEl){if(!toEl.hasAttribute("multiple")){var selectedIndex=-1;var i=0;var curChild=fromEl.firstChild;var optgroup;var nodeName;while(curChild){nodeName=curChild.nodeName&&curChild.nodeName.toUpperCase();if(nodeName==="OPTGROUP"){optgroup=curChild;curChild=optgroup.firstChild}else{if(nodeName==="OPTION"){if(curChild.hasAttribute("selected")){selectedIndex=i;break}i++}curChild=curChild.nextSibling;if(!curChild&&optgroup){curChild=optgroup.nextSibling;optgroup=null}}}fromEl.selectedIndex=selectedIndex}}};var ELEMENT_NODE=1;var DOCUMENT_FRAGMENT_NODE$1=11;var TEXT_NODE=3;var COMMENT_NODE=8;function noop(){}function defaultGetNodeKey(node){if(node){return node.getAttribute&&node.getAttribute("id")||node.id}}function morphdomFactory(morphAttrs){return function morphdom(fromNode,toNode,options){if(!options){options={}}if(typeof toNode==="string"){if(fromNode.nodeName==="#document"||fromNode.nodeName==="HTML"||fromNode.nodeName==="BODY"){var toNodeHtml=toNode;toNode=doc.createElement("html");toNode.innerHTML=toNodeHtml}else{toNode=toElement(toNode)}}else if(toNode.nodeType===DOCUMENT_FRAGMENT_NODE$1){toNode=toNode.firstElementChild}var getNodeKey=options.getNodeKey||defaultGetNodeKey;var onBeforeNodeAdded=options.onBeforeNodeAdded||noop;var onNodeAdded=options.onNodeAdded||noop;var onBeforeElUpdated=options.onBeforeElUpdated||noop;var onElUpdated=options.onElUpdated||noop;var onBeforeNodeDiscarded=options.onBeforeNodeDiscarded||noop;var onNodeDiscarded=options.onNodeDiscarded||noop;var onBeforeElChildrenUpdated=options.onBeforeElChildrenUpdated||noop;var skipFromChildren=options.skipFromChildren||noop;var addChild=options.addChild||function(parent,child){return parent.appendChild(child)};var childrenOnly=options.childrenOnly===true;var fromNodesLookup=Object.create(null);var keyedRemovalList=[];function addKeyedRemoval(key){keyedRemovalList.push(key)}function walkDiscardedChildNodes(node,skipKeyedNodes){if(node.nodeType===ELEMENT_NODE){var curChild=node.firstChild;while(curChild){var key=undefined;if(skipKeyedNodes&&(key=getNodeKey(curChild))){addKeyedRemoval(key)}else{onNodeDiscarded(curChild);if(curChild.firstChild){walkDiscardedChildNodes(curChild,skipKeyedNodes)}}curChild=curChild.nextSibling}}}function removeNode(node,parentNode,skipKeyedNodes){if(onBeforeNodeDiscarded(node)===false){return}if(parentNode){parentNode.removeChild(node)}onNodeDiscarded(node);walkDiscardedChildNodes(node,skipKeyedNodes)}function indexTree(node){if(node.nodeType===ELEMENT_NODE||node.nodeType===DOCUMENT_FRAGMENT_NODE$1){var curChild=node.firstChild;while(curChild){var key=getNodeKey(curChild);if(key){fromNodesLookup[key]=curChild}indexTree(curChild);curChild=curChild.nextSibling}}}indexTree(fromNode);function handleNodeAdded(el){onNodeAdded(el);var curChild=el.firstChild;while(curChild){var nextSibling=curChild.nextSibling;var key=getNodeKey(curChild);if(key){var unmatchedFromEl=fromNodesLookup[key];if(unmatchedFromEl&&compareNodeNames(curChild,unmatchedFromEl)){curChild.parentNode.replaceChild(unmatchedFromEl,curChild);morphEl(unmatchedFromEl,curChild)}else{handleNodeAdded(curChild)}}else{handleNodeAdded(curChild)}curChild=nextSibling}}function cleanupFromEl(fromEl,curFromNodeChild,curFromNodeKey){while(curFromNodeChild){var fromNextSibling=curFromNodeChild.nextSibling;if(curFromNodeKey=getNodeKey(curFromNodeChild)){addKeyedRemoval(curFromNodeKey)}else{removeNode(curFromNodeChild,fromEl,true)}curFromNodeChild=fromNextSibling}}function morphEl(fromEl,toEl,childrenOnly){var toElKey=getNodeKey(toEl);if(toElKey){delete fromNodesLookup[toElKey]}if(!childrenOnly){var beforeUpdateResult=onBeforeElUpdated(fromEl,toEl);if(beforeUpdateResult===false){return}else if(beforeUpdateResult instanceof HTMLElement){fromEl=beforeUpdateResult;indexTree(fromEl)}morphAttrs(fromEl,toEl);onElUpdated(fromEl);if(onBeforeElChildrenUpdated(fromEl,toEl)===false){return}}if(fromEl.nodeName!=="TEXTAREA"){morphChildren(fromEl,toEl)}else{specialElHandlers.TEXTAREA(fromEl,toEl)}}function morphChildren(fromEl,toEl){var skipFrom=skipFromChildren(fromEl,toEl);var curToNodeChild=toEl.firstChild;var curFromNodeChild=fromEl.firstChild;var curToNodeKey;var curFromNodeKey;var fromNextSibling;var toNextSibling;var matchingFromEl;outer:while(curToNodeChild){toNextSibling=curToNodeChild.nextSibling;curToNodeKey=getNodeKey(curToNodeChild);while(!skipFrom&&curFromNodeChild){fromNextSibling=curFromNodeChild.nextSibling;if(curToNodeChild.isSameNode&&curToNodeChild.isSameNode(curFromNodeChild)){curToNodeChild=toNextSibling;curFromNodeChild=fromNextSibling;continue outer}curFromNodeKey=getNodeKey(curFromNodeChild);var curFromNodeType=curFromNodeChild.nodeType;var isCompatible=undefined;if(curFromNodeType===curToNodeChild.nodeType){if(curFromNodeType===ELEMENT_NODE){if(curToNodeKey){if(curToNodeKey!==curFromNodeKey){if(matchingFromEl=fromNodesLookup[curToNodeKey]){if(fromNextSibling===matchingFromEl){isCompatible=false}else{fromEl.insertBefore(matchingFromEl,curFromNodeChild);if(curFromNodeKey){addKeyedRemoval(curFromNodeKey)}else{removeNode(curFromNodeChild,fromEl,true)}curFromNodeChild=matchingFromEl;curFromNodeKey=getNodeKey(curFromNodeChild)}}else{isCompatible=false}}}else if(curFromNodeKey){isCompatible=false}isCompatible=isCompatible!==false&&compareNodeNames(curFromNodeChild,curToNodeChild);if(isCompatible){morphEl(curFromNodeChild,curToNodeChild)}}else if(curFromNodeType===TEXT_NODE||curFromNodeType==COMMENT_NODE){isCompatible=true;if(curFromNodeChild.nodeValue!==curToNodeChild.nodeValue){curFromNodeChild.nodeValue=curToNodeChild.nodeValue}}}if(isCompatible){curToNodeChild=toNextSibling;curFromNodeChild=fromNextSibling;continue outer}if(curFromNodeKey){addKeyedRemoval(curFromNodeKey)}else{removeNode(curFromNodeChild,fromEl,true)}curFromNodeChild=fromNextSibling}if(curToNodeKey&&(matchingFromEl=fromNodesLookup[curToNodeKey])&&compareNodeNames(matchingFromEl,curToNodeChild)){if(!skipFrom){addChild(fromEl,matchingFromEl)}morphEl(matchingFromEl,curToNodeChild)}else{var onBeforeNodeAddedResult=onBeforeNodeAdded(curToNodeChild);if(onBeforeNodeAddedResult!==false){if(onBeforeNodeAddedResult){curToNodeChild=onBeforeNodeAddedResult}if(curToNodeChild.actualize){curToNodeChild=curToNodeChild.actualize(fromEl.ownerDocument||doc)}addChild(fromEl,curToNodeChild);handleNodeAdded(curToNodeChild)}}curToNodeChild=toNextSibling;curFromNodeChild=fromNextSibling}cleanupFromEl(fromEl,curFromNodeChild,curFromNodeKey);var specialElHandler=specialElHandlers[fromEl.nodeName];if(specialElHandler){specialElHandler(fromEl,toEl)}}var morphedNode=fromNode;var morphedNodeType=morphedNode.nodeType;var toNodeType=toNode.nodeType;if(!childrenOnly){if(morphedNodeType===ELEMENT_NODE){if(toNodeType===ELEMENT_NODE){if(!compareNodeNames(fromNode,toNode)){onNodeDiscarded(fromNode);morphedNode=moveChildren(fromNode,createElementNS(toNode.nodeName,toNode.namespaceURI))}}else{morphedNode=toNode}}else if(morphedNodeType===TEXT_NODE||morphedNodeType===COMMENT_NODE){if(toNodeType===morphedNodeType){if(morphedNode.nodeValue!==toNode.nodeValue){morphedNode.nodeValue=toNode.nodeValue}return morphedNode}else{morphedNode=toNode}}}if(morphedNode===toNode){onNodeDiscarded(fromNode)}else{if(toNode.isSameNode&&toNode.isSameNode(morphedNode)){return}morphEl(morphedNode,toNode,childrenOnly);if(keyedRemovalList){for(var i=0,len=keyedRemovalList.length;i<len;i++){var elToRemove=fromNodesLookup[keyedRemovalList[i]];if(elToRemove){removeNode(elToRemove,elToRemove.parentNode,false)}}}}if(!childrenOnly&&morphedNode!==fromNode&&fromNode.parentNode){if(morphedNode.actualize){morphedNode=morphedNode.actualize(fromNode.ownerDocument||doc)}fromNode.parentNode.replaceChild(morphedNode,fromNode)}return morphedNode}}var morphdom=morphdomFactory(morphAttrs);return morphdom});
+</script>
+<script>
+/* ===== constants ===== */
+const STATUSES=[
+  {id:"new",label:"Neskambinta",short:"Neskambinta"},
+  {id:"no_answer",label:"Skambinta — neatsiliepė",short:"Neatsiliepė"},
+  {id:"declined",label:"Skambinta — nenori",short:"Nenori"},
+  {id:"thinking",label:"Skambinta — pagalvos",short:"Pagalvos"},
+  {id:"interested",label:"Skambinta — nori",short:"Nori"},
+];
+const STAGES=[
+  {id:"meeting",label:"Susitikimas"},
+  {id:"proposal",label:"Pasiūlymas išsiųstas"},
+  {id:"won",label:"Laimėta"},
+  {id:"lost",label:"Pralaimėta"},
+];
+const NEEDS=["Svetainė","Svetainės atnaujinimas","Rezervacijų sistema","El. parduotuvė","Vidinė sistema / CRM"];
+const REVENUE=["iki 50 tūkst. €","50–150 tūkst. €","150–500 tūkst. €","0,5–1 mln. €","1–5 mln. €","5 mln. € +"];
+const RETRY_MS=3*3600e3,DEF_COMMISSION=10,DEF_GOAL=60;
+const ICON={
+  phone:"M6.6 3.5h2.2l1.4 3.6-1.7 1.1a10 10 0 0 0 4.3 4.3l1.1-1.7 3.6 1.4v2.2a1.8 1.8 0 0 1-1.9 1.8A13.7 13.7 0 0 1 4.8 5.4a1.8 1.8 0 0 1 1.8-1.9Z",
+  list:"M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01",
+  spark:"M4 10v4M8 7v10M12 4v16M16 8v8M20 10.5v3",
+  chart:"M4 20V10M10 20V4M16 20v-7M22 20H2",
+  euro:"M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9",
+  pin:"M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z",
+  tag:"M3.5 12.5V4.5a1 1 0 0 1 1-1h8l8.5 8.5-9 9-8.5-8.5ZM8 8.5h.01",
+  logout:"M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11",
+  upload:"M12 16V4M7 9l5-5 5 5M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2",
+  users:"M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM21 19v-1a4 4 0 0 0-3-3.9M15.5 3.2a3.5 3.5 0 0 1 0 6.6",
+  mail:"M4 6h16v12H4zM4 7l8 6 8-6",
+  globe:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18",
+  send:"M4 12 20 4l-6 16-2.5-6.5L4 12Z",
+  x:"M6 6l12 12M18 6 6 18",
+  skip:"M6 6l8 6-8 6V6Zm12 0v12",
+  edit:"M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4",
+  plus:"M12 5v14M5 12h14",
+  download:"M12 4v12m-5-5 5 5 5-5M4 20h16",
+  copy:"M9 9h10v10H9zM5 15V5h10",
+  sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",
+  moon:"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z",
+  chev:"m6 9 6 6 6-6",
+  shuffle:"M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5",
+  arrow:"M5 12h14m-5-5 5 5-5 5",
+  undo:"M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3",
+  search:"M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm9 2-4-4",
+  target:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z",
+  gear:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z",
+  cal:"M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM4 10h16M8 3v4M16 3v4",
+  dots:"M5 12h.01M12 12h.01M19 12h.01",
+  sms:"M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z",
+  check:"m5 12.5 4.5 4.5L19 7.5",
+  link:"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1",
+};
+const NAV=[["","Skambinti","phone"],["kontaktai","Kontaktai","list"],["pardavimai","Pardavimai","euro"],["apzvalga","Apžvalga","chart"],["komanda","Komanda","users"]];
+/* Phone tab bar: the rest sits behind "Daugiau". */
+const TABS=["","kontaktai","pardavimai","claude"];
+
+/* Conversation guide. Each step: what you say, and what they might answer.
+   {me} {name} {cat} {city} {problem} are filled in. Endings map to a call result. */
+const PROBLEM={
+  "Svetainė":"jūsų nėra Google",
+  "Svetainės atnaujinimas":"jūsų svetainė telefone sunkiai veikia",
+  "Rezervacijų sistema":"pas jus užsirašyti galima tik skambinant",
+  "El. parduotuvė":"internetu pas jus nieko nenupirksi",
+  "Vidinė sistema / CRM":"užsakymus tvarkot rankom",
+};
+const PITCH={
+  "Svetainė":"Trumpai, neužlaikysiu. Ieškojau Google „{cat} {city}“: rodo jūsų konkurentus, o jūsų nėra. Tai reiškia, kad dalis žmonių, kurie jau nori pirkti, skambina ne jums. Mes darom paprastas svetaines, kad jus rastų. O kaip dabar pas jus klientai ateina?",
+  "Svetainės atnaujinimas":"Trumpai, neužlaikysiu. Atsidariau jūsų svetainę telefone ir sunkiai ten ką nors radau. O dauguma žmonių dabar žiūri būtent iš telefono, ir jei nesigaudo, tiesiog išeina pas kitus. Galim ją atnaujinti, kad normaliai veiktų. Iš kur dabar daugiausia klientų ateina?",
+  "Rezervacijų sistema":"Trumpai, neužlaikysiu. Dabar pas jus užsirašyti galima tik paskambinus, tiesa? O žmonės dažnai nori užsirašyti vakare, kai jūs nedirbat, ir tada užsirašo pas tą, pas kurį galima internetu. Galim padaryti, kad užsirašytų patys ir gautų priminimą. Kaip dabar tvarkotės su registracija?",
+  "El. parduotuvė":"Trumpai, neužlaikysiu. Matau, kad prekiaujat, bet internetu nupirkti nieko negalima. O žmonės vis daugiau perka vakare iš telefono, ir tie pinigai dabar nueina kitiems. Galim padaryti paprastą parduotuvę. Kaip dabar pas jus užsako?",
+  "Vidinė sistema / CRM":"Trumpai, neužlaikysiu. Kaip dabar susirašot užsakymus ir klientus: Excel, sąsiuvinis? Klausiu, nes tokiose įmonėse dažnai kas nors pasimeta, ir tai kainuoja pinigus. Darom paprastas sistemas, kad viskas būtų vienoj vietoj. Kaip pas jus?",
+};
+/* say = what you say, tip = how to say it, replies = what they answer -> next step */
+const FLOW={
+  start:{say:"Laba diena, čia {me}. Kalbu su {name} vadovu?",tip:"Kalbėk ramiai ir su šypsena. Pirmos sekundės lemia viską.",
+    replies:[["Taip, klausau","pitch"],["Jo dabar nėra","gate"],["O kas skambina?","who"],["Neturiu dabar laiko","busy"]]},
+  gate:{say:"Aišku. O kada jį geriau pagauti? Ir kuo jis vardu?",tip:"Sekretorė nėra kliūtis. Būk mandagus, ji tau padės.",
+    replies:[["Pasakė, kada skambinti","end_callback"],["Davė jo numerį","end_number"],["Nesako","gate2"]]},
+  gate2:{say:"Gerai. Tai gal perduokit, kad skambino {me}: pastebėjau, kad {problem}, ir turiu, kaip tai pataisyti. Paliksiu savo numerį.",
+    replies:[["Gerai, perduosiu","end_callback"],["Nereikia","no"]]},
+  who:{say:"Atsiprašau, nepasakiau: aš {me}, darau svetaines mažoms įmonėms. Paskambinau, nes pastebėjau, kad {problem}, ir manau, kad dėl to netenkat klientų. Minutę turit?",
+    replies:[["Na, sakykit","pitch"],["Neturiu laiko","busy"],["Neįdomu","nosoft"]]},
+  busy:{say:"Supratau, tik viena mintis: {problem}, ir dėl to dalis klientų skambina kitiems. Kada galiu perskambinti dviem minutėm, vakare ar rytoj ryte?",tip:"Duok du variantus, ne „kada nors“.",
+    replies:[["Pasakė, kada","end_callback"],["Ai, sakykit dabar","pitch"],["Neskambinkit daugiau","no"]]},
+  pitch:{say:"{pitch}",tip:"Paklausęs tylėk ir lauk. Tegul kalba jis: kuo daugiau papasakos, tuo lengviau parduoti.",
+    replies:[["Per Facebook, pažįstamus","fb"],["O, įdomu","close"],["O kiek kainuos?","price"],["Jau turim svetainę","have"],["Klientų ir taip užtenka","enough"],["Brangu, pinigų nėra","money"],["Atsiųskit ką nors paštu","email"],["Ne, nereikia","nosoft"]]},
+  fb:{say:"Facebook gerai, jo nemeskit. Bet ten jus randa tie, kurie jau žino. Nauji žmonės ieško Google „{cat} {city}“ ir jūsų neranda. Svetainė atvestų būtent tuos, kurių dabar netenkat. Logiška, ne?",tip:"Nesakyk, kad Facebook blogai. Sakyk, kad svetainė prideda.",
+    replies:[["Na, gal ir taip","close"],["Mums Facebook užtenka","fb2"],["O kiek kainuos?","price"]]},
+  fb2:{say:"Suprantu. Tik pagalvokit: Facebook gali bet kada pakeisti taisykles ar užblokuoti puslapį, o svetainė yra jūsų. Ir Google ją rodo metų metus. Galiu per 15 minučių parodyti, kaip atrodytų, nieko neįsipareigojant. Kada patogiau, rytoj ar poryt?",
+    replies:[["Sutarėm laiką","end_meeting"],["Atsiųskit pavyzdį","email"],["Ne, ačiū","no"]]},
+  have:{say:"Gerai. O ar ji atneša klientų? Daug svetainių yra, bet telefone sunkiai veikia arba Google jų nerodo. Galiu nemokamai peržiūrėti ir pasakyti, ką verta pataisyti. Niekuo neįsipareigojat.",tip:"Klausk apie rezultatą, ne apie svetainę.",
+    replies:[["Gerai, pažiūrėkit","email"],["Nežinau, ar atneša","close"],["Atneša, viskas gerai","no"]]},
+  enough:{say:"Gerai girdėti, kad darbo yra. Bet kai klientų daugiau, galit rinktis geresnius užsakymus ir kelti kainą. O kai sezonas atslūgsta, telefonas vis tiek skamba. Gal verta bent pažiūrėti, kaip tai atrodytų?",
+    replies:[["Na, galima pažiūrėti","close"],["Pagalvosiu","think"],["Ne, nereikia","no"]]},
+  price:{say:"Paprasta svetainė nuo kelių šimtų eurų, ir viskas įskaičiuota. Bet tiksliai pasakysiu, kai suprasiu, ko jums reikia, kad nemokėtumėt už tai, ko nereikia. Susiskambinam 15 minučių, rytoj ar poryt?",tip:"Kainą sakyk ramiai ir iškart grįžk prie susitikimo.",
+    replies:[["Sutarėm laiką","end_meeting"],["Brangu","money"],["Atsiųskit kainą","email"]]},
+  money:{say:"Suprantu, kiekvienas euras svarbus. Tai pažiūrėkim kitaip: kiek uždirbat iš vieno kliento? Jei svetainė atveda bent du per mėnesį, ji atsiperka per kelis mėnesius, o dirba metų metus. Ir galim pradėti nuo paprasčiausios.",tip:"Nesiginčyk. Sutik, tada parodyk, kad tai uždarbis, ne išlaida.",
+    replies:[["Gerai, pažiūrėkim","close"],["Pagalvosiu","think"],["Vis tiek ne","no"]]},
+  nosoft:{say:"Supratau, nenoriu įkyrėti. Tik paklausiu, kad žinočiau: dėl kainos, dėl laiko ar tiesiog nematot naudos?",tip:"Klausk ramiai, be spaudimo. Jei ir vėl „ne“, paleisk.",
+    replies:[["Dėl kainos","money"],["Neturim laiko tuo užsiimti","notime"],["Nematau naudos","value"],["Tiesiog ne","no"]]},
+  notime:{say:"Būtent todėl viską darom patys: tekstus, nuotraukas, viską sutvarkom. Jums reikės tik vieno 20 minučių pokalbio ir pasakyti, ar patinka. Jokio vargo.",
+    replies:[["Tai gal ir galima","close"],["Pagalvosiu","think"],["Vis tiek ne","no"]]},
+  value:{say:"Paprastai: jei per mėnesį svetainė atveda bent du naujus klientus, kiek tai jums pinigų? Dažniausiai vien to užtenka, kad atsipirktų per kelis mėnesius. Ir Google rodo ją kasdien, net kai jūs ilsitės.",
+    replies:[["Na, gal ir taip","close"],["Vis tiek ne","no"]]},
+  close:{say:"Tai darom taip: susiskambinam ar susitinkam 15 minučių, parodysiu, kaip galėtų atrodyti jūsų svetainė, ir pasakysiu tikslią kainą. Jei nepatiks, nieko nemokat. Kada jums geriau, rytoj ar poryt?",tip:"Siūlyk du laikus. Nepaklausk „ar norit“, klausk „kada“.",
+    replies:[["Sutarėm laiką","end_meeting"],["Geriau atsiųskit","email"],["Pagalvosiu","think"]]},
+  email:{say:"Būtinai atsiųsiu. Tik kad nesiųsčiau bendro teksto, kurio niekas neskaito: ko jums labiausiai reikėtų? Ir kur nusiųsti?",tip:"„Atsiųskit paštu“ dažnai reiškia mandagų „ne“. Gauk konkretų klausimą ir laiką perskambinti.",
+    replies:[["Pasakė, ko reikia, ir paštą","email2"],["„Tiesiog siųskit“","email2"]]},
+  email2:{say:"Gerai. Atsiųsiu šiandien, o poryt paskambinsiu, kai pažiūrėsit. Užtruksim penkias minutes, tinka?",
+    replies:[["Tinka","end_offer"],["Neskambinkit, parašysiu pats","end_later"]]},
+  think:{say:"Žinoma. O dėl ko labiausiai abejojat: dėl kainos ar ar apskritai reikia? Klausiu, kad kitą kartą neskambinčiau tuščiai.",tip:"„Pagalvosiu“ beveik visada slepia kitą priežastį. Išsiaiškink kokią.",
+    replies:[["Dėl kainos","money"],["Ar apskritai reikia","value"],["Tiesiog pagalvosiu","think2"]]},
+  think2:{say:"Gerai, neskubinu. Paskambinsiu po kelių dienų. Kokia diena jums geriau?",
+    replies:[["Pasakė, kada","end_callback"],["Neskambinkit","no"]]},
+  no:{say:"Supratau, ačiū, kad išklausėt. Jei kada prireiks, mano numerį turit. Geros dienos!",end:"declined"},
+  end_meeting:{say:"Tai sutarėm. Atsiųsiu priminimą, iki pasimatymo. Geros dienos!",end:"meeting"},
+  end_offer:{say:"Ačiū! Šiandien atsiųsiu, poryt paskambinsiu. Geros dienos!",end:"offer"},
+  end_later:{say:"Gerai, atsiųsiu. Jei kils klausimų, skambinkit. Geros dienos!",end:"callback"},
+  end_callback:{say:"Ačiū, tada ir paskambinsiu. Geros dienos!",end:"callback"},
+  end_number:{say:"Ačiū, paskambinsiu. Geros dienos!",end:"callback"},
+};
+/* How a name sounds out loud: "BALTIC FOREST GROUP, UAB" -> "Baltic Forest Group". */
+const LOWER=/^(IR|IN|AND|ĮMONĖ|GROŽIO|SALONAS)$/i;
+const LEGAL=/^(UAB|MB|IĮ|AB|VŠĮ|PĮ|IVV|ŽŪB|KB|TŪB)$/i;
+function spokenName(n){
+  n=String(n||"").replace(/\([^)]*\)/g," ").split(",")[0];
+  const w=n.split(/\s+/).filter(t=>t&&!LEGAL.test(t.replace(/[.,]/g,"")));
+  const out=w.map((t,i)=>i&&LOWER.test(t)?t.toLocaleLowerCase("lt"):/\p{Ll}/u.test(t)||t.length<3||t.includes(".")?t:t.charAt(0)+t.slice(1).toLocaleLowerCase("lt")).join(" ").trim();
+  return out||String(n).trim();
+}
+/* "Paberžė, Vilniaus r." -> "Vilnius", "Klaipėdos r." -> "Klaipėda" */
+function spokenCity(c){
+  c=String(c||"").trim();if(!c)return"";
+  const parts=c.split(",").map(x=>x.trim());let t=parts[parts.length-1];
+  if(!/\sr\.?$/.test(t))return parts[0];
+  t=t.replace(/\s*r\.?$/,"");
+  return t.replace(/io$/,"is").replace(/aus$/,"us").replace(/os$/,"a").replace(/ės$/,"ė").replace(/o$/,"as");
+}
+const ENDS={
+  meeting:{label:"Susitikimas sutartas",hint:"Įrašyk sumą, jei kalbėjot apie kainą.",tone:"var(--s-interested)"},
+  offer:{label:"Siųsti pasiūlymą",hint:"Sandoris bus etape „Pasiūlymas išsiųstas“.",tone:"var(--s-interested)"},
+  callback:{label:"Perskambinti",hint:"Pasirink, kada.",tone:"var(--s-thinking)"},
+  declined:{label:"Nenori",hint:"Kontaktas bus pažymėtas „Nenori“.",tone:"var(--s-declined)"},
+};
+
+/* ===== helpers ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const icon=(n,s=18)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
+const stat=id=>STATUSES.find(s=>s.id===id)||STATUSES[0];
+const stage=id=>STAGES.find(s=>s.id===id)||STAGES[0];
+const sdot=id=>`<span class="dot" style="background:var(--s-${stat(id).id})"></span>`;
+const ddot=id=>`<span class="dot" style="background:var(--d-${stage(id).id})"></span>`;
+const safeUrl=u=>{const v=/^https?:\/\//i.test(u||"")?u:"https://"+u;return /^https:\/\//i.test(v)?v:""};
+const host=u=>{try{return new URL(safeUrl(u)).hostname.replace(/^www\./,"")}catch{return u}};
+const tel=p=>"tel:"+String(p||"").replace(/[^\d+]/g,"");
+const ms=v=>typeof v==="number"?v:(v?Date.parse(v)||0:0);
+const MAXEUR=1e7;
+const num=v=>{const n=Number(String(v??"").replace(/\s/g,"").replace(",","."));return Number.isFinite(n)?n:0};
+const eur=n=>new Intl.NumberFormat("lt-LT",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n||0);
+const eurShort=n=>Math.abs(n)>=1e4?new Intl.NumberFormat("lt-LT",{notation:"compact",maximumFractionDigits:1}).format(n)+" €":eur(n);
+const TZ="Europe/Vilnius";
+const dayKey=t=>new Date(t).toLocaleDateString("sv-SE",{timeZone:TZ});
+const monthKey=t=>dayKey(t).slice(0,7);
+const hm=t=>new Date(t).toLocaleTimeString("lt-LT",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
+function when(t){
+  t=ms(t);if(!t)return"—";const d=Date.now()-t;
+  if(d>=0&&d<6e4)return"ką tik";
+  if(d>=0&&d<36e5)return`prieš ${Math.floor(d/6e4)} min.`;
+  if(dayKey(t)===dayKey(Date.now()))return`šiandien ${hm(t)}`;
+  if(dayKey(t)===dayKey(Date.now()-864e5))return`vakar ${hm(t)}`;
+  if(dayKey(t)===dayKey(Date.now()+864e5))return`rytoj ${hm(t)}`;
+  return new Date(t).toLocaleDateString("lt-LT",{timeZone:TZ,month:"long",day:"numeric"})+" "+hm(t);
+}
+/* Lithuanian plural: 1 / 2–9 / 0,10–20 */
+const pl=(n,one,few,many)=>{const a=Math.abs(n)%100,b=a%10;return`${n} ${b===1&&a!==11?one:b>=2&&b<=9&&(a<10||a>19)?few:many}`};
+const dtLocal=t=>{t=ms(t);if(!t)return"";const d=new Date(t),z=n=>String(n).padStart(2,"0");return`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`};
+const fmtDur=ms=>{const t=Math.max(0,Math.round(ms/1000));return`${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`};
+const revVal=l=>typeof l.revenueValue==="number"?l.revenueValue:num(String(l.revenue||"").split("€")[0].replace(/[^\d]/g,""))||0;
+const revShort=l=>{const v=revVal(l);return v?eurShort(v):""};
+const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
+let toastT;function toast(t){const el=$("toast");el.innerHTML=`<div class="toast in">${esc(t)}</div>`;clearTimeout(toastT);toastT=setTimeout(()=>el.innerHTML="",3400)}
+const LSKEY="coldline.theme";
+function theme(){try{return localStorage.getItem(LSKEY)||"light"}catch{return"light"}}
+function setTheme(t){try{localStorage.setItem(LSKEY,t)}catch{}document.documentElement.dataset.theme=t}
+document.documentElement.dataset.theme=theme();
+
+/* ===== state ===== */
+let db=null,user=null,downloads=null,ai=null,meId=null,isOwner=false;
+let leads=[],acts=[],deals=[],team={},names={},avatars={},settings={};
+const S={conn:"wait",loaded:false,tab:"queue",scope:"mine",sel:null,skipped:new Set(),sheet:false,filter:"all",q:"",sort:"created",who:"all",adding:false,finding:false,menu:null,
+  note:"",askWhen:false,custom:"",dealAsk:false,editing:false,composer:"",busy:false,hover:null,dealOpen:null,dealFilter:"open",period:"month",
+  form:{industry:"",city:"",revenue:[],needs:[],count:10},reqText:""};
+
+/* ===== people & roles ===== */
+const PALETTE=["#2f5fb3","#0e7a43","#6b46c1","#b5432f","#9a6a12","#1f7a85","#8a4b72"];
+const pcolor=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return PALETTE[h%PALETTE.length]};
+const who=id=>!id?"Niekas":id===meId?(names[id]||"Aš"):(names[id]||"Komandos narys");
+const firstName=id=>who(id).split(/\s+/)[0];
+const initials=n=>n.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0].toUpperCase()).join("")||"?";
+function avatar(id,size=28){
+  const n=who(id);
+  if(id&&avatars[id])return`<span class="avatar" style="width:${size}px;height:${size}px"><img alt="" src="${esc(avatars[id])}"></span>`;
+  return`<span class="avatar" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.38)}px;background:${id?pcolor(id):"var(--line-2)"}">${id?esc(initials(n)):"–"}</span>`;
+}
+const member=id=>team[id]||{id,role:"caller",commission:DEF_COMMISSION,goal:DEF_GOAL};
+const isManager=()=>isOwner||member(meId).role==="manager";
+function people(){
+  const ids=new Set([...Object.keys(team),...acts.map(a=>a.author),...leads.map(l=>l.assignee),...deals.map(d=>d.owner)].filter(Boolean));
+  if(meId)ids.add(meId);
+  return[...ids];
+}
+let resolving=false;
+async function resolveNames(){
+  if(!user||resolving)return;
+  const ids=people().filter(i=>!(i in names));if(!ids.length)return;
+  resolving=true;
+  try{const ps=await user.profiles(ids);for(const i of ids){names[i]=ps[i]?.name||"";avatars[i]=ps[i]?.avatarUrl||""}}catch{}
+  resolving=false;render(true);
+}
+
+/* ===== money ===== */
+const commissionOf=d=>num(d.value)*(num(member(d.owner).commission)/100);
+const profitOf=d=>num(d.value)-num(d.cost)-commissionOf(d);
+function inPeriod(t,p=S.period){
+  t=ms(t);if(!t)return false;
+  if(p==="month")return monthKey(t)===monthKey(Date.now());
+  if(p==="prev"){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-1);return monthKey(t)===monthKey(d.getTime())}
+  if(p==="year")return dayKey(t).slice(0,4)===dayKey(Date.now()).slice(0,4);
+  return true;
+}
+
+/* ===== queue ===== */
+function place(l,now=Date.now()){
+  const T=v=>ms(v);
+  if(l.status==="interested")return{l,tab:"won",rank:0,key:-T(l.updatedAt),label:"Nori",tone:"var(--s-interested)"};
+  if(l.status==="declined")return null;
+  if(l.status==="thinking"){const due=T(l.callbackAt);
+    if(!due||due<=now)return{l,tab:"queue",rank:0,key:due,label:"Perskambinti dabar",tone:"var(--s-thinking)"};
+    return{l,tab:"waiting",rank:0,key:due,label:"Perskambinti "+when(due),tone:"var(--s-thinking)"};}
+  if(l.status==="no_answer"){const last=T(l.lastCalledAt),label=`Neatsiliepė ×${l.attempts||1}`;
+    if(now-last>=RETRY_MS)return{l,tab:"queue",rank:2,key:last,label,tone:"var(--s-no_answer)"};
+    return{l,tab:"waiting",rank:1,key:last+RETRY_MS,label:"Bandyti vėl "+when(last+RETRY_MS),tone:"var(--s-no_answer)"};}
+  return{l,tab:"queue",rank:1,key:-T(l.createdAt),label:"Naujas",tone:"var(--accent)"};
+}
+const mine=l=>!l.assignee||l.assignee===meId;
+function queues(){
+  const q={queue:[],waiting:[],won:[]},now=Date.now();
+  for(const l of leads){if(S.scope==="mine"&&!mine(l))continue;const p=place(l,now);if(p)q[p.tab].push(p)}
+  for(const k in q)q[k].sort((a,b)=>a.rank-b.rank||a.key-b.key);
+  return q;
+}
+function current(q){
+  if(S.sel){const l=leads.find(x=>x.id===S.sel);if(l)return place(l)||{l,tab:"waiting",label:"Nenori",tone:"var(--muted)"};}
+  return q.queue.find(p=>!S.skipped.has(p.l.id))||null;
+}
+const callsBy=(id,pred=()=>true)=>acts.filter(a=>a.kind==="call"&&a.author===id&&pred(a));
+
+/* ===== writes ===== */
+async function put(col,id,doc){
+  if(!db){toast("Debesis nepasiekiamas: pakeitimas neišsaugotas.");return false}
+  try{await db.collection(col).doc(id).set(doc);return true}
+  catch(e){toast(e?.code==="invalid_argument"?"Neturi teisės keisti šių duomenų.":e?.code==="quota_exceeded"?"Duomenų bazė pilna.":"Nepavyko išsaugoti. Bandyk dar kartą.");return false}
+}
+const saveLead=l=>put("leads",l.id,l);
+async function addAct(a){await put("activities",uid(),{...a,author:meId||"",createdAt:Date.now()})}
+async function logCall(l,status,extra={}){
+  if(S.busy)return;S.busy=true;
+  const now=Date.now();
+  const next={...l,status,callbackAt:status==="thinking"?(extra.callbackAt||null):null,attempts:(l.attempts||0)+1,lastCalledAt:now,lastCalledBy:meId||"",assignee:l.assignee||meId||"",updatedAt:now};
+  delete next.fresh;delete next.note;
+  const note=S.note.trim();
+  const dur=S.callFor===l.id&&S.callStart?Math.round((now-S.callStart)/1000):null;S.callStart=null;S.callFor=null;
+  leads=leads.map(x=>x.id===l.id?next:x);
+  S.note="";S.askWhen=false;S.dealAsk=false;S.dealStage=null;S.custom="";S.sel=null;S.cv=null;history.replaceState(null,"","#");
+  render();
+  if(status==="interested")celebrate();
+  if(await saveLead(next)){
+    await addAct({leadId:l.id,kind:"call",status,note,duration:dur});
+    if(extra.deal){
+      const d={id:uid(),leadId:l.id,leadName:l.name,owner:meId||"",title:extra.deal.title||l.need||"Svetainė",value:num(extra.deal.value),cost:num(extra.deal.cost),stage:extra.deal.stage||"meeting",meetingAt:Date.parse(extra.deal.meetingAt||"")||null,note,createdAt:now,updatedAt:now,closedAt:extra.deal.stage==="won"?now:null};
+      deals=[d,...deals];
+      if(await put("deals",d.id,d))await addAct({leadId:l.id,kind:"deal",status:d.stage,note:`Sandoris: ${eur(d.value)}`});
+      toast(`Sandoris sukurtas: ${eur(d.value)}`);if(d.stage==="won")celebrate();
+    }
+  }
+  S.busy=false;render();
+}
+async function setStatus(id,status){
+  const l=leads.find(x=>x.id===id);if(!l||l.status===status)return;
+  const next={...l,status,callbackAt:status==="thinking"?l.callbackAt||null:null,updatedAt:Date.now()};
+  leads=leads.map(x=>x.id===id?next:x);render();
+  if(await saveLead(next))await addAct({leadId:id,kind:"status",status,note:""});
+}
+async function assign(id,to){
+  const l=leads.find(x=>x.id===id);if(!l||l.assignee===to)return;
+  const next={...l,assignee:to,updatedAt:Date.now()};leads=leads.map(x=>x.id===id?next:x);render();
+  await saveLead(next);
+}
+async function saveDeal(d,prevStage){
+  d={...d,updatedAt:Date.now()};
+  if(d.stage==="won"&&!d.closedAt)d.closedAt=Date.now();
+  if(d.stage!=="won"&&d.stage!=="lost")d.closedAt=null;
+  if(d.stage==="lost"&&!d.closedAt)d.closedAt=Date.now();
+  deals=deals.map(x=>x.id===d.id?d:x);render();if(d.stage==="won"&&prevStage!=="won")celebrate();
+  if(await put("deals",d.id,d)&&prevStage!==d.stage)await addAct({leadId:d.leadId,kind:"deal",status:d.stage,note:`${stage(d.stage).label}: ${eur(d.value)}`});
+}
+async function sendNote(l){const note=S.composer.trim();if(!note)return;S.composer="";render();await addAct({leadId:l.id,kind:"note",status:null,note})}
+async function saveMember(id,patch){const m={...member(id),...patch,id};team[id]=m;render();await put("team",id,m)}
+async function distribute(){
+  const callers=people().filter(id=>member(id).role!=="manager");
+  const pool=callers.length?callers:people();
+  const todo=leads.filter(l=>!l.assignee&&l.status==="new");
+  if(!pool.length||!todo.length){toast(todo.length?"Nėra kam paskirstyti.":"Nėra nepriskirtų naujų kontaktų.");return}
+  toast(`Skirstoma ${todo.length} kontaktų tarp ${pool.length} žmonių…`);
+  let i=0;
+  for(const l of todo){const to=pool[i++%pool.length];const next={...l,assignee:to,updatedAt:Date.now()};leads=leads.map(x=>x.id===l.id?next:x);await saveLead(next)}
+  render();toast(`Paskirstyta: ${pl(todo.length,"kontaktas","kontaktai","kontaktų")}.`);
+}
+
+/* Owner-only: remove every call, note, deal and status, keep the contacts themselves. */
+async function wipe(silent){
+  if(!db||S.wiping)return;
+  if(!silent&&!confirm("Ištrinti VISUS skambučius, pastabas, sandorius ir pelną?\n\nKontaktai (pavadinimai, telefonai, el. paštai, pajamos) liks. Statusai grįš į „Neskambinta“. Atšaukti nebus galima."))return;
+  S.wiping=true;render();let n=0,fail=0;
+  const del=async col=>{let docs=[];try{docs=(await db.collection(col).get()).docs}catch{docs=(col==="deals"?deals:acts).map(x=>({id:x.id}))}
+    for(const d of docs){try{await db.collection(col).doc(d.id).delete();n++}catch{fail++}}};
+  try{
+    await del("deals");await del("activities");
+    for(const l of leads){
+      if(l.status==="new"&&!l.attempts&&!l.lastCalledAt&&!l.callbackAt&&!l.note)continue;
+      const patch={status:"new",attempts:0,lastCalledAt:null,lastCalledBy:"",callbackAt:null,note:"",updatedAt:Date.now()};
+      const ref=db.collection("leads").doc(l.id);
+      try{if(typeof ref.update==="function")await ref.update(patch);else await ref.set({...l,...patch});n++}catch{fail++}
+    }
+  }finally{S.wiping=false;S.sel=null;S.cv=null;S.note="";render()}
+  toast(fail?`Išvalyta, bet ${fail} įrašų nepavyko. Komandoje spausk „Išvalyti“ dar kartą.`:"Skambučiai ir pardavimai išvalyti. Kontaktai liko, visi vėl „Neskambinta“.");
+}
+/* One-time cleanup the owner asked for (2026-11-26): runs once, the first time the owner opens the page. */
+const RESET_ID="reset-2026-11-26";
+const fresh0={leads:false,deals:false,acts:false,meta:false};let metaIds=new Set(),resetDone=false;
+async function maybeReset(){
+  if(window.COLDLINE_WEB||resetDone||!db||!isOwner||!fresh0.leads||!fresh0.deals||!fresh0.acts||!fresh0.meta||metaIds.has(RESET_ID))return;
+  resetDone=true;
+  try{await db.collection("meta").doc(RESET_ID).set({at:Date.now(),by:meId||""})}catch{resetDone=false;return}
+  await wipe(true);
+}
+/* ===== data ===== */
+/* Apyvarta ir darbuotojai iš 1551.lt (2026-11). Įrašoma į DB vieną kartą, jei kontakte jų dar nėra. */
+const SEED={"l01-karlona":["9 790 € (2022 m., 1551.lt)",9790,""],"l04-silkine-banga":["44 453 € (2025 m., 1551.lt)",44453,"iki 10 darbuotojų"],"l05-zara":["25 335 € (2025 m., 1551.lt)",25335,"iki 10 darbuotojų"],"l07-chonas":["787 341 € (2025 m., 1551.lt)",787341,"11–20 darbuotojų"],"l08-kesandra":["250 308 € (2024 m., 1551.lt)",250308,"iki 10 darbuotojų"],"l10-intransport":["443 237 € (2025 m., 1551.lt)",443237,"iki 10 darbuotojų"],"l11-skamerda":["44 868 € (2019 m., 1551.lt)",44868,"iki 10 darbuotojų"],"l12-narbona":["543 316 € (2025 m., 1551.lt)",543316,"iki 10 darbuotojų"],"l14-mom-trans":["299 305 € (2025 m., 1551.lt)",299305,"iki 10 darbuotojų"],"l15-justoma":["153 460 € (2025 m., 1551.lt)",153460,"iki 10 darbuotojų"],"m01-em-statyba":["332 127 € (2025 m., 1551.lt)",332127,"iki 10 darbuotojų"],"m02-gertika":["193 374 € (2024 m., 1551.lt)",193374,"iki 10 darbuotojų"],"m03-santechrad":["6 827 € (2025 m., 1551.lt)",6827,""],"m04-varinukas":["531 313 € (2025 m., 1551.lt)",531313,"iki 10 darbuotojų"],"m05-svega":["325 769 € (2025 m., 1551.lt)",325769,"iki 10 darbuotojų"],"m06-juriveda":["202 500 € (2025 m., 1551.lt)",202500,"iki 10 darbuotojų"],"m07-milandra":["400 063 € (2025 m., 1551.lt)",400063,"11–20 darbuotojų"],"m08-utenos-apdaila":["63 655 € (2025 m., 1551.lt)",63655,""],"m09-elektros-trauka":["828 739 € (2025 m., 1551.lt)",828739,"iki 10 darbuotojų"],"m10-kilovatai":["82 870 € (2025 m., 1551.lt)",82870,"iki 10 darbuotojų"],"m11-ligrita":["153 516 € (2025 m., 1551.lt)",153516,"iki 10 darbuotojų"],"m12-skardos-meistrai":["965 104 € (2025 m., 1551.lt)",965104,"iki 10 darbuotojų"],"m13-saugiklis":["31 989 € (2025 m., 1551.lt)",31989,"iki 10 darbuotojų"],"m14-dilgrenta":["366 167 € (2025 m., 1551.lt)",366167,"iki 10 darbuotojų"],"m15-zaibo-pica":["",0,"iki 10 darbuotojų"],"m16-viip":["43 933 € (2025 m., 1551.lt)",43933,""],"m17-delfai":["247 626 € (2019 m., 1551.lt)",247626,"11–20 darbuotojų"],"m19-maluno-virtuve":["400 134 € (2023 m., 1551.lt)",400134,"iki 10 darbuotojų"],"m21-agvala":["1 490 003 € (2024 m., 1551.lt)",1490003,"31–50 darbuotojų"],"m22-ruta":["",0,"iki 10 darbuotojų"],"m24-gelze":["107 867 € (2025 m., 1551.lt)",107867,"iki 10 darbuotojų"],"m30-pavliukevic":["15 405 € (2025 m., 1551.lt)",15405,"iki 10 darbuotojų"],"m34-audgira":["236 378 € (2025 m., 1551.lt)",236378,"iki 10 darbuotojų"],"m35-gv-auto":["3 109 182 € (2025 m., 1551.lt)",3109182,"21–30 darbuotojų"],"m37-zemaitaicio":["81 539 € (2021 m., 1551.lt)",81539,"iki 10 darbuotojų"],"m38-ago-transport":["21 641 € (2016 m., 1551.lt)",21641,""],"m39-gontera":["663 068 € (2025 m., 1551.lt)",663068,"iki 10 darbuotojų"],"m42-roberto-danius":["",0,"iki 10 darbuotojų"],"m43-feropolis":["1 074 175 € (2025 m., 1551.lt)",1074175,"iki 10 darbuotojų"],"m44-metalana":["298 458 € (2022 m., 1551.lt)",298458,"iki 10 darbuotojų"],"m45-autorestadas":["10 755 € (2025 m., 1551.lt)",10755,""],"m47-mk-cechas":["26 760 € (2024 m., 1551.lt)",26760,"iki 10 darbuotojų"],"m49-arnitana":["30 299 € (2025 m., 1551.lt)",30299,"iki 10 darbuotojų"],"m50-baldu-prizme":["117 014 € (2025 m., 1551.lt)",117014,"iki 10 darbuotojų"]};
+let seeded=false;
+async function backfill(){
+  if(seeded||!db)return;seeded=true;
+  for(const l of leads){
+    const s=SEED[l.id];if(!s)continue;
+    const [rev,val,emp]=s,patch={};
+    if(val&&typeof l.revenueValue!=="number"){patch.revenue=rev;patch.revenueValue=val}
+    if(emp&&!l.employees)patch.employees=emp;
+    if(!Object.keys(patch).length)continue;
+    try{await db.collection("leads").doc(l.id).set({...l,...patch})}catch{}
+  }
+}
+async function connect(){
+  const c=window.claude&&typeof window.claude.use==="function"?window.claude:null;
+  if(!c){S.conn="none";render();return}
+  let smp;[db,user,downloads,ai,smp]=await Promise.all([c.use("db"),c.use("user"),c.use("downloads"),c.use("ai"),c.use("sample")].map(p=>p.catch(()=>null)));
+  aiApi=ai&&window.COLDLINE_WEB?webAi():typeof smp==="function"?sampleAi(smp):null;
+  if(aiApi&&!NAV.some(n=>n[0]==="claude"))NAV.splice(1,0,["claude",aiApi.web?"AI":"Claude","spark"]);
+  if(user){try{meId=await user.id();isOwner=await user.isOwner()}catch{}}
+  if(!db){S.conn="none";render();return}
+  let got=false;const timer=setTimeout(()=>{if(!got){S.conn="slow";render()}},10000);
+  const fail=e=>{clearTimeout(timer);S.conn=e?.code==="revoked"?"revoked":"error";S.loaded=true;render()};
+  db.collection("leads").onSnapshot(snap=>{
+    if(!snap.metadata.fromCache){got=true;clearTimeout(timer);S.conn="ok"}
+    leads=snap.docs.map(d=>({...d.data(),id:d.id}));S.loaded=true;render(true);resolveNames();
+    if(!snap.metadata.fromCache){backfill();fresh0.leads=true;maybeReset()}
+  },fail);
+  db.collection("activities").orderBy("createdAt","desc").limit(1000).onSnapshot(snap=>{acts=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames();if(!snap.metadata?.fromCache){fresh0.acts=true;maybeReset()}},()=>{});
+  db.collection("deals").onSnapshot(snap=>{deals=snap.docs.map(d=>({...d.data(),id:d.id}));render(true);resolveNames();if(!snap.metadata?.fromCache){fresh0.deals=true;maybeReset()}},()=>{});
+  db.collection("meta").onSnapshot(snap=>{const sd=snap.docs.find(d=>d.id==="settings");settings=sd?{...sd.data()}:{};render(true);
+    if(snap.metadata?.fromCache)return;metaIds=new Set(snap.docs.map(d=>d.id));fresh0.meta=true;maybeReset()},()=>{});
+  let joined=false;
+  db.collection("team").onSnapshot(snap=>{
+    team=Object.fromEntries(snap.docs.map(d=>[d.id,{...d.data(),id:d.id}]));
+    if(!joined&&meId&&!snap.metadata.fromCache){joined=true;if(!team[meId])saveMember(meId,{role:isOwner?"manager":"caller",commission:DEF_COMMISSION,goal:DEF_GOAL,joinedAt:Date.now()})}
+    render(true);resolveNames();
+  },()=>{});
+}
+
+/* ===== shell ===== */
+const route=()=>(location.hash||"").replace(/^#/,"");
+function renderShell(){
+  const r=route(),q=leads.filter(l=>l.status==="new"&&mine(l)).length;
+  const openDeals=deals.filter(d=>d.stage==="meeting"||d.stage==="proposal").length;
+  const count={"":q,pardavimai:openDeals,kontaktai:leads.length,komanda:people().length};
+  patch($("nav"),NAV.map(([h,t,i])=>`<a href="#${h}" title="${t}" ${r===h?'aria-current="page"':""}>${icon(i,18)}<span class="lab">${t}</span>${count[h]?`<span class="cnt">${count[h]}</span>`:""}</a>`).join(""));
+  const tabItems=TABS.map(h=>NAV.find(n=>n[0]===h)).filter(Boolean);
+  const moreOn=!tabItems.some(n=>n[0]===r);
+  patch($("tabs"),tabItems.map(([h,t,i])=>`<a href="#${h}" ${r===h&&!S.more?'aria-current="page"':""}>${icon(i,21)}<span>${h==="claude"?"AI":t}</span></a>`).join("")
+    +`<button data-act="more" ${moreOn||S.more?'aria-current="page"':""}>${icon("dots",21)}<span>Daugiau</span></button>`);
+  patch($("more"),S.more?`<div class="moresheet in" data-act="more-bg"><div class="msheet" data-stop-bg>
+    ${NAV.filter(n=>!TABS.includes(n[0])).map(([h,t,i])=>`<a href="#${h}" data-act="more-close" ${r===h?'aria-current="page"':""}>${icon(i,19)}${t}</a>`).join("")}
+    <a href="#nustatymai" data-act="more-close" ${r==="nustatymai"?'aria-current="page"':""}>${icon("gear",19)}Nustatymai</a>
+    <button data-act="theme">${icon(theme()==="dark"?"sun":"moon",19)}${theme()==="dark"?"Šviesi tema":"Tamsi tema"}</button>
+    ${window.COLDLINE_WEB?`<button data-act="logout">${icon("logout",19)}Atsijungti${meId?` <span class="muted">· ${esc(who(meId))}</span>`:""}</button>`:""}
+  </div></div>`:"");
+  patch($("pal"),palHtml());
+  patch($("sidefoot"),`<button data-act="pal-open" title="Greita paieška (⌘K)">${icon("search",17)}<span class="lab">Ieškoti</span><span class="lab kbd" style="margin-left:auto">⌘K</span></button><a href="#nustatymai" title="Nustatymai" ${r==="nustatymai"?'aria-current="page"':""}>${icon("gear",17)}<span class="lab">Nustatymai</span></a><button data-act="theme" title="Tema">${icon(theme()==="dark"?"sun":"moon",17)}<span class="lab">${theme()==="dark"?"Šviesi tema":"Tamsi tema"}</span></button>${meId?`<span class="who" title="${esc(who(meId))}">${avatar(meId,22)}<span class="lab trunc">${esc(who(meId))}</span>${window.COLDLINE_WEB?`<button data-act="logout" class="out" title="Atsijungti" aria-label="Atsijungti">${icon("logout",16)}</button>`:""}</span>`:""}`);
+  $("live").className="live"+(S.conn==="ok"?" on":"");
+  $("live").title=S.conn==="ok"?"Prisijungta":"Neprisijungta";
+}
+function connBanner(){
+  if(S.conn==="none")return`<div class="banner err">Duomenų bazė čia nepasiekiama. Atidaryk nuorodą Safari naršyklėje per claude.ai, prisijungęs.</div>`;
+  if(S.conn==="slow")return`<div class="banner">Jungiamasi prie duomenų…</div>`;
+  if(S.conn==="error")return`<div class="banner err">Nepavyko pasiekti duomenų. Perkrauk puslapį.</div>`;
+  if(S.conn==="revoked")return`<div class="banner err">Prieiga nutraukta.</div>`;
+  return"";
+}
+const memberOptions=(sel,withNone=true)=>(withNone?`<option value="">Nepriskirta</option>`:"")+people().map(id=>`<option value="${esc(id)}" ${id===sel?"selected":""}>${esc(who(id))}</option>`).join("");
+const head=(title,meta,right="")=>`<header class="ph"><h1>${title}${meta?`<span class="meta">${meta}</span>`:""}</h1><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${right}</div></header>`;
+
+/* ===== e-mail and SMS after a call ===== */
+const MAILK=[["after","Po skambučio"],["meeting","Susitikimas"],["missed","Neprisiskambinau"]];
+/* Grammar per offer: what it is (sentence), "dėl jūsų …" (genitive), "jūsų …" (nominative). */
+const OFFER={"Svetainė":["svetainė, kuri gerai veikia telefone ir atveda naujų klientų","svetainės","svetainė"],
+  "Svetainės atnaujinimas":["atnaujinta svetainė, kuri gerai veikia telefone ir atveda naujų klientų","svetainės","atnaujinta svetainė"],
+  "Rezervacijų sistema":["rezervacijų sistema, kurioje klientai užsiregistruoja patys ir gauna priminimą","registracijos","rezervacijų sistema"],
+  "El. parduotuvė":["paprasta el. parduotuvė, kurioje galima pirkti iš telefono","el. parduotuvės","el. parduotuvė"],
+  "Vidinė sistema / CRM":["paprasta sistema, kurioje visi užsakymai ir klientai vienoje vietoje","užsakymų tvarkymo","sistema"]};
+function mailTpl(l,kind){
+  const st=settings||{},me=callName()||"",co=String(st.company||"").trim(),from=me&&co?` iš „${co}“`:co?` iš „${co}“`:"";
+  const [offer,needGen,need]=OFFER[l.need]||OFFER["Svetainė"],problem=PROBLEM[l.need]||PROBLEM["Svetainė"];
+  const md=deals.filter(d=>d.leadId===l.id&&d.meetingAt).sort((a,b)=>ms(b.meetingAt)-ms(a.meetingAt))[0];
+  const whenTxt=md?" "+new Date(ms(md.meetingAt)).toLocaleString("lt-LT",{timeZone:TZ,weekday:"long",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+  const sign=[st.sign||me,st.phone].filter(Boolean).join("\n");
+  const site=st.site?`Mūsų darbų pavyzdžiai: ${st.site}`:"";
+  const price=num(st.price)>0?` Kaina prasideda nuo ${eur(num(st.price))}.`:"";
+  const T={
+    after:{subject:`${spokenName(l.name)}: pasiūlymas po pokalbio`,
+      body:`Laba diena,\n\načiū už pokalbį telefonu. Kaip ir sutarėme, siunčiu trumpai.\n\nPastebėjau, kad ${problem}, todėl dalis žmonių, kurie jau nori pirkti, nueina pas konkurentus. Pasiūlymas paprastas: ${offer}.${price}\n\n${site}\n\nJei patogu, susiskambinkime 15 minučių – parodysiu, kaip tai atrodytų jums.\n\nPagarbiai\n${sign}`,
+      sms:`Laba diena, čia ${me||"[vardas]"}${from}. Ačiū už pokalbį! ${st.site?"Darbų pavyzdžiai: "+st.site+". ":""}Jei kils klausimų, skambinkite.`},
+    meeting:{subject:`Susitikimo patvirtinimas${whenTxt?":"+whenTxt:""}`,
+      body:`Laba diena,\n\načiū už pokalbį. Patvirtinu mūsų susitikimą${whenTxt||" [data ir laikas]"}.\n\nParodysiu, kaip galėtų atrodyti jūsų ${need}, ir pasakysiu tikslią kainą. Užtruksime apie 15 minučių.\n\nJei laikas netinka, tiesiog atrašykite.\n\n${sign}`,
+      sms:`Laba diena, čia ${me||"[vardas]"}${from}. Primenu mūsų susitikimą${whenTxt||" [data ir laikas]"}. Iki!`},
+    missed:{subject:`${spokenName(l.name)}: trumpas klausimas`,
+      body:`Laba diena,\n\nbandžiau jums paskambinti. Esu ${me||"[vardas]"}${from}.\n\nPastebėjau, kad ${problem}, ir turiu paprastą pasiūlymą, kaip tai pataisyti.${price}\n\nKada jums patogu trumpai pasikalbėti telefonu?\n\n${sign}`,
+      sms:`Laba diena, čia ${me||"[vardas]"}${from}. Bandžiau prisiskambinti dėl jūsų ${needGen}. Kada patogu trumpai pasikalbėti?`}};
+  const t=T[kind]||T.after;
+  return{subject:t.subject,body:t.body.replace(/\n{3,}/g,"\n\n").trim(),sms:t.sms};
+}
+function mailPanel(l){
+  const m=S.mail;if(!m||m.lead!==l.id)return"";
+  return`<section class="mailbox in" id="mail-${esc(l.id)}">
+    <header><b>Laiškas ar SMS</b><div class="seg">${MAILK.map(([k,t])=>`<button data-act="mail-kind" data-v="${k}" aria-pressed="${m.kind===k}">${t}</button>`).join("")}</div><button class="iconbtn" data-act="mail-close" aria-label="Uždaryti">${icon("x",16)}</button></header>
+    <label class="field">Tema<input class="inp" data-key="mailsubj" value="${esc(m.subject)}"></label>
+    <label class="field">Laiškas<textarea class="inp" rows="9" data-key="mailbody">${esc(m.body)}</textarea></label>
+    <div class="btnrow">${l.email?`<button class="btn ink" data-act="mail-send" data-id="${esc(l.id)}">${icon("mail",15)} Atidaryti el. pašte</button>`:`<span class="muted small">El. pašto nėra – gali siųsti SMS.</span>`}
+      ${l.phone?`<button class="btn" data-act="sms-send" data-id="${esc(l.id)}">${icon("sms",15)} SMS</button>`:""}
+      <button class="btn" data-act="mail-copy">${icon("copy",15)} Kopijuoti</button></div>
+    ${!settings.company&&!settings.sign?`<p class="muted small">Įmonės pavadinimą ir parašą nustatyk <a class="u" href="#nustatymai">Nustatymuose</a>.</p>`:""}
+  </section>`;
+}
+function openMail(l,kind){const t=mailTpl(l,kind);S.mail={lead:l.id,kind,subject:t.subject,body:t.body,sms:t.sms};render();
+  setTimeout(()=>document.getElementById("mail-"+l.id)?.scrollIntoView({block:"nearest",behavior:"smooth"}),30)}
+
+/* ===== call view ===== */
+function threadHtml(l,cls){
+  const items=acts.filter(a=>a.leadId===l.id).sort((a,b)=>ms(a.createdAt)-ms(b.createdAt));
+  const ev=a=>a.kind==="call"?`paskambino ${sdot(a.status)} ${stat(a.status).short}${a.duration?` <span class="mono muted">· ${fmtDur(a.duration*1000)}</span>`:""}`
+    :a.kind==="status"?`pakeitė statusą ${sdot(a.status)} ${stat(a.status).short}`
+    :a.kind==="deal"?`sandoris ${ddot(a.status)} ${stage(a.status).label}`
+    :a.kind==="created"?"pridėjo kontaktą":"";
+  return`<section class="thread ${cls}">
+    <header class="thead">Istorija<span class="muted mono" style="font-weight:400;font-size:12px">${items.length||""}</span></header>
+    <ol class="tlist thin" id="tlist">
+      ${items.length?"":`<li class="muted" style="font-size:13px">Dar nieko neįvyko.</li>`}
+      ${items.map(a=>`<li class="titem" id="a-${esc(a.id)}">${avatar(a.author,24)}<div style="min-width:0"><div class="h"><b>${esc(who(a.author))}</b><time class="muted">${when(a.createdAt)}</time></div>${ev(a)?`<div class="ev">${ev(a)}</div>`:""}${a.note?`<p class="msg">${esc(a.note)}</p>`:""}</div></li>`).join("")}
+    </ol>
+    <form class="composer" data-act="note-form"><div>
+      <textarea rows="1" data-key="composer" placeholder="Pastaba komandai">${esc(S.composer)}</textarea>
+      <button class="send" type="submit" aria-label="Siųsti" ${S.composer.trim()?"":"disabled"}>${icon("send",15)}</button>
+    </div></form>
+  </section>`;
+}
+function editForm(l){
+  const f=[["name","Pavadinimas"],["phone","Telefonas"],["email","El. paštas"],["website","Svetainė"],["category","Sritis"],["city","Miestas"],["companyCode","Įmonės kodas"],["revenue","Pajamos"]];
+  return`<form id="ef-${esc(l.id)}" class="in" data-act="edit-form" style="margin-top:22px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    ${f.map(([k,t])=>`<label class="field">${t}<input class="inp" name="${k}" value="${esc(l[k]||"")}" ${k==="name"?"required":""}></label>`).join("")}
+    <label class="field">Reikia<select class="inp" name="need">${NEEDS.map(n=>`<option ${n===l.need?"selected":""}>${n}</option>`).join("")}</select></label>
+    <label class="field">Atsakingas<select class="inp" name="assignee">${memberOptions(l.assignee)}</select></label>
+    <label class="field" style="grid-column:1/-1">Kodėl jiems reikia<textarea class="inp" rows="3" name="reason">${esc(l.reason||"")}</textarea></label>
+    <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px"><button type="button" class="btn" data-act="edit-close">Atšaukti</button><button class="btn ink">Išsaugoti</button></div>
+  </form>`;
+}
+function convo(l){
+  if(!S.cv||S.cv.lead!==l.id)S.cv={lead:l.id,path:["start"],picks:[],noted:false};
+  return S.cv;
+}
+function callName(){
+  const m=meId&&team[meId];if(m&&m.callName)return m.callName;
+  try{const v=localStorage.getItem("coldline-name");if(v)return v}catch{}
+  const f=firstName(meId);return f==="Aš"||f==="Komandos"||f==="Niekas"?"":f;
+}
+function fillLine(t,l){
+  const me=callName(),city=spokenCity(l.city);
+  const vars={me:me||"[tavo vardas]",name:spokenName(l.name),cat:(l.category||"").split(",")[0].trim().toLocaleLowerCase("lt")||"jūsų paslaugos",city:city?city:"",problem:PROBLEM[l.need]||PROBLEM["Svetainė"],pitch:PITCH[l.need]||PITCH["Svetainė"]};
+  let out=t;for(let i=0;i<2;i++)out=out.replace(/\{(\w+)\}/g,(m,k)=>vars[k]??m);
+  return esc(out.replace(/\s+“/g,"“").replace(/ {2,}/g," "));
+}
+function convoHtml(l){
+  const c=convo(l),cur=FLOW[c.path[c.path.length-1]],end=cur.end?ENDS[cur.end]:null;
+  const steps=c.path.slice(0,-1).map((id,i)=>`<div class="cv-past"><p class="cv-you">${fillLine(FLOW[id].say,l)}</p><p class="cv-them"><span>${esc(c.picks[i])}</span></p></div>`).join("");
+  return`<section class="cv" id="cv-${esc(l.id)}">
+    <header><span>Pokalbis</span><span style="display:inline-flex;gap:6px;align-items:center"><label class="cv-me" title="Kaip prisistatai skambindamas">Aš <input data-key="callname" value="${esc(callName())}" placeholder="vardas" autocomplete="off" enterkeyhint="done"></label>${c.path.length>1?`<button class="mini-btn" data-act="cv-back">${icon("undo",14)} Atgal</button><button class="mini-btn" data-act="cv-reset">Iš naujo</button>`:""}</span></header>
+    <div class="cv-body">
+      ${steps}
+      <div class="cv-now in" id="cv-step-${c.path.length}">
+        <span class="lbl">Tu sakai</span>
+        <p class="cv-say">${fillLine(cur.say,l)}</p>${cur.tip?`<p class="cv-tip">${icon("spark",14)}<span>${esc(cur.tip)}</span></p>`:""}
+        ${end?`<div class="cv-end" style="--tone:${end.tone}"><div><b>${end.label}</b><small>${end.hint}</small></div><button class="btn go" data-act="cv-finish" data-end="${cur.end}">Pažymėti ${icon("arrow",15)}</button></div>`
+        :`<span class="lbl" style="margin-top:14px">Ką atsakė?</span><div class="cv-replies">${cur.replies.map(([t,n])=>`<button class="cv-reply" data-act="cv-pick" data-next="${n}" data-label="${esc(t)}">${esc(t)}</button>`).join("")}</div>`}
+      </div>
+    </div>
+  </section>`;
+}
+function viewCall(){
+  const q=queues(),cur=current(q),wide=matchMedia("(min-width:1500px)").matches,desk=matchMedia("(min-width:768px)").matches;
+  const pos=cur?q.queue.findIndex(p=>p.l.id===cur.l.id):-1;
+  const myToday=meId?callsBy(meId,a=>dayKey(ms(a.createdAt))===dayKey(Date.now())).length:0,goal=num(member(meId).goal)||DEF_GOAL;
+  const hasAssign=leads.some(l=>l.assignee&&l.assignee!==meId);
+  const list=`<div class="qhead">
+      <div class="qtop"><h1>Eilė</h1>${hasAssign||S.scope==="all"?`<div class="seg"><button data-act="scope" data-v="mine" aria-pressed="${S.scope==="mine"}">Mano</button><button data-act="scope" data-v="all" aria-pressed="${S.scope==="all"}">Visi</button></div>`:""}</div>
+      ${meId?`<div class="goal">${ring(myToday,goal,46)}<div><b class="tnum">${myToday}<span class="muted"> / ${goal}</span></b><small>${myToday>=goal?"Dienos tikslas pasiektas":`Liko ${pl(goal-myToday,"skambutis","skambučiai","skambučių")} iki tikslo`}</small></div></div>`:""}
+      <div class="qtabs">${[["queue","Skambinti"],["waiting","Laukia"],["won","Nori"]].map(([id,t])=>`<button data-act="tab" data-v="${id}" aria-pressed="${S.tab===id}">${t}<span class="n">${q[id].length}</span></button>`).join("")}</div></div>
+    <ul class="qlist thin">${q[S.tab].length?"":`<li class="muted" style="padding:28px 14px;text-align:center;font-size:13px">Tuščia</li>`}
+      ${q[S.tab].map(p=>`<li id="q-${esc(p.l.id)}"><button class="qitem" data-act="pick" data-id="${esc(p.l.id)}" aria-current="${cur&&p.l.id===cur.l.id}">
+        <span class="dot" style="background:${p.tone}"></span><b class="trunc">${esc(spokenName(p.l.name))}</b>${revShort(p.l)?`<span class="qrev mono">${esc(revShort(p.l))}</span>`:""}
+        <small class="trunc">${esc([spokenCity(p.l.city)||p.l.city,(p.l.category||"").split(",")[0]].filter(Boolean).join(" · ")||"—")}</small>
+        ${p.l.status==="new"&&!p.l.attempts?"":`<small class="trunc" style="color:${p.tone}">${esc(p.label)}</small>`}</button></li>`).join("")}</ul>`;
+  let center;
+  if(!S.loaded&&S.conn!=="none")center=`<div class="muted" style="padding:32px;font-size:13px">Kraunama…</div>`;
+  else if(!cur&&!leads.length)center=`<div class="empty"><div class="onb"><h2>Labas${callName()?", "+esc(callName()):""}!</h2><p class="muted">Tavo komandos erdvė tuščia. Trys žingsniai iki pirmo skambučio:</p>
+    <ol class="onbl"><li><a href="#kontaktai" data-act="find-open"><b>Rask įmonių</b><span>Iš 1551.lt su telefonais ir apyvarta, arba įkelk savo sąrašą iš Excel.</span></a></li>
+      <li><a href="#nustatymai"><b>Pakviesk komandą</b><span>Nusiųsk kvietimo nuorodą – kolegos matys tuos pačius kontaktus.</span></a></li>
+      <li><a href="#nustatymai"><b>Užpildyk savo įmonę</b><span>Pavadinimas, parašas ir kaina atsiras laiškuose po skambučio.</span></a></li></ol></div></div>`;
+  else if(!cur)center=`<div class="empty"><div><h2>Eilė tuščia</h2><p class="muted" style="margin:6px auto 0;max-width:360px;font-size:14px">${leads.length?"Visiems paskambinta. Neatsiliepę ir galvojantys grįš patys.":"Dar nėra kontaktų."}</p><a href="#kontaktai" data-act="find-open" class="btn ink" style="margin-top:18px">${icon("search",15)} Rasti įmonių</a></div></div>`;
+  else{
+    const l=cur.l,meta=[l.category,l.city].filter(Boolean).join(" · ");
+    const days=[["Rytoj, 10:00",1],["Po 3 d.",3],["Po savaitės",7],["Po 2 sav.",14]];
+    const ld=deals.filter(d=>d.leadId===l.id);
+    const tags=[[icon("pin",13),spokenCity(l.city)||l.city],[icon("tag",13),(l.category||"").split(",")[0]],[icon("euro",13),l.revenue?revShort(l)+" apyvarta":""],[icon("users",13),l.employees||""]].filter(t=>t[1]);
+    center=`<article class="focus in" id="lead-${esc(l.id)}">
+      <section class="hero">
+      <div class="crumbs"><span style="display:inline-flex;align-items:center;gap:7px;color:${cur.tone};font-weight:500"><span class="dot" style="background:${cur.tone}"></span>${esc(cur.label)}</span>
+        ${pos>=0?`<span class="mono">${pos+1}/${q.queue.length}</span>`:""}
+        ${l.assignee?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(firstName(l.assignee))}</span>`:""}
+        ${aiApi?`<button class="push askai" data-act="ask-claude" data-id="${esc(l.id)}">${icon("spark",14)}Klausti ${aiApi.web?"Coldai":"Claude"}</button>`:""}<button class="${aiApi?"":"push "}t2" data-act="edit-toggle" style="display:inline-flex;align-items:center;gap:5px">${icon("edit",14)}${S.editing?"Uždaryti":"Redaguoti"}</button></div>
+      <h1 class="fname">${esc(spokenName(l.name))}</h1>${spokenName(l.name)!==l.name?`<p class="fmeta">${esc(l.name)}</p>`:""}
+      ${tags.length?`<div class="htags">${tags.map(([i,t])=>`<span>${i}${esc(t)}</span>`).join("")}<span class="need">${esc(l.need||"Svetainė")}</span></div>`:""}
+      ${S.editing?`</section>`+editForm(l):`
+      <div class="dial"><div class="nr"><span class="lbl">Telefonas</span><span class="num">${esc(l.phone||"—")}</span></div>
+        ${l.phone?`<button class="copy" data-act="copy" data-v="${esc(l.phone)}" title="Kopijuoti numerį">${icon("copy",16)}<span>Kopijuoti</span></button><a class="go${S.callFor===l.id&&S.callStart?" live":""}" data-act="dial" data-id="${esc(l.id)}" data-v="${esc(l.phone)}" href="${esc(tel(l.phone))}">${icon("phone",18)} Skambinti</a>`:""}</div>
+      <div class="links">${l.email?`<a href="mailto:${esc(l.email)}" class="u">${esc(l.email)}</a>`:""}
+        ${l.website&&safeUrl(l.website)?`<a class="u" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.website))}">${esc(host(l.website))}</a>`:`<span class="muted">Svetainės nėra</span>`}
+        ${l.source&&safeUrl(l.source)?`<a class="u muted" target="_blank" rel="noreferrer" href="${esc(safeUrl(l.source))}">Šaltinis: ${esc(host(l.source))}</a>`:""}
+        ${l.email||l.phone?`<button class="hlink" data-act="mail-open" data-id="${esc(l.id)}">${icon("mail",14)} Laiškas ar SMS</button>`:""}</div>
+      </section>
+      ${mailPanel(l)}
+      ${l.reason?`<div class="whybox${S.whyOpen===l.id?" open":""}" data-act="why-toggle" data-id="${esc(l.id)}" title="Spausk, kad matytum visą"><span class="wicon">${icon("spark",15)}</span><div><span class="lbl">Kodėl skambinti</span><p>${esc(l.reason)}</p></div></div>`:""}
+      ${convoHtml(l)}
+      ${briefHtml(l)}
+      <dl class="brief facts">
+        <div><dt>Pajamos</dt><dd>${l.revenue?esc(l.revenue):`<span class="muted">Neskelbiamos</span>`}</dd></div>
+        ${l.employees?`<div><dt>Darbuotojai</dt><dd>${esc(l.employees)}</dd></div>`:""}
+        <div><dt>Bandymai</dt><dd><span class="mono">${l.attempts||0}</span>${l.lastCalledAt?` <span class="muted">· paskutinis ${when(l.lastCalledAt)}, ${esc(firstName(l.lastCalledBy))}</span>`:""}</dd></div>
+        ${l.companyCode?`<div><dt>Įmonės kodas</dt><dd class="mono">${esc(l.companyCode)}</dd></div>`:""}
+        ${ld.length?`<div><dt>Sandoriai</dt><dd style="display:flex;gap:14px;flex-wrap:wrap">${ld.map(d=>`<span class="tagline">${ddot(d.stage)}<span class="mono">${eur(d.value)}</span> ${stage(d.stage).label}</span>`).join("")}</dd></div>`:""}
+      </dl>`}
+      <section class="outcome">
+        <header><span>Rezultatas</span><span style="display:inline-flex;align-items:center;gap:12px">${S.callFor===l.id&&S.callStart?`<span class="live-call"><span class="pulse"></span><span id="calltimer" class="mono">${fmtDur(Date.now()-S.callStart)}</span></span>`:""}${desk?`<span class="muted" style="font-weight:400;font-size:12px">klavišai 1–4</span>`:""}</span></header>
+        <div class="pad">
+        <textarea class="note" rows="2" data-key="note" placeholder="Su kuo kalbėjai ir ką sutarėte (nebūtina)">${esc(S.note)}</textarea>
+        ${S.askWhen?`<div class="sub in"><span class="lbl" style="margin-bottom:8px">Kada perskambinti</span><div class="chips">
+          ${days.map(([t,d])=>`<button class="chip" data-act="callback" data-d="${d}">${t}</button>`).join("")}
+          <input type="datetime-local" class="chip" data-key="custom" value="${esc(S.custom)}">
+          ${S.custom?`<button class="chip" data-act="callback-custom" aria-pressed="true">Išsaugoti</button>`:""}
+          <button class="chip" data-act="ask-back">Atgal</button></div></div>`
+        :S.dealAsk?`<form id="df-${esc(l.id)}" class="dealform sub in" data-act="deal-form">
+          <label class="field">Suma, €<input class="inp mono" name="value" inputmode="decimal" placeholder="1200" autofocus></label>
+          <label class="field">Savikaina, €<input class="inp mono" name="cost" inputmode="decimal" placeholder="0"></label>
+          <label class="field">Etapas<select class="inp" name="stage">${STAGES.filter(s=>s.id!=="lost").map(s=>`<option value="${s.id}" ${s.id===(S.dealStage||"meeting")?"selected":""}>${s.label}</option>`).join("")}</select></label>
+          <label class="field">Kas parduodama<select class="inp" name="title">${NEEDS.map(n=>`<option ${n===l.need?"selected":""}>${n}</option>`).join("")}</select></label>
+          <label class="field">Susitikimas (nebūtina)<input class="inp" type="datetime-local" name="meetingAt"></label>
+          <div class="full"><button type="button" class="btn" data-act="deal-back">Atgal</button><button type="button" class="btn" data-act="deal-skip">Be sandorio</button><button class="btn go">Išsaugoti sandorį</button></div></form>`
+        :`<div class="obtns">${[["no_answer","Neatsiliepė",1],["declined","Nenori",2],["thinking","Pagalvos",3],["interested","Nori",4]].map(([s,t,k])=>`<button class="obtn" style="--tone:var(--s-${s})" data-act="outcome" data-s="${s}" ${S.busy?"disabled":""}><span>${sdot(s)}${t}</span><span class="kbd">${k}</span></button>`).join("")}</div>`}
+        ${cur.tab==="queue"?`<div class="skip"><button data-act="skip">Praleisti ${icon("skip",13)}</button></div>`:""}
+        </div>
+      </section>
+    </article>${!wide?threadHtml(l,"below"):""}`;
+  }
+  if(cur&&!cur.l.aiBrief)queueBrief(cur.l.id);
+  return`<div class="call">
+    <aside class="queue ${S.sheet?"sheet":""}">${S.sheet?`<button data-act="sheet-close" aria-label="Uždaryti" class="iconbtn" style="position:absolute;right:10px;top:12px">${icon("x")}</button>`:""}${list}</aside>
+    <div class="center thin"><div class="mbar"><button data-act="sheet-open" style="display:inline-flex;align-items:center;gap:8px;font-weight:500">${icon("list",16)} Eilė <span class="mono muted">${q.queue.length}</span></button>${meId?`<span class="mring">${ring(myToday,goal,26)}<span class="tnum">${myToday}/${goal}</span></span>`:""}</div>${center}</div>
+    ${cur&&wide?threadHtml(cur.l,"side"):""}
+  </div>`;
+}
+
+/* ===== deals view ===== */
+function dealDrawer(){
+  const d=deals.find(x=>x.id===S.dealOpen);if(!d)return"";
+  const comm=commissionOf(d),prof=profitOf(d);
+  return`<div class="drawer" data-act="drawer-bg"><div class="pane thin" data-stop-bg>
+    <div class="phd"><b style="font-weight:600" class="trunc">${esc(d.leadName||"—")}</b><button class="iconbtn" data-act="drawer-close" aria-label="Uždaryti">${icon("x")}</button></div>
+    <form id="de-${esc(d.id)}" data-act="deal-edit" style="padding:18px;display:grid;gap:14px">
+      <label class="field">Etapas<select class="inp" name="stage">${STAGES.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${s.label}</option>`).join("")}</select></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label class="field">Suma, €<input class="inp mono" name="value" inputmode="decimal" value="${esc(num(d.value)||"")}"></label><label class="field">Savikaina, €<input class="inp mono" name="cost" inputmode="decimal" value="${esc(num(d.cost)||"")}"></label></div>
+      <label class="field">Kas parduodama<select class="inp" name="title">${NEEDS.map(n=>`<option ${n===d.title?"selected":""}>${n}</option>`).join("")}</select></label>
+      <label class="field">Susitikimas<input class="inp" type="datetime-local" name="meetingAt" value="${esc(dtLocal(d.meetingAt))}"></label>
+      <label class="field">Atsakingas<select class="inp" name="owner">${memberOptions(d.owner,false)}</select></label>
+      <label class="field">Pastaba<textarea class="inp" rows="4" name="note">${esc(d.note||"")}</textarea></label>
+      <div class="ledger mono">
+        <div><span>Suma</span><span>${eur(d.value)}</span></div>
+        <div><span>Savikaina</span><span>−${eur(d.cost)}</span></div>
+        <div><span>Komisiniai, ${num(member(d.owner).commission)} %</span><span>−${eur(comm)}</span></div>
+        <div class="tot"><span>Pelnas</span><span style="color:${prof>=0?"var(--d-won)":"var(--danger)"}">${eur(prof)}</span></div></div>
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-act="deal-open-lead" data-id="${esc(d.leadId)}">Atidaryti kontaktą</button><button class="btn ink">Išsaugoti</button></div>
+      <p class="muted" style="font-size:12px">Sukurta ${when(d.createdAt)}${d.closedAt?` · uždaryta ${when(d.closedAt)}`:""}</p>
+    </form></div></div>`;
+}
+function viewDeals(){
+  const scoped=deals.filter(d=>S.who==="all"||d.owner===S.who);
+  const open=scoped.filter(d=>d.stage==="meeting"||d.stage==="proposal");
+  const wonP=scoped.filter(d=>d.stage==="won"&&inPeriod(d.closedAt));
+  const rev=wonP.reduce((a,d)=>a+num(d.value),0),prof=wonP.reduce((a,d)=>a+profitOf(d),0),pipe=open.reduce((a,d)=>a+num(d.value),0);
+  const closed=scoped.filter(d=>d.stage==="won"||d.stage==="lost"),winRate=closed.length?Math.round(closed.filter(d=>d.stage==="won").length/closed.length*100):null;
+  const shown=s=>scoped.filter(d=>d.stage===s&&(s==="meeting"||s==="proposal"||inPeriod(d.closedAt))).sort((a,b)=>ms(b.updatedAt)-ms(a.updatedAt));
+  const right=`<select class="sel" data-key="who"><option value="all">Visa komanda</option>${people().map(id=>`<option value="${esc(id)}" ${S.who===id?"selected":""}>${esc(who(id))}</option>`).join("")}</select>
+    <div class="seg">${[["month","Šis mėn."],["prev","Praėjęs"],["year","Metai"],["all","Visi"]].map(([v,t])=>`<button data-act="period" data-v="${v}" aria-pressed="${S.period===v}">${t}</button>`).join("")}</div>`;
+  return`<div class="scroll thin"><div class="page">${head("Pardavimai","",right)}
+    <div class="kpis">
+      <div class="kpi"><span class="lbl">Pajamos</span><span class="v">${eur(rev)}</span><small>${pl(wonP.length,"laimėtas sandoris","laimėti sandoriai","laimėtų sandorių")}</small></div>
+      <div class="kpi"><span class="lbl">Pelnas</span><span class="v" style="color:${prof<0?"var(--danger)":"inherit"}">${eur(prof)}</span><small>po savikainos ir komisinių</small></div>
+      <div class="kpi"><span class="lbl">Derinama</span><span class="v">${eur(pipe)}</span><small>${pl(open.length,"sandoris","sandoriai","sandorių")}</small></div>
+      <div class="kpi"><span class="lbl">Laimima</span><span class="v">${winRate===null?"—":winRate+" %"}</span><small>iš ${pl(closed.length,"uždaryto","uždarytų","uždarytų")}</small></div></div>
+    <div class="board">${STAGES.map(s=>{const items=shown(s.id);return`<section class="col">
+      <h3><span style="display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;color:var(--text);font-weight:600">${ddot(s.id)}${s.label}</span><span>${items.length} · ${eur(items.reduce((a,d)=>a+num(d.value),0))}</span></h3>
+      ${items.length?items.map(d=>`<button id="dc-${esc(d.id)}" class="dcard" data-act="deal-open" data-id="${esc(d.id)}">
+        <div class="top"><b class="trunc">${esc(d.leadName?spokenName(d.leadName):"—")}</b><span class="mono">${eur(d.value)}</span></div>
+        <div class="bot"><span class="trunc">${d.meetingAt&&d.stage==="meeting"?`${icon("cal",12)} ${esc(when(d.meetingAt))}`:esc(d.title||"")}</span><span style="display:inline-flex;align-items:center;gap:6px;flex-shrink:0">${avatar(d.owner,16)}${when(d.updatedAt)}</span></div>
+      </button>`).join(""):`<div class="none">—</div>`}
+    </section>`}).join("")}</div>
+    ${!deals.length?`<p class="muted" style="margin-top:20px;font-size:13px">Sandoris sukuriamas, kai skambučio rezultatas yra „Nori“ ir įrašai sumą.</p>`:""}
+  </div>${dealDrawer()}</div>`;
+}
+
+/* ===== contacts view ===== */
+function buildRequest(){
+  const F=S.form;
+  return`Coldline: surask ${F.count} Lietuvos įmonių ir įrašyk jas į Coldline sąrašą.
+Sritis: ${F.industry.trim()||"bet kuri, kur svetainė padidintų pardavimus"}
+Miestas: ${F.city.trim()||"visa Lietuva"}
+Metinės pajamos: ${F.revenue.join(", ")||"nesvarbu"}
+Ko trūksta: ${F.needs.join(", ")||"svetainės ar sistemos"}
+Kontaktus imk tik iš šaltinių (rekvizitai.lt, 1551.lt ir pan.), nieko neišgalvok.
+Jau sąraše (${leads.length}): ${leads.map(l=>l.name).join("; ")||"nėra"}`;
+}
+const QUICK_IND=["Kirpyklos","Autoservisai","Statybos darbai","Grožio salonai","Kavinės","Santechnikai","Elektrikai","Baldų gamyba","Valymo paslaugos"];
+const QUICK_CITY=["Vilnius","Kaunas","Klaipėda","Šiauliai","Panevėžys","Alytus"];
+function findPanel(){
+  const F=S.form,busy=!!S.aiBusy,found=S.found||[],done=S.searchDone;
+  const chip=(arr,v)=>`<button type="button" class="chip" data-act="fchip" data-arr="${arr}" data-v="${esc(v)}" aria-pressed="${F[arr].includes(v)}">${esc(v)}</button>`;
+  const quick=(key,v)=>`<button type="button" class="qchip${String(F[key]).toLowerCase()===v.toLowerCase()?" on":""}" data-act="fquick" data-k="${key}" data-v="${esc(v)}">${esc(v)}</button>`;
+  if(!ai)return`<section class="box finder in"><div class="fhead"><div><h2>Rasti naujų įmonių</h2><p>Šis puslapis pats internete ieškoti negali. Paruošk užklausą ir įklijuok ją pokalbyje su Claude.</p></div><button class="iconbtn" data-act="find-close" aria-label="Uždaryti">${icon("x",16)}</button></div>
+    <div class="btnrow" style="margin-top:14px"><button class="btn ink" data-act="req">${icon("copy",15)} Nukopijuoti užklausą</button></div>${S.reqText?`<textarea class="req in" readonly id="reqbox" style="margin-top:12px">${esc(S.reqText)}</textarea>`:""}</section>`;
+  return`<section class="box finder in">
+    <div class="fhead"><div><h2>Rasti naujų įmonių</h2><p>Tikros įmonės iš 1551.lt su telefonais ir apyvarta. Dublikatai praleidžiami.</p></div><button class="iconbtn" data-act="find-close" aria-label="Uždaryti">${icon("x",16)}</button></div>
+    <form class="fform" data-act="find-form">
+      <label class="field">Ką ieškoti<input class="inp" data-key="f.industry" value="${esc(F.industry)}" placeholder="pvz. kirpykla" enterkeyhint="search" ${busy?"disabled":""}></label>
+      <div class="qrow">${QUICK_IND.map(v=>quick("industry",v)).join("")}</div>
+      <label class="field">Kur<input class="inp" data-key="f.city" value="${esc(F.city)}" placeholder="Visa Lietuva" enterkeyhint="search" ${busy?"disabled":""}></label>
+      <div class="qrow">${QUICK_CITY.map(v=>quick("city",v)).join("")}</div>
+      <details class="fmore"${S.fmore?" open":""}><summary data-act="fmore">Daugiau filtrų${F.revenue.length||F.needs.length?` <span class="fbadge">${F.revenue.length+F.needs.length}</span>`:""}</summary>
+        <span class="lbl">Metinės pajamos (nieko nepažymėjus – bet kokios)</span><div class="chips">${REVENUE.map(v=>chip("revenue",v)).join("")}</div>
+        <span class="lbl" style="margin-top:12px">Ko trūksta</span><div class="chips">${NEEDS.map(v=>chip("needs",v)).join("")}</div></details>
+      <div class="fgo"><div class="seg" aria-label="Kiek įmonių">${[5,10,15,20].map(c=>`<button type="button" data-act="fcount" data-v="${c}" aria-pressed="${F.count===c}">${c}</button>`).join("")}</div>
+        ${busy?`<button type="button" class="btn" data-act="search-stop">${icon("x",15)} Stabdyti</button>`:`<button class="btn go big">${icon("search",16)} Ieškoti</button>`}</div>
+    </form>
+    ${busy||found.length||done?`<div class="fres">
+      <div class="fstat">${busy?`<span class="scan"></span><span>${esc(S.aiNow||"Ieškoma…")}</span>`:done?`<b>${done.added?pl(done.added,"nauja įmonė","naujos įmonės","naujų įmonių")+" pridėta":"Naujų įmonių nerasta"}</b><span class="muted">${done.error?esc(done.error):done.added?"Jos jau tavo eilėje.":"Pabandyk kitą sritį ar miestą."}</span>`:""}
+        ${done&&done.added?`<a class="btn go" href="#">${icon("phone",15)} Pradėti skambinti</a>`:""}</div>
+      ${found.length?`<ul class="fcards">${found.map((l,i)=>`<li id="fc-${i}"><b class="trunc">${esc(spokenName(l.name))}</b><span class="trunc">${esc([l.category,spokenCity(l.city)||l.city].filter(Boolean).join(" · "))}</span><span class="fph">${esc(l.phone||"—")}${l.revenue?` · ${esc(revShort({revenue:l.revenue}))}`:""}</span></li>`).join("")}</ul>`:""}
+    </div>`:""}
+  </section>`;
+}
+function viewContacts(){
+  const counts=Object.fromEntries(STATUSES.map(s=>[s.id,0]));leads.forEach(l=>counts[l.status]=(counts[l.status]||0)+1);
+  const n=S.q.trim().toLowerCase(),mgr=isManager();
+  const vis=leads.filter(l=>(S.filter==="all"||l.status===S.filter)&&(S.who==="all"||(S.who==="none"?!l.assignee:l.assignee===S.who))&&(!n||[l.name,l.category,l.city,l.phone,l.email,l.companyCode].some(v=>String(v||"").toLowerCase().includes(n))));
+  if(S.sort==="name")vis.sort((a,b)=>a.name.localeCompare(b.name,"lt"));
+  else if(S.sort==="called")vis.sort((a,b)=>ms(b.lastCalledAt)-ms(a.lastCalledAt));
+  else if(S.sort==="revenue")vis.sort((a,b)=>revVal(b)-revVal(a));
+  else vis.sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));
+  const f=([k,p])=>`<input class="inp" name="${k}" placeholder="${p}" ${k==="name"?"required":""}>`;
+  const right=`${mgr?`<label class="btn" title="Įkelti kontaktus iš Excel (CSV) arba kopijos">${icon("upload",15)}<span class="hide-xs">Importuoti</span><input type="file" accept=".csv,.json,text/csv,application/json" data-key="import" hidden></label>`:""}<button class="btn" data-act="csv" title="Atsisiųsti Excel (CSV)" ${leads.length?"":"disabled"}>${icon("download",15)}<span class="hide-xs">Excel</span></button><button class="btn" data-act="add-toggle">${icon("plus",15)} Pridėti</button><button class="btn ink" data-act="find-toggle">${icon("search",15)} Rasti įmonių</button>`;
+  return`<div class="scroll thin"><div class="page">${head("Kontaktai",`${leads.length} · ${leads.filter(l=>!l.assignee).length} nepriskirta`,right)}
+    ${S.finding?findPanel():""}
+    ${S.adding?`<form class="box add in" data-act="add-form">${[["name","Pavadinimas"],["phone","Telefonas"],["email","El. paštas"],["website","Svetainė"],["category","Sritis"],["city","Miestas"],["companyCode","Įmonės kodas"]].map(f).join("")}
+      <select class="inp" name="need">${NEEDS.map(x=>`<option>${x}</option>`).join("")}</select>
+      <div class="acts"><button type="button" class="btn" data-act="add-toggle">Atšaukti</button><button class="btn ink">Pridėti</button></div></form>`:""}
+    <nav class="statusbar">${[["all","Visi",leads.length],...STATUSES.map(s=>[s.id,s.short,counts[s.id]])].map(([id,t,c])=>`<button data-act="filter" data-v="${id}" aria-pressed="${S.filter===id}">${id==="all"?"":sdot(id)}${t}<span class="n">${c}</span></button>`).join("")}</nav>
+    <div class="toolbar"><label class="search">${icon("search",15)}<input data-key="q" placeholder="Pavadinimas, telefonas arba kodas" value="${esc(S.q)}"></label>
+      <select class="sel" data-key="who"><option value="all">Visi žmonės</option><option value="none" ${S.who==="none"?"selected":""}>Nepriskirti</option>${people().map(id=>`<option value="${esc(id)}" ${S.who===id?"selected":""}>${esc(who(id))}</option>`).join("")}</select>
+      <select class="sel" data-key="sort"><option value="created" ${S.sort==="created"?"selected":""}>Naujausi</option><option value="called" ${S.sort==="called"?"selected":""}>Neseniai skambinta</option><option value="revenue" ${S.sort==="revenue"?"selected":""}>Didžiausios pajamos</option><option value="name" ${S.sort==="name"?"selected":""}>A–Ž</option></select></div>
+    ${S.loaded&&!vis.length?`<div class="empty" style="min-height:0;padding:64px 0"><h2>${leads.length?"Nieko nerasta":"Sąrašas tuščias"}</h2></div>`:`
+    <div class="tablewrap"><table class="grid leads"><thead><tr><th>Įmonė</th><th>Telefonas</th><th class="hide-s r">Pajamos</th><th class="hide-m">Siūlyti</th><th class="hide-s">Atsakingas</th><th class="hide-m">Paskutinis</th><th>Statusas</th></tr></thead><tbody>
+    ${vis.map(l=>`<tr id="r-${esc(l.id)}" data-act="open" data-id="${esc(l.id)}">
+      <td style="max-width:320px"><div class="trunc" style="font-weight:500" title="${esc(l.name)}">${esc(spokenName(l.name))}</div><div class="trunc muted" style="font-size:12.5px">${esc([l.category,l.city].filter(Boolean).join(" · ")||"—")}</div></td>
+      <td class="mono" style="white-space:nowrap">${l.phone?`<a href="${esc(tel(l.phone))}" data-stop>${esc(l.phone)}</a>`:`<span class="muted">—</span>`}</td>
+      <td class="hide-s r mono" style="white-space:nowrap">${revShort(l)||`<span class="muted">—</span>`}</td>
+      <td class="hide-m t2" style="white-space:nowrap">${esc(l.need||"")}</td>
+      <td class="hide-s c3" data-stop>${mgr?`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}<select class="sel" style="border:0;background:none;padding:0;height:24px;max-width:150px" data-assign="${esc(l.id)}">${memberOptions(l.assignee)}</select></span>`:`<span style="display:inline-flex;align-items:center;gap:6px">${avatar(l.assignee,18)}${esc(l.assignee?who(l.assignee):"—")}</span>`}</td>
+      <td class="hide-m muted" style="white-space:nowrap;font-size:12.5px">${l.lastCalledAt?when(l.lastCalledAt):"—"}</td>
+      <td class="st"><div class="pick"><button data-act="menu" data-id="${esc(l.id)}">${sdot(l.status)}${stat(l.status).short}${icon("chev",13)}</button>
+        ${S.menu===l.id?`<ul class="menu in">${STATUSES.map(s=>`<li><button data-act="set" data-id="${esc(l.id)}" data-s="${s.id}">${sdot(s.id)}${s.label}</button></li>`).join("")}</ul>`:""}</div></td>
+    </tr>`).join("")}</tbody></table></div>`}
+  </div></div>`;
+}
+
+/* ===== team view ===== */
+function memberStats(id){
+  const c=callsBy(id),today=dayKey(Date.now());
+  const cT=c.filter(a=>dayKey(ms(a.createdAt))===today),cM=c.filter(a=>inPeriod(a.createdAt,"month"));
+  const won=deals.filter(d=>d.owner===id&&d.stage==="won"&&inPeriod(d.closedAt,"month"));
+  const rev=won.reduce((a,d)=>a+num(d.value),0);
+  return{today:cT.length,month:cM.length,reached:cM.filter(a=>a.status!=="no_answer").length,interested:cM.filter(a=>a.status==="interested").length,won:won.length,rev,comm:won.reduce((a,d)=>a+commissionOf(d),0),leads:leads.filter(l=>l.assignee===id&&l.status!=="declined").length};
+}
+function viewTeam(){
+  const mgr=isManager(),ids=people();
+  if(window.COLDLINE_WEB&&!S.ws)loadTeam();
+  const rows=ids.map(id=>({id,m:member(id),s:memberStats(id)})).sort((a,b)=>b.s.rev-a.s.rev||b.s.month-a.s.month);
+  const unassigned=leads.filter(l=>!l.assignee&&l.status==="new").length;
+  const right=mgr?`<button class="btn ink" data-act="distribute" ${unassigned?"":"disabled"}>${icon("shuffle",15)} Paskirstyti ${pl(unassigned,"naują kontaktą","naujus kontaktus","naujų kontaktų")}</button>`:"";
+  return`<div class="scroll thin"><div class="page">${head("Komanda",`${pl(ids.length,"žmogus","žmonės","žmonių")} · šis mėnuo`,right)}
+    <div class="tablewrap box"><table class="grid" style="font-size:13px">
+      <thead><tr><th style="width:28px"></th><th>Žmogus</th><th>Rolė</th><th class="r">Šiandien</th><th class="r">Skambučiai</th><th class="r">Atsiliepė</th><th class="r">Laimėta</th><th class="r">Pajamos</th><th class="r">Komisiniai</th><th class="r">Kontaktai</th>${mgr?`<th class="r">Kom. %</th><th class="r">Tikslas</th>`:""}</tr></thead>
+      <tbody>${rows.map(({id,m,s},i)=>`<tr id="m-${esc(id)}" style="cursor:default">
+        <td><span class="rank">${i+1}</span></td>
+        <td><span style="display:inline-flex;align-items:center;gap:9px;white-space:nowrap">${avatar(id,24)}<span style="font-weight:500">${esc(who(id))}</span>${id===meId?`<span class="muted">tu</span>`:""}</span></td>
+        <td>${mgr&&(id!==meId||isOwner)?`<select class="sel" style="height:28px" data-role="${esc(id)}"><option value="caller" ${m.role!=="manager"?"selected":""}>Skambintojas</option><option value="manager" ${m.role==="manager"?"selected":""}>Vadovas</option></select>`:`<span class="t2">${m.role==="manager"?"Vadovas":"Skambintojas"}</span>`}</td>
+        <td class="r mono"><span style="color:${s.today>=(num(m.goal)||DEF_GOAL)?"var(--d-won)":"inherit"}">${s.today}</span><span class="muted">/${num(m.goal)||DEF_GOAL}</span></td>
+        <td class="r mono">${s.month}</td><td class="r mono">${s.reached}</td><td class="r mono">${s.won}</td>
+        <td class="r mono">${eur(s.rev)}</td><td class="r mono">${eur(s.comm)}</td><td class="r mono">${s.leads}</td>
+        ${mgr?`<td class="r"><input class="mini mono" inputmode="decimal" data-comm="${esc(id)}" value="${esc(num(m.commission??DEF_COMMISSION))}"></td><td class="r"><input class="mini mono" inputmode="numeric" data-goal="${esc(id)}" value="${esc(num(m.goal)||DEF_GOAL)}"></td>`:""}
+      </tr>`).join("")}</tbody></table></div>
+    <div class="cols">
+      <div class="box panel"><div class="sect">Pridėti skambintoją</div><ol class="steps">${window.COLDLINE_WEB?`${inviteUrl()?`<li>Nusiųsk kvietimo nuorodą <button class="linkbtn" data-act="copy" data-v="${esc(inviteUrl())}">kopijuoti ${icon("copy",13)}</button></li>`:`<li>Kvietimo nuorodą rasi <a class="u" href="#nustatymai">Nustatymuose</a>.</li>`}<li>Žmogus spaudžia „Prisijungti prie komandos“ ir atsiranda šioje lentelėje.</li>`:`<li>Viršuje spausk <b>Share</b> ir pakviesk su teise <b>Contributor</b>.</li><li>Kai žmogus pirmą kartą atidarys nuorodą, jis atsiras lentelėje.</li>`}<li>Nustatyk komisinius ir dienos tikslą, tada paskirstyk kontaktus.</li></ol></div>
+      <div class="box panel"><div class="sect">Skaičiavimas</div><p class="t2" style="font-size:13.5px;line-height:1.7">Komisiniai = laimėto sandorio suma × komisinių %. Pelnas = suma − savikaina − komisiniai. Skambintojas mato savo ir dar nepriskirtus kontaktus. Paskirstant kontaktai skiriami tik skambintojams.</p></div></div>
+  </div></div>`;
+}
+
+/* ===== overview ===== */
+function viewOverview(){
+  const counts=Object.fromEntries(STATUSES.map(s=>[s.id,0]));leads.forEach(l=>counts[l.status]=(counts[l.status]||0)+1);
+  const ids=new Set(leads.map(l=>l.id)),dealLead=new Set(deals.map(d=>d.leadId).filter(i=>ids.has(i)));
+  const wonSet=new Set(deals.filter(d=>d.stage==="won").map(d=>d.leadId).filter(i=>ids.has(i)));
+  const wantSet=new Set([...leads.filter(l=>l.status==="interested").map(l=>l.id),...dealLead]);
+  const reachSet=new Set([...leads.filter(l=>["declined","thinking","interested"].includes(l.status)).map(l=>l.id),...wantSet]);
+  const callSet=new Set([...leads.filter(l=>l.status!=="new").map(l=>l.id),...reachSet]);
+  const called=callSet.size,reached=reachSet.size;
+  const wonM=deals.filter(d=>d.stage==="won"&&inPeriod(d.closedAt,"month"));
+  const revM=wonM.reduce((a,d)=>a+num(d.value),0),profM=wonM.reduce((a,d)=>a+profitOf(d),0);
+  const openD=deals.filter(d=>d.stage==="meeting"||d.stage==="proposal"),pipe=openD.reduce((a,d)=>a+num(d.value),0);
+  const calls=acts.filter(a=>a.kind==="call"),today=dayKey(Date.now());
+  const todayCalls=calls.filter(a=>dayKey(ms(a.createdAt))===today).length;
+  const teamGoal=people().filter(id=>member(id).role!=="manager").reduce((a,id)=>a+(num(member(id).goal)||DEF_GOAL),0)||(num(member(meId).goal)||DEF_GOAL);
+  const days=[...Array(14)].map((_,i)=>dayKey(Date.now()-(13-i)*864e5));
+  const byDay=days.map(d=>calls.filter(a=>dayKey(ms(a.createdAt))===d).length),max=Math.max(1,...byDay),hv=S.hover;
+  const steps=[["Kontaktai",leads.length,"var(--s-new)"],["Paskambinta",called,"var(--s-no_answer)"],["Atsiliepė",reached,"var(--s-thinking)"],["Nori",wantSet.size,"var(--s-interested)"],["Laimėta",wonSet.size,"var(--text)"]];
+  const leaders=people().map(id=>({id,s:memberStats(id)})).sort((a,b)=>b.s.rev-a.s.rev||b.s.month-a.s.month).slice(0,6);
+  const date=new Date().toLocaleDateString("lt-LT",{timeZone:TZ,weekday:"long",month:"long",day:"numeric"});
+  return`<div class="scroll thin"><div class="page">${head("Apžvalga",esc(date))}
+    <div class="kpis">
+      <div class="kpi"><span class="lbl">Pajamos šį mėnesį</span><span class="v">${eur(revM)}</span><small>pelnas ${eur(profM)}</small></div>
+      <div class="kpi"><span class="lbl">Derinama</span><span class="v">${eur(pipe)}</span><small>${pl(openD.length,"sandoris","sandoriai","sandorių")}</small></div>
+      <div class="kpi"><span class="lbl">Skambučiai šiandien</span><span class="v">${todayCalls}<span class="muted" style="font-size:16px">/${teamGoal}</span></span><small>komandos tikslas</small></div>
+      <div class="kpi"><span class="lbl">Atsiliepia</span><span class="v">${called?Math.round(reached/called*100)+" %":"—"}</span><small>${reached} iš ${called}</small></div></div>
+    <div class="cols">
+      <section class="box panel"><div class="sect">Piltuvėlis<span>visi laikai</span></div><div class="funnel">${steps.map(([t,c,col],i)=>{const base=steps[0][1]||1,prev=i?steps[i-1][1]:0;return`<div class="frow"><span class="t2">${t}</span><div class="ftrack"><span style="width:${Math.max(c?1:0,c/base*100)}%;background:${col}"></span></div><span class="mono" style="text-align:right">${c}${i&&prev?`<span class="muted" style="font-size:11px"> ${Math.round(c/prev*100)}%</span>`:""}</span></div>`}).join("")}</div></section>
+      <section class="box panel"><div class="sect">Šio mėnesio lyderiai<span>pagal pajamas</span></div>${leaders.length?`<table class="grid" style="font-size:13px"><tbody>${leaders.map(({id,s},i)=>`<tr style="cursor:default"><td style="width:24px"><span class="rank">${i+1}</span></td><td><span style="display:inline-flex;align-items:center;gap:8px">${avatar(id,22)}${esc(who(id))}</span></td><td class="r mono muted">${s.month} skamb.</td><td class="r mono" style="font-weight:500">${eur(s.rev)}</td></tr>`).join("")}</tbody></table>`:`<p class="muted" style="font-size:13px">Dar nėra duomenų.</p>`}</section></div>
+    ${(()=>{const end=new Date();end.setHours(23,59,59,999);const due=leads.filter(l=>l.status==="thinking"&&l.callbackAt&&ms(l.callbackAt)<=end.getTime()).sort((a,b)=>ms(a.callbackAt)-ms(b.callbackAt));
+      const meet=deals.filter(d=>d.stage==="meeting"&&d.meetingAt&&ms(d.meetingAt)>Date.now()-2*36e5).sort((a,b)=>ms(a.meetingAt)-ms(b.meetingAt));
+      return`<div class="cols"><section class="box panel"><div class="sect">Artimiausi susitikimai<span>${meet.length?pl(meet.length,"susitikimas","susitikimai","susitikimų"):"nėra"}</span></div>
+      ${meet.length?`<div class="cblist">${meet.slice(0,8).map(d=>`<button class="cbrow" data-act="deal-open-lead" data-id="${esc(d.leadId)}"><span class="dot" style="background:var(--d-meeting)"></span><b class="trunc">${esc(spokenName(d.leadName||""))}</b><span class="muted trunc">${esc(firstName(d.owner))}</span><span class="tnum">${esc(when(d.meetingAt))}</span></button>`).join("")}</div>`:`<p class="muted small">Kai sutarsi susitikimą, įrašyk jo laiką – jis atsiras čia.</p>`}</section>
+      <section class="box panel"><div class="sect">Šiandien perskambinti<span>${due.length?pl(due.length,"kontaktas","kontaktai","kontaktų"):"nieko"}</span></div>
+      ${due.length?`<div class="cblist">${due.slice(0,8).map(l=>`<button class="cbrow" data-act="open-cb" data-id="${esc(l.id)}"><span class="dot" style="background:var(--s-thinking)"></span><b class="trunc">${esc(spokenName(l.name))}</b><span class="muted trunc">${esc(spokenCity(l.city)||l.city||"")}</span><span class="mono ${ms(l.callbackAt)<Date.now()?"late":""}">${esc(when(l.callbackAt))}</span></button>`).join("")}</div>`:`<p class="muted small">Kai kas nors pasakys „pagalvosiu“ ir pažymėsi, kada perskambinti, jie atsiras čia.</p>`}</section></div>`})()}
+    <section class="box panel" style="margin-top:16px"><div class="sect">Skambučiai per 14 dienų<span class="mono">${hv!==null?`${esc(days[hv].slice(5).replace("-","."))}: ${byDay[hv]}`:`iš viso ${byDay.reduce((a,b)=>a+b,0)} · max ${max}`}</span></div>
+      <div class="bars">${byDay.map((c,i)=>`<button data-act="bar" data-i="${i}" aria-label="${esc(days[i])}: ${c} skambučių"><span style="height:${c/max*100}%;opacity:${hv===null||hv===i?1:.25}"></span></button>`).join("")}</div>
+      <div class="axis"><span>${esc(days[0].slice(5).replace("-","."))}</span><span>šiandien</span></div></section>
+    <section class="box panel" style="margin-top:16px"><div class="sect">Kontaktai pagal statusą</div>
+      <div style="display:flex;height:10px;gap:2px;overflow:hidden" role="img" aria-label="Kontaktų pasiskirstymas">${leads.length?STATUSES.filter(s=>counts[s.id]).map(s=>`<div title="${s.short}: ${counts[s.id]}" style="flex-grow:${counts[s.id]};background:var(--s-${s.id})"></div>`).join(""):`<div style="flex:1;background:var(--line)"></div>`}</div>
+      <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 20px">${STATUSES.map(s=>`<span class="tagline">${sdot(s.id)}${s.short} <b class="mono" style="font-weight:500;color:var(--text)">${counts[s.id]}</b></span>`).join("")}</div></section>
+  </div></div>`;
+}
+
+/* ===== settings ===== */
+/* Shared company profile (meta/settings): used in e-mail and SMS templates. */
+const SETF=[["company","Įmonė, kurią atstovauji","pvz. Webdirbtuvė"],["site","Darbų pavyzdžiai (nuoroda)","pvz. webdirbtuve.lt/darbai"],["price","Kaina nuo, €","490"],["phone","Telefonas laiškuose","+370 600 00000"],["sign","Parašas","Matas, Webdirbtuvė"]];
+async function saveSettings(p){settings={...settings,...p,updatedAt:Date.now()};render();
+  try{await db.collection("meta").doc("settings").set(settings);toast("Išsaugota.")}catch{toast("Nepavyko išsaugoti.")}}
+async function loadTeam(){
+  if(!window.COLDLINE_WEB||S.ws==="loading")return;S.ws="loading";
+  try{const r=await fetch("/api/workspace",{credentials:"same-origin"});S.ws=r.ok?await r.json():{error:"Nepavyko."}}catch{S.ws={error:"Nėra ryšio."}}
+  render();
+}
+async function teamPost(body,msg){
+  S.wsBusy=true;render();
+  try{const r=await fetch("/api/workspace",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+    const d=await r.json().catch(()=>({}));if(r.ok){S.ws=d;toast(msg)}else toast(d.error||"Nepavyko.")}catch{toast("Nėra ryšio.")}
+  S.wsBusy=false;render();
+}
+const inviteUrl=()=>S.ws&&S.ws!=="loading"&&S.ws.invite||"";
+function viewSettings(){
+  const mgr=isManager(),web=!!window.COLDLINE_WEB,origin=location.origin&&location.origin!=="null"?location.origin:"";
+  if(web&&!S.ws)loadTeam();
+  const W=S.ws&&S.ws!=="loading"?S.ws:null;
+  const field=([k,t,ph])=>`<label class="field">${t}<input class="inp" name="${k}" data-key="set.${k}" value="${esc(S.setDraft&&S.setDraft[k]!=null?S.setDraft[k]:settings[k]||"")}" placeholder="${esc(ph)}" ${mgr?"":"disabled"}></label>`;
+  return`<div class="scroll thin"><div class="page narrow">${head("Nustatymai","")}
+    <section class="box panel sset"><div class="sh"><h2>Tavo įmonė</h2><p>Šie duomenys įrašomi į laiškų ir SMS šablonus po skambučio.</p></div>
+      <form class="sb setgrid" data-act="settings-form">${SETF.map(field).join("")}${mgr?`<div class="full"><button class="btn ink">Išsaugoti</button></div>`:`<p class="muted small full">Keisti gali savininkas arba vadovas.</p>`}</form></section>
+    ${web?`<section class="box panel sset"><div class="sh"><h2>Komanda</h2><p>Kiekviena komanda turi savo kontaktus. Kolegos prisijungia tik per tavo kvietimo nuorodą.</p></div>
+      <div class="sb">${!W?`<p class="muted">Kraunama…</p>`:W.error?`<p class="aierr">${esc(W.error)}</p>`:`
+        <form class="keyrow" data-act="team-form"><input class="inp" style="font-family:inherit" name="name" data-key="teamname" value="${esc(S.teamDraft??W.name)}" placeholder="Komandos pavadinimas" ${W.canEdit?"":"disabled"}>${W.canEdit?`<button class="btn" ${S.wsBusy?"disabled":""}>Išsaugoti</button>`:""}</form>
+        ${W.invite?`<span class="lbl">Kvietimo nuoroda</span><div class="invite"><span class="mono trunc">${esc(W.invite)}</span><button class="btn ink" data-act="copy" data-v="${esc(W.invite)}">${icon("copy",15)} Kopijuoti</button></div>
+        <p class="muted small">Nusiųsk ją kolegai. Jis spaudžia „Prisijungti prie komandos“ ir iškart mato jūsų kontaktus. Jei nuoroda pateko ne tiems žmonėms – <button class="linkbtn" data-act="team-rotate" ${S.wsBusy?"disabled":""}>sukurk naują</button>, sena nustos veikti.</p>`
+        :`<p class="muted small">Kviesti naujus žmones gali savininkas arba vadovas.</p>`}`}</div></section>`:""}
+    <section class="box panel sset"><div class="sh"><h2>Duomenys</h2><p>Atsisiųsk kontaktus į Excel arba įkelk savo sąrašą.</p></div>
+      <div class="sb"><div class="btnrow"><button class="btn" data-act="csv" ${leads.length?"":"disabled"}>${icon("download",15)} Excel (CSV)</button><button class="btn" data-act="backup" ${leads.length?"":"disabled"}>${icon("download",15)} Atsarginė kopija</button>
+        ${mgr?`<label class="btn">${icon("upload",15)} Importuoti CSV ar JSON<input type="file" accept=".csv,.json,text/csv,application/json" data-key="import" hidden></label>`:""}</div>
+        <p class="muted small">Importuojant iš Excel reikia stulpelių: Pavadinimas, Telefonas (nebūtina: El. paštas, Miestas, Sritis, Svetainė, Įmonės kodas). Dublikatai praleidžiami.</p></div></section>
+    ${isOwner||mgr?`<section class="box panel sset danger"><div class="sh"><h2>Pradėti iš naujo</h2><p>Ištrina visus skambučius, pastabas ir sandorius. Kontaktai lieka, statusai grįžta į „Neskambinta“.</p></div>
+      <div class="sb"><button class="btn red" data-act="wipe" ${S.wiping?"disabled":""}>${S.wiping?"Valoma…":"Išvalyti skambučius ir pardavimus"}</button></div></section>`:""}
+  </div></div>`;
+}
+
+/* ===== AI backends =====
+   Web version: the server (Vercel AI Gateway / API key, can search the web).
+   Claude artifact: the viewer's own Claude account through `sample` (no key, no card; cannot browse). */
+let aiApi=null;
+const TIER={haiku:"quick",sonnet:"default",opus:"complex"};
+const AI_RULES=`Tu esi Claude, įmontuotas į „Coldai“: Lietuvos komandos, kuri šaltais skambučiais parduoda svetaines, el. parduotuves, rezervacijų ir vidines sistemas mažoms įmonėms, darbo vietą.
+Rašyk lietuviškai, paprastai ir žmogiškai, kaip kolega. Trumpai: dažniausiai 2–6 sakiniai arba trumpas sąrašas. Jei prašo frazės skambučiui, duok tikslų tekstą, kurį galima pasakyti balsu.
+Būk tiesus: jei idėja silpna, taip ir pasakyk. Neišgalvok faktų apie įmones (telefonų, pajamų, el. paštų, klientų): naudok tik žemiau pateiktus duomenis, o jei ko nežinai, pasakyk. Nesiūlyk meluoti klientams ir nekurk netikrų atsiliepimų.`;
+const BRIEF_RULES=`Tu padedi lietuviui, kuris šaltu skambučiu parduoda svetaines ir paprastas sistemas mažoms įmonėms. Iš įmonės duomenų parašyk trumpą skambučio planą lietuviškai, paprasta šnekamąja kalba, be išgalvotų faktų. Formatas tiksliai toks (be įžangos):
+**Pradžia:** 1–2 sakiniai, ką pasakyti po pasisveikinimo, pritaikyti šiai įmonei.
+**Kabliukas:** vienas konkretus dalykas, kurį jie greičiausiai praranda dabar.
+**Jei sako…**
+- „<tikėtinas prieštaravimas>“ – <ką atsakyti, 1 sakinys>
+- „<tikėtinas prieštaravimas>“ – <ką atsakyti, 1 sakinys>
+- „<tikėtinas prieštaravimas>“ – <ką atsakyti, 1 sakinys>
+**Siūlyk:** ką konkrečiai siūlyti ir kokio susitikimo prašyti.
+Iš viso iki 110 žodžių.`;
+const leadFacts=l=>[`Įmonė: ${l.name||""}`,`Sritis: ${l.category||""}`,`Miestas: ${l.city||""}`,`Apyvarta: ${l.revenue||"nežinoma"}`,`Darbuotojai: ${l.employees||"nežinoma"}`,`Svetainė: ${l.website||"nėra"}`,`Ką siūlyti: ${l.need||"Svetainė"}`,`Kodėl skambinti: ${String(l.reason||"").slice(0,900)}`].join("\n");
+function aiContext(leadId){
+  const by={};for(const l of leads)by[l.status||"new"]=(by[l.status||"new"]||0)+1;
+  const top=leads.filter(l=>(l.status||"new")==="new").sort((a,b)=>revVal(b)-revVal(a)).slice(0,15);
+  const l=leadId&&leads.find(x=>x.id===leadId);
+  return [`Šiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who(meId)}.`,
+    `Sąraše ${leads.length} įmonių. Pagal statusą: ${Object.entries(by).map(([k,v])=>`${stat(k).short} ${v}`).join(", ")||"nėra"}.`,
+    top.length?`Neskambintos su didžiausia apyvarta:\n${top.map(x=>`- ${[x.name,x.city,x.category,x.revenue,x.need].filter(Boolean).join(" · ")}`).join("\n")}`:"",
+    l?`Šiuo metu atidaryta įmonė:\n${leadFacts(l)}\nTelefonas: ${l.phone||""}\nEl. paštas: ${l.email||""}\nStatusas: ${stat(l.status).short}`:""].filter(Boolean).join("\n\n");
+}
+function aiErr(e){const c=e&&e.code;
+  return c==="not_granted"?"Claude nenaudojamas: puslapiui neleista. Leisk, kai paklaus (perkrauk puslapį).":c==="rate_limited"?"Pasiektas tavo Claude limitas. Pabandyk vėliau.":c==="sampling_disabled"?"Claude šioje paskyroje neprieinamas.":c==="session_expired"?"Prisijunk prie Claude iš naujo.":c==="refused"?"Claude į tai neatsakys. Paklausk kitaip.":c==="cancelled"?"Sustabdyta.":"Claude neatsakė. Bandyk dar kartą."}
+function sampleAi(smp){return{web:false,
+  async chat(msgs,leadId,model,onEvent){
+    try{await smp([{role:"user",content:AI_RULES+"\n\n"+aiContext(leadId)},...msgs],{cache:false,modelTier:TIER[model]||"quick",onText:({delta})=>onEvent({type:"text",text:delta})})}
+    catch(e){onEvent({type:"error",message:aiErr(e)})}
+  },
+  async brief(leadId,model,force){
+    const l=leads.find(x=>x.id===leadId);if(!l)return{error:"Nerasta įmonė."};if(l.aiBrief&&!force)return{brief:l.aiBrief};
+    try{const {text}=await smp(BRIEF_RULES+"\n\n"+leadFacts(l),{modelTier:TIER[model]||"quick",cache:force?false:{gcTime:86400000}});
+      const cur=leads.find(x=>x.id===leadId)||l;await put("leads",leadId,{...cur,aiBrief:text.slice(0,3000),aiBriefAt:Date.now()});return{brief:text}}
+    catch(e){return{error:aiErr(e)}}
+  }}}
+function webAi(){return{web:true,
+  chat:(msgs,leadId,model,onEvent)=>window.COLDLINE_WEB.chat(msgs,leadId,model,onEvent),
+  brief:(leadId,model,force)=>window.COLDLINE_WEB.brief(leadId,model,force)}}
+
+/* ===== AI model choice ===== */
+const AIMODELS=[["haiku","Haiku","greitas, pigus"],["sonnet","Sonnet","geresnis"],["opus","Opus","protingiausias"]];
+function aiModel(){try{const m=localStorage.getItem("coldai-model");return AIMODELS.some(x=>x[0]===m)?m:"haiku"}catch{return"haiku"}}
+const modelPick=()=>window.COLDLINE_WEB&&!window.COLDLINE_WEB.models?"":`<div class="seg mpick" title="AI modelis">${AIMODELS.map(([k,t,n])=>`<button data-act="model" data-v="${k}" aria-pressed="${aiModel()===k}" title="${n}">${t}</button>`).join("")}</div>`;
+
+/* ===== AI call plan per company ===== */
+const briefSt={};let briefTimer=0;
+function queueBrief(id){
+  if(!aiApi||briefSt[id])return;
+  if(window.COLDLINE_WEB&&!window.COLDLINE_WEB.aiFull)return; // free AI: 1 answer / 45 s, keep it for the chat; the plan is one tap away
+  clearTimeout(briefTimer);briefTimer=setTimeout(()=>{const c=current(queues());if(c&&c.l.id===id&&!c.l.aiBrief)makeBrief(id,false)},900);
+}
+async function makeBrief(id,force){
+  const st=briefSt[id]=briefSt[id]||{};if(st.busy)return;st.busy=true;st.err="";render(true);
+  try{const r=await aiApi.brief(id,aiModel(),force);
+    if(r.brief){leads=leads.map(x=>x.id===id?{...x,aiBrief:r.brief,aiBriefAt:Date.now()}:x)}else st.err=r.error||"Nepavyko."}
+  catch(e){st.err=e&&e.message||"Nepavyko."}
+  st.busy=false;render(true);
+}
+function briefHtml(l){
+  if(!aiApi)return"";
+  const st=briefSt[l.id]||{},b=l.aiBrief;
+  return`<section class="aibrief" id="ab-${esc(l.id)}"><header><span class="cav">${MARK()}</span><b>AI planas šiam skambučiui</b>
+    <button class="mini-btn" data-act="brief-redo" data-id="${esc(l.id)}" ${st.busy?"disabled":""}>${st.busy?"Rašoma…":b?"Perrašyti":"Sugeneruoti"}</button></header>
+    ${b?`<div class="aib">${md(b)}</div>`:!st.busy&&!st.err&&window.COLDLINE_WEB&&!window.COLDLINE_WEB.aiFull?`<p class="muted small" style="margin-top:6px">Spausk „Sugeneruoti“: AI parašys pradžią, kabliuką ir atsakymus į 3 tikėtinus prieštaravimus.</p>`:st.err?`<p class="aierr">${esc(st.err)}</p>`:`<div class="shim"><i></i><i></i><i></i></div>`}</section>`;
+}
+
+/* ===== Claude chat (web version) ===== */
+const CHATKEY=()=>"coldline-chat-"+(meId||"x");
+function chatState(){
+  const key=CHATKEY();
+  if(!S.chat||(S.chat.key!==key&&!S.chat.busy)){let msgs=[];try{msgs=JSON.parse(localStorage.getItem(key)||"[]")}catch{}S.chat={key,msgs:Array.isArray(msgs)?msgs.slice(-40):[],busy:false,err:"",leadId:S.chat?S.chat.leadId:null}}
+  return S.chat;
+}
+function saveChat(){try{localStorage.setItem(CHATKEY(),JSON.stringify(S.chat.msgs.slice(-40)))}catch{}}
+function md(t){
+  const lines=esc(t).split("\n"),out=[];let list=null;
+  const inline=x=>x.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/(https:\/\/[^\s<)]+)/g,'<a href="$1" target="_blank" rel="noreferrer" class="u">$1</a>');
+  for(const raw of lines){const ln=raw.trim();const m=ln.match(/^(?:[-•*]|\d+[.)])\s+(.*)$/);
+    if(m){if(!list){list=[];out.push(list)}list.push(inline(m[1]));continue}
+    list=null;if(!ln){out.push("");continue}
+    out.push(`<p>${inline(ln.replace(/^#{1,4}\s+/,""))}</p>`)}
+  return out.map(x=>Array.isArray(x)?`<ul>${x.map(i=>`<li>${i}</li>`).join("")}</ul>`:x).join("");
+}
+function viewClaude(){
+  const c=chatState(),lead=c.leadId?leads.find(l=>l.id===c.leadId):null;
+  if(!aiApi)return`<div class="scroll thin"><div class="page">${head("Claude","")}
+    <section class="box panel aioff"><span class="wicon">${icon("spark",16)}</span><div><b>Claude dar neprijungtas</b>
+    <p class="t2">Kad galėtum čia rašyti su Claude, reikia Anthropic API rakto. Savininkui: console.anthropic.com → API Keys → Create Key, papildyk sąskaitą kreditais, tada Vercel → coldline → Settings → Environment Variables įrašyk <code>ANTHROPIC_API_KEY</code> ir perdiek. Kiekvienas atsakymas kainuoja apie kelis centus.</p></div></section></div></div>`;
+  const sugg=lead?[[aiApi.web&&window.COLDLINE_WEB.aiFull?"Ką žinai apie šią įmonę? Paieškok internete.":"Ką gali pasakyti apie šią įmonę iš turimų duomenų? Kuo jie gali būti suinteresuoti?",aiApi.web&&window.COLDLINE_WEB.aiFull?"Ištirti įmonę":"Apie įmonę"],["Kaip pradėti pokalbį su šia įmone? Duok 2–3 sakinius.","Pirmi sakiniai"],["Jie sako „turim Facebook, užtenka“. Ką atsakyti?","Prieštaravimas"],["Parašyk trumpą el. laišką po skambučio šiai įmonei.","Laiškas po skambučio"]]
+    :[["Kam iš sąrašo skambinti pirmiausia ir kodėl?","Kam skambinti"],["Klientas sako „brangu“. Kaip atsakyti žmogiškai?","„Brangu“"],["Parašyk trumpą el. laišką po skambučio, kai klientas sako „atsiųskit pasiūlymą“.","Laiškas"],["Duok 5 patarimus, kaip nesijaudinti skambinant.","Drąsa skambinti"]];
+  const msgs=c.msgs.map((m,i)=>m.role==="user"?`<div class="cmsg me"><div class="cb">${esc(m.content)}</div></div>`
+    :`<div class="cmsg ai"><span class="cav">${MARK()}</span><div class="cb">${(m.searches||[]).map(q=>`<span class="csearch">${icon("search",12)} ${esc(q)}</span>`).join("")}${m.content?md(m.content):c.busy&&i===c.msgs.length-1?`<span class="typing"><i></i><i></i><i></i></span>`:""}</div></div>`).join("");
+  return`<div class="chat">
+    <header class="chead"><span class="cav big">${MARK()}</span><div class="ctitle"><b>${aiApi.web?"Coldai":"Claude"}</b><small>Atsakymai į prieštaravimus, laiškai ir kam skambinti pirmiausia</small></div>
+      ${modelPick()}${c.msgs.length?`<button class="btn" data-act="chat-new" title="Naujas pokalbis">${icon("plus",15)}<span class="hide-xs">Naujas</span></button>`:""}</header>
+    ${lead?`<div class="cctx">Kalbam apie <b>${esc(spokenName(lead.name))}</b><button class="iconbtn" data-act="chat-ctx-clear" aria-label="Nebekalbėti apie šią įmonę">${icon("x",14)}</button></div>`:""}
+    <div class="cmsgs thin" id="cmsgs">${c.msgs.length?msgs:`<div class="cempty"><span class="cav huge">${MARK()}</span><h2>Kuo galiu padėti?</h2><p class="muted">Matau komandos sąrašą${lead?" ir atidarytą įmonę":""}${aiApi.web&&window.COLDLINE_WEB.aiFull?", galiu ieškoti internete":""}.</p>
+      <div class="csugg">${sugg.map(([q,t])=>`<button data-act="chat-sugg" data-q="${esc(q)}"><b>${esc(t)}</b><span>${esc(q)}</span></button>`).join("")}</div></div>`}
+      ${c.err?`<div class="cerr">${esc(c.err)}</div>`:""}</div>
+    <form class="ccomp" data-act="chat-form"><textarea data-key="chat" rows="1" placeholder="${aiApi.web?"Rašyk Coldai…":"Rašyk Claude…"}" enterkeyhint="send">${esc(S.chatDraft||"")}</textarea>
+      <button class="csend" ${c.busy?"disabled":""} aria-label="Siųsti">${icon("send",16)}</button></form>
+  </div>`;
+}
+async function chatSend(text){
+  const c=chatState();text=String(text||"").trim();if(!text||c.busy||!aiApi)return;
+  c.msgs.push({role:"user",content:text});const a={role:"assistant",content:"",searches:[]};c.msgs.push(a);
+  c.busy=true;c.err="";S.chatDraft="";S.chatScroll=true;
+  const ta=document.querySelector("textarea[data-key=chat]");if(ta){ta.value="";ta.style.height="auto"}
+  render();
+  try{await aiApi.chat(c.msgs.slice(0,-1).map(m=>({role:m.role,content:m.content})),c.leadId,aiModel(),e=>{
+    if(e.type==="text")a.content+=e.text;else if(e.type==="search")a.searches.push(e.query);else if(e.type==="error")c.err=e.message;else if(e.type==="meta")a.meta=e;
+    S.chatScroll=true;render(true)})}
+  catch(err){c.err=err&&err.message||"Nepavyko."}
+  if(!a.content){c.msgs.pop();if(!c.err)c.err="Atsakymo negauta. Bandyk dar kartą."}
+  c.busy=false;S.chatScroll=true;saveChat();render();
+}
+/* ===== brand mark ===== */
+const MARK=()=>`<svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="url(#cm-g)" stroke-linecap="round" stroke-width="5.2"><path d="M41.5 18.5a19 19 0 1 0 0 27"/><path d="M36.6 24.4a11 11 0 1 0 0 15.2"/></g><circle cx="27.5" cy="32" r="4.2" fill="#30d158"/></svg>`;
+
+/* ===== motion ===== */
+/* Daily goal ring: fills like an activity ring, glows when the goal is met. */
+function ring(n,goal,size){
+  const r=size/2-size*.12,c=2*Math.PI*r,p=Math.max(0,Math.min(1,n/(goal||1))),w=size*.17;
+  return`<svg class="ring${p>=1?" full":""}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-label="${n} iš ${goal}"><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${w}" class="rb"/><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${w}" class="rf" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-p)).toFixed(1)}"/></svg>`;
+}
+/* A short burst of confetti for wins: a "Nori", a won deal, new companies found. */
+function celebrate(){
+  if(still())return;
+  const cv=document.createElement("canvas"),dpr=Math.min(2,devicePixelRatio||1);cv.className="confetti";cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;document.body.appendChild(cv);
+  const x=cv.getContext("2d");x.scale(dpr,dpr);const C=["#30d158","#64d2ff","#a6f7c0","#ffd60a","#bf5af2","#ffffff"];
+  const P=Array.from({length:90},()=>({x:innerWidth/2+(Math.random()-.5)*120,y:innerHeight*.42,vx:(Math.random()-.5)*13,vy:-Math.random()*13-5,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.35,w:5+Math.random()*6,h:8+Math.random()*8,c:C[Math.random()*C.length|0]}));
+  const t0=performance.now();
+  (function f(t){const k=(t-t0)/1700;x.clearRect(0,0,innerWidth,innerHeight);
+    for(const p of P){p.vy+=.38;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.globalAlpha=Math.max(0,1-k);x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*2)));x.restore()}
+    if(k<1)requestAnimationFrame(f);else cv.remove()})(t0);
+}
+/* ⌘K: jump to any company by name, phone, city or code. */
+function palHtml(){
+  if(!S.pal)return"";
+  const q=String(S.palQ||"").trim().toLowerCase(),norm=v=>String(v||"").toLowerCase();
+  const hits=(q?leads.filter(l=>[l.name,l.phone,l.city,l.category,l.companyCode].some(v=>norm(v).includes(q))||norm(l.phone).replace(/\D/g,"").includes(q.replace(/\D/g,"")||"~")):leads.slice().sort((a,b)=>ms(b.lastCalledAt||b.updatedAt)-ms(a.lastCalledAt||a.updatedAt))).slice(0,8);
+  const i=Math.min(S.palI||0,Math.max(0,hits.length-1));S.palHits=hits.map(h=>h.id);
+  return`<div class="palbg" data-act="pal-bg"><div class="pal" data-stop-bg role="dialog" aria-label="Greita paieška">
+    <label class="palq">${icon("search",18)}<input data-key="pal" value="${esc(S.palQ||"")}" placeholder="Įmonė, telefonas arba miestas" autocomplete="off" spellcheck="false"><span class="kbd">esc</span></label>
+    <ul class="palr">${hits.length?hits.map((l,n)=>`<li><button data-act="pal-go" data-id="${esc(l.id)}" aria-selected="${n===i}">${sdot(l.status)}<span class="trunc"><b>${esc(spokenName(l.name))}</b><small>${esc([spokenCity(l.city)||l.city,l.phone].filter(Boolean).join(" · "))}</small></span><span class="palst">${stat(l.status).short}</span></button></li>`).join("")
+      :`<li class="palnone">${q?"Nieko nerasta":"Dar nėra kontaktų"}</li>`}</ul>
+    <div class="palfoot"><span><span class="kbd">↑</span><span class="kbd">↓</span> rinktis</span><span><span class="kbd">↵</span> atidaryti</span></div></div></div>`;
+}
+function openPal(){S.pal=true;S.palQ="";S.palI=0;render();setTimeout(()=>document.querySelector("input[data-key=pal]")?.focus(),20)}
+function palGo(id){S.pal=false;S.sel=id;S.scope="all";S.mail=null;if(location.hash&&location.hash!=="#")location.hash="";else render()}
+const counted=new WeakSet(),still=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
+function countUp(){
+  document.querySelectorAll(".kpi .v").forEach(el=>{
+    if(counted.has(el))return;counted.add(el);if(still())return;
+    const node=el.firstChild;if(!node||node.nodeType!==3)return;
+    const txt=node.nodeValue,n=Number(txt.replace(/[^\d,.-]/g,"").replace(",","."));if(!Number.isFinite(n)||!n)return;
+    const fmt=txt.includes("€")?v=>eur(v):txt.includes("%")?v=>Math.round(v)+" %":v=>String(Math.round(v));
+    const t0=performance.now(),dur=750;
+    const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);if(el.firstChild===node)node.nodeValue=k<1?fmt(n*e):txt;if(k<1)requestAnimationFrame(step)};
+    requestAnimationFrame(step);
+  });
+}
+
+/* ===== render ===== */
+/* Rendering: the page is rebuilt as HTML but patched into the live DOM (morphdom), so the
+   element under a finger is never replaced. Live-data renders wait while a finger is down. */
+let pointerDown=false,pending=false,frame=0;
+function render(bg){
+  if(bg){pending=true;if(!pointerDown&&!frame)frame=requestAnimationFrame(()=>{frame=0;if(pending&&!pointerDown)paint()});return}
+  paint();
+}
+const KEEP=new Set(["INPUT","TEXTAREA","SELECT"]);
+function morphOpts(){return{
+  onBeforeElUpdated(from,to){
+    if(from.isEqualNode(to))return false;
+    if(KEEP.has(from.tagName)){
+      if(from===document.activeElement)return false;          // keep what is being typed, and the caret
+      if(from.form&&!from.dataset.key)return false;           // uncontrolled form fields keep their value
+    }
+    if(from.tagName==="DETAILS"&&from.dataset.keepOpen!==undefined){to.open=from.open}
+    return true;
+  }}}
+function patch(el,html){
+  if(window.morphdom){const tmp=el.cloneNode(false);tmp.innerHTML=html;morphdom(el,tmp,{...morphOpts(),childrenOnly:true})}
+  else el.innerHTML=html;
+}
+function paint(){
+  pending=false;
+  const tl=$("tlist"),tAtBottom=!tl||tl.scrollHeight-tl.scrollTop-tl.clientHeight<40;
+  renderShell();
+  const r=route();
+  patch($("main"),connBanner()+`<div class="view" id="view-${r||"call"}">${r==="kontaktai"?viewContacts():r==="pardavimai"?viewDeals():r==="komanda"?viewTeam():r==="apzvalga"?viewOverview():r==="claude"?viewClaude():r==="nustatymai"?viewSettings():viewCall()}</div>`);
+  countUp();
+  const cm=$("cmsgs");if(cm&&S.chatScroll){cm.scrollTop=cm.scrollHeight;S.chatScroll=false}
+  const tl2=$("tlist");if(tl2&&tAtBottom)tl2.scrollTop=tl2.scrollHeight;
+  if(S.focus){const el=document.querySelector(S.focus);S.focus=null;if(el)el.focus({preventScroll:false})}
+}
+addEventListener("pointerdown",()=>{pointerDown=true},true);
+const release=()=>{pointerDown=false;if(pending)setTimeout(()=>{if(!pointerDown&&pending)paint()},120)};
+addEventListener("pointerup",release,true);addEventListener("pointercancel",release,true);
+
+/* ===== events ===== */
+document.addEventListener("click",async e=>{
+  if(e.target.closest("[data-stop]"))return;
+  const b=e.target.closest("[data-act]");
+  if(!b){if(S.menu){S.menu=null;render()}return}
+  if(b.tagName==="FORM")return;
+  const act=b.dataset.act,id=b.dataset.id;
+  if(act==="drawer-bg"&&e.target.closest("[data-stop-bg]"))return;
+  switch(act){
+    case"dial":S.callStart=Date.now();S.callFor=id;copyText(b.dataset.v,"Skambinama. Numeris nukopijuotas, jei reikėtų surinkti ranka.");render();break;
+    case"copy":copyText(b.dataset.v,"Numeris nukopijuotas.");break;
+    case"cv-pick":{const c=S.cv;if(!c)break;c.path.push(b.dataset.next);c.picks.push(b.dataset.label);render();
+      const el=document.getElementById("cv-step-"+c.path.length);if(el)el.scrollIntoView({block:"nearest",behavior:"smooth"});break}
+    case"cv-back":{const c=S.cv;if(c&&c.path.length>1){c.path.pop();c.picks.pop();render()}break}
+    case"cv-reset":{if(S.cv){S.cv.path=["start"];S.cv.picks=[]}render();break}
+    case"cv-finish":{const c=current(queues());if(!c||!S.cv)break;
+      const sum="Pokalbis: "+S.cv.picks.join(" → ");if(!S.note.includes(sum))S.note=(S.note.trim()?S.note.trim()+"\n":"")+sum;
+      const e=b.dataset.end;
+      if(e==="meeting"||e==="offer"){S.dealAsk=true;S.dealStage=e==="offer"?"proposal":"meeting";S.focus='form[data-act=deal-form] input[name=value]'}
+      else if(e==="callback")S.askWhen=true;
+      else{logCall(c.l,"declined");break}
+      render();document.querySelector(".outcome")?.scrollIntoView({block:"start",behavior:"smooth"});break}
+    case"theme":{const r=document.documentElement;r.classList.add("theming");setTheme(theme()==="dark"?"light":"dark");render();setTimeout(()=>r.classList.remove("theming"),450);break}
+    case"more":S.more=!S.more;render();break;
+    case"pal-open":openPal();break;
+    case"pal-bg":if(e.target.closest("[data-stop-bg]"))break;S.pal=false;render();break;
+    case"pal-go":palGo(id);break;
+    case"mail-open":{const l=leads.find(x=>x.id===id);if(!l)break;if(S.mail&&S.mail.lead===id){S.mail=null;render();break}
+      openMail(l,l.status==="no_answer"?"missed":deals.some(d=>d.leadId===id&&d.stage==="meeting")?"meeting":"after");break}
+    case"mail-kind":{const l=S.mail&&leads.find(x=>x.id===S.mail.lead);if(l)openMail(l,b.dataset.v);break}
+    case"mail-close":S.mail=null;render();break;
+    case"mail-copy":if(S.mail)copyText(`${S.mail.subject}\n\n${S.mail.body}`,"Laiškas nukopijuotas.");break;
+    case"mail-send":{const l=leads.find(x=>x.id===id),m=S.mail;if(!l||!m||!l.email)break;
+      location.href=`mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
+      addAct({leadId:l.id,kind:"note",status:null,note:`Išsiųstas laiškas: ${m.subject}`});break}
+    case"sms-send":{const l=leads.find(x=>x.id===id),m=S.mail;if(!l||!m||!l.phone)break;
+      location.href=`sms:${String(l.phone).replace(/[^\d+]/g,"")}?&body=${encodeURIComponent(m.sms)}`;
+      addAct({leadId:l.id,kind:"note",status:null,note:`Išsiųsta SMS: ${m.sms}`});break}
+    case"more-bg":if(e.target.closest("[data-stop-bg]"))break;S.more=false;render();break;
+    case"more-close":S.more=false;break;
+    case"tab":S.tab=b.dataset.v;render();break;
+    case"scope":S.scope=b.dataset.v;S.sel=null;render();break;
+    case"pick":S.sel=id;S.sheet=false;S.editing=false;S.askWhen=false;S.dealAsk=false;S.mail=null;history.replaceState(null,"","#");render();break;
+    case"sheet-open":S.sheet=true;render();break;
+    case"sheet-close":S.sheet=false;render();break;
+    case"skip":{const c=current(queues());if(c){S.skipped.add(c.l.id);S.sel=null;S.note="";render()}break}
+    case"outcome":{const c=current(queues());if(!c)break;const s=b.dataset.s;
+      if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;S.focus='form[data-act=deal-form] input[name=value]';render()}else logCall(c.l,s);break}
+    case"callback":{const c=current(queues());if(!c)break;const d=new Date();d.setDate(d.getDate()+Number(b.dataset.d));d.setHours(10,0,0,0);logCall(c.l,"thinking",{callbackAt:d.getTime()});break}
+    case"callback-custom":{const c=current(queues()),t=Date.parse(S.custom);if(c&&t)logCall(c.l,"thinking",{callbackAt:t});break}
+    case"ask-back":S.askWhen=false;render();break;
+    case"deal-back":S.dealAsk=false;render();break;
+    case"deal-skip":{const c=current(queues());if(c)logCall(c.l,"interested");break}
+    case"edit-toggle":S.editing=!S.editing;render();break;
+    case"edit-close":S.editing=false;render();break;
+    case"filter":S.filter=b.dataset.v;render();break;
+    case"add-toggle":S.adding=!S.adding;S.finding=false;render();break;
+    case"find-toggle":S.finding=!S.finding;S.adding=false;if(S.finding&&!S.aiBusy){S.found=[];S.searchDone=null}render();if(S.finding)setTimeout(()=>document.querySelector("input[data-key='f.industry']")?.focus({preventScroll:true}),60);break;
+    case"model":try{localStorage.setItem("coldai-model",b.dataset.v)}catch{};render();break;
+    case"brief-redo":makeBrief(id,true);break;
+    case"search-stop":if(S.aiAbort)S.aiAbort.abort();break;
+    case"find-open":S.finding=true;S.found=[];S.searchDone=null;break;
+    case"fquick":{const k=b.dataset.k,v=b.dataset.v;S.form[k]=String(S.form[k]).toLowerCase()===v.toLowerCase()?"":v;render();break}
+    case"fmore":e.preventDefault();S.fmore=!S.fmore;render();break;
+    case"find-close":S.finding=false;render();break;
+    case"menu":e.stopPropagation();S.menu=S.menu===id?null:id;render();break;
+    case"set":e.stopPropagation();S.menu=null;setStatus(id,b.dataset.s);break;
+    case"open":if(e.target.closest(".st,.c3"))break;S.sel=id;S.scope="all";location.hash="";break;
+    case"fchip":{const arr=S.form[b.dataset.arr],v=b.dataset.v;S.form[b.dataset.arr]=arr.includes(v)?arr.filter(x=>x!==v):[...arr,v];render();break}
+    case"fcount":S.form.count=Number(b.dataset.v);render();break;
+    case"req":S.reqText=buildRequest();render();
+      try{await navigator.clipboard.writeText(S.reqText);toast("Nukopijuota. Įklijuok į pokalbį su Claude.")}
+      catch{const t=$("reqbox");t?.focus();t?.select();toast("Pažymėjau tekstą, nukopijuok jį rankiniu būdu.")}break;
+    case"csv":exportCsv();break;
+    case"backup":exportBackup();break;
+    case"ask-claude":{const c=chatState();if(c.leadId!==id){c.leadId=id}location.hash="#claude";break}
+    case"chat-new":{const c=chatState();c.msgs=[];c.err="";saveChat();render();break}
+    case"chat-ctx-clear":chatState().leadId=null;render();break;
+    case"chat-sugg":chatSend(b.dataset.q);break;
+    case"why-toggle":S.whyOpen=S.whyOpen===id?null:id;render();break;
+    case"logout":if(window.COLDLINE_WEB)window.COLDLINE_WEB.logout();break;
+
+    case"open-cb":S.sel=id;S.scope="all";location.hash="";break;
+    case"bar":S.hover=S.hover===Number(b.dataset.i)?null:Number(b.dataset.i);render();break;
+    case"period":S.period=b.dataset.v;render();break;
+    case"deal-open":S.dealOpen=id;render();break;
+    case"drawer-bg":case"drawer-close":S.dealOpen=null;render();break;
+    case"deal-open-lead":S.dealOpen=null;S.sel=id;S.scope="all";location.hash="";break;
+    case"distribute":b.disabled=true;await distribute();break;
+    case"wipe":await wipe();break;
+    case"team-rotate":if(confirm("Sukurti naują kvietimo nuorodą? Sena nustos veikti."))teamPost({rotate:true},"Nauja nuoroda sukurta.");break;
+  }
+});
+let nameT=0;
+document.addEventListener("input",e=>{
+  const k=e.target.dataset?.key;if(!k)return;const v=e.target.value;
+  if(k==="note")S.note=v;
+  else if(k==="composer"){S.composer=v;const s=e.target.closest("form")?.querySelector(".send");if(s)s.disabled=!v.trim()}
+  else if(k==="custom"){S.custom=v;render()}
+  else if(k==="q"){S.q=v;render()}
+  else if(k.startsWith("f."))S.form[k.slice(2)]=v;
+  else if(k==="chat"){S.chatDraft=v;e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,180)+"px"}
+  else if(k==="teamname")S.teamDraft=v;
+  else if(k==="pal"){S.palQ=v;S.palI=0;render()}
+  else if(k.startsWith("set.")){S.setDraft=S.setDraft||{};S.setDraft[k.slice(4)]=v}
+  else if(k==="mailsubj"){if(S.mail)S.mail.subject=v}
+  else if(k==="mailbody"){if(S.mail)S.mail.body=v}
+  else if(k==="callname"){const n=v.trim().slice(0,40);try{localStorage.setItem("coldline-name",n)}catch{};if(meId&&team[meId])team[meId]={...team[meId],callName:n};
+    render(true);clearTimeout(nameT);if(meId)nameT=setTimeout(()=>saveMember(meId,{callName:n}),700)}
+});
+document.addEventListener("change",e=>{
+  const t=e.target,k=t.dataset||{};
+  if(k.key==="sort"){S.sort=t.value;render()}
+  else if(k.key==="who"){S.who=t.value;render()}
+  else if(k.assign!==undefined)assign(k.assign,t.value);
+  else if(k.key==="import"&&t.files&&t.files[0]){const f=t.files[0];t.value="";f.text().then(t=>importLeads(t,f.name)).catch(()=>toast("Nepavyko perskaityti failo."))}
+  else if(k.role!==undefined)saveMember(k.role,{role:t.value});
+  else if(k.comm!==undefined)saveMember(k.comm,{commission:Math.max(0,Math.min(100,num(t.value)))});
+  else if(k.goal!==undefined)saveMember(k.goal,{goal:Math.max(1,Math.round(num(t.value))||DEF_GOAL)});
+});
+document.addEventListener("keydown",e=>{
+  const t=e.target;
+  if(t.dataset?.key==="composer"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();const c=current(queues());if(c)sendNote(c.l);return}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();if(S.pal){S.pal=false;render()}else openPal();return}
+  if(S.pal){const n=(S.palHits||[]).length;
+    if(e.key==="Escape"){S.pal=false;render();return}
+    if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();S.palI=((S.palI||0)+(e.key==="ArrowDown"?1:-1)+n)%Math.max(1,n);render();return}
+    if(e.key==="Enter"){e.preventDefault();const id=(S.palHits||[])[Math.min(S.palI||0,n-1)];if(id)palGo(id);return}
+    return}
+  if(e.key==="Escape"){if(S.dealOpen){S.dealOpen=null;render();return}if(S.menu){S.menu=null;render();return}}
+  if(t.closest("input,textarea,select")||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(route()!==""||S.editing||S.dealAsk)return;
+  const map={"1":"no_answer","2":"declined","3":"thinking","4":"interested"};
+  const c=current(queues());if(!c||!map[e.key])return;
+  e.preventDefault();const s=map[e.key];
+  if(s==="thinking"){S.askWhen=true;render()}else if(s==="interested"){S.dealAsk=true;S.focus='form[data-act=deal-form] input[name=value]';render()}else logCall(c.l,s);
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&e.target?.dataset?.key==="chat"){e.preventDefault();chatSend(S.chatDraft)}},true);
+document.addEventListener("submit",async e=>{
+  e.preventDefault();const f=e.target,act=f.dataset.act;
+  if(act==="note-form"){const c=current(queues());if(c)sendNote(c.l);return}
+  if(act==="chat-form"){chatSend(S.chatDraft);return}
+  if(act==="find-form"){document.activeElement?.blur?.();runSearch();return}
+  if(act==="team-form"){const n=String(S.teamDraft??"").trim();S.teamDraft=null;if(n)teamPost({name:n},"Pavadinimas išsaugotas.");else render();return}
+  const d=Object.fromEntries(new FormData(f));for(const k in d)d[k]=String(d[k]).trim().slice(0,2000);
+  if(act==="settings-form"){if(!isManager())return;const p={};for(const [k] of SETF)p[k]=d[k]||"";S.setDraft=null;await saveSettings(p);return}
+  if(act==="edit-form"){
+    const c=current(queues());if(!c)return;
+    const next={...c.l,...d,updatedAt:Date.now()};leads=leads.map(x=>x.id===next.id?next:x);S.editing=false;render();
+    if(await saveLead(next))toast("Išsaugota.");
+  }else if(act==="deal-form"){
+    const c=current(queues());if(!c)return;
+    if(!(num(d.value)>0)&&!d.meetingAt){toast("Įrašyk sumą (ar bent susitikimo laiką) arba spausk „Be sandorio“.");return}
+    if(num(d.value)>MAXEUR||num(d.cost)>MAXEUR){toast("Per didelė suma. Daugiausia 10 000 000 €.");return}
+    logCall(c.l,"interested",{deal:{value:d.value,cost:d.cost,stage:d.stage,title:d.title,meetingAt:d.meetingAt}});
+  }else if(act==="deal-edit"){
+    const old=deals.find(x=>x.id===S.dealOpen);if(!old)return;
+    if(num(d.value)>MAXEUR||num(d.cost)>MAXEUR){toast("Per didelė suma. Daugiausia 10 000 000 €.");return}
+    const next={...old,stage:d.stage,value:num(d.value),cost:num(d.cost),title:d.title,owner:d.owner||old.owner,note:d.note,meetingAt:Date.parse(d.meetingAt||"")||null};
+    S.dealOpen=null;await saveDeal(next,old.stage);toast("Sandoris išsaugotas.");
+  }else if(act==="add-form"){
+    if(!d.name)return;
+    const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\b(uab|mb|ii|ab|vsi)\b/g,"").replace(/[^a-z0-9]/g,"");
+    const pk=s=>String(s||"").replace(/\D/g,"").slice(-8);
+    if(leads.some(l=>(d.companyCode&&l.companyCode===d.companyCode)||(pk(d.phone).length===8&&pk(l.phone)===pk(d.phone))||norm(l.name)===norm(d.name))){toast("Toks kontaktas jau yra sąraše.");return}
+    const now=Date.now(),l={id:uid(),name:d.name,companyCode:d.companyCode||"",category:d.category||"",city:d.city||"",phone:d.phone||"",email:d.email||"",website:d.website||"",revenue:"",need:d.need||"Svetainė",reason:"",source:"",status:"new",callbackAt:null,attempts:0,lastCalledAt:null,lastCalledBy:"",assignee:"",createdBy:meId||"",createdAt:now,updatedAt:now};
+    leads=[l,...leads];S.adding=false;render();
+    if(await saveLead(l))await addAct({leadId:l.id,kind:"created",status:null,note:""});
+  }
+});
+
+async function copyText(t,msg){try{await navigator.clipboard.writeText(t);toast(msg)}catch{toast(t)}}
+setInterval(()=>{const el=document.getElementById("calltimer");if(el&&S.callStart)el.textContent=fmtDur(Date.now()-S.callStart)},1000);
+const LEAD_FIELDS=["name","companyCode","category","city","phone","email","website","revenue","revenueValue","employees","need","reason","source"];
+async function runSearch(){
+  if(!ai||S.aiBusy)return;S.aiBusy=true;S.found=[];S.searchDone=null;S.aiNow="Pradedama paieška…";
+  const ctl=new AbortController();S.aiAbort=ctl;render();
+  const want=Math.min(20,S.form.count);let res={added:0,found:0,error:""},quiet=null,ended=false;
+  /* Every company is saved the moment the server finds it, so finishing early never loses anything. */
+  const finish=()=>{if(ended)return;ended=true;clearTimeout(quiet);
+    if(!res.added&&S.found.length)res.added=S.found.length;
+    S.aiBusy=false;if(S.aiAbort===ctl)S.aiAbort=null;S.searchDone=res;render();if(res.added)celebrate()};
+  const alive=()=>{clearTimeout(quiet);quiet=setTimeout(()=>{res.error=S.found.length?"":"1551.lt neatsako. Pabandyk po minutės.";ctl.abort()},30000)};
+  alive();
+  try{await ai.search({industry:S.form.industry,city:S.form.city,revenue:S.form.revenue,needs:S.form.needs,count:want,model:aiModel()},e=>{
+    if(ended)return;alive();
+    if(e.type==="search")S.aiNow="Ieškoma: "+e.query.replace(/^1551\.lt:\s*/,"");
+    else if(e.type==="fetch")S.aiNow="Tikrinama: "+host(e.url);
+    else if(e.type==="scan")S.aiNow=`Peržiūrėta ${e.scanned} · tinka ${e.added} iš ${want}`;
+    else if(e.type==="lead"){S.found=[...S.found,e];S.aiNow=`Rasta ${S.found.length} iš ${want}…`}
+    else if(e.type==="result"){res={...res,added:e.added,found:e.found};finish();return}
+    else if(e.type==="error")res.error=e.message;
+    render(true)},ctl.signal)}
+  catch(err){if(!ended&&!res.error&&!S.found.length)res.error=err&&err.name==="AbortError"?"Sustabdyta.":(err&&err.message||"Nepavyko.")}
+  finish();
+}
+async function exportBackup(){
+  const data=JSON.stringify(leads.map(l=>Object.fromEntries([["id",l.id],...LEAD_FIELDS.filter(k=>l[k]!==undefined&&l[k]!=="").map(k=>[k,l[k]])])),null,1);
+  const filename=`coldline-kontaktai-${dayKey(Date.now())}.json`;
+  if(downloads){try{await downloads.save({filename,data,mimeType:"application/json"});return}catch(e){if(e?.code==="declined")return}}
+  try{await navigator.clipboard.writeText(data);toast("Kopija nukopijuota į iškarpinę.")}catch{toast("Nepavyko eksportuoti.")}
+}
+/* CSV from Excel / Google Sheets: ; or , separated, quoted cells, Lithuanian or English headers. */
+const CSVCOLS={name:["pavadinimas","imone","imones pavadinimas","name","company","company name","klientas"],phone:["telefonas","tel","tel.","telefono nr","phone","mobile","mobilus"],
+  email:["el. pastas","el pastas","elpastas","pastas","email","e-mail","e-pastas"],city:["miestas","city","vieta"],category:["sritis","kategorija","veikla","category","industry"],
+  website:["svetaine","tinklalapis","website","web","url"],companyCode:["imones kodas","kodas","company code","code"],need:["reikia","siulyti","need"],reason:["pastaba","pastabos","kodel skambinti","note","notes"]};
+function parseCsv(text){
+  text=text.replace(/^\uFEFF/,"");const first=text.split(/\r?\n/)[0]||"";
+  const sep=(first.match(/;/g)||[]).length>=(first.match(/,/g)||[]).length?";":first.includes("\t")?"\t":",";
+  const rows=[];let row=[],cell="",q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){if(ch==='"'){if(text[i+1]==='"'){cell+='"';i++}else q=false}else cell+=ch;continue}
+    if(ch==='"')q=true;else if(ch===sep){row.push(cell);cell=""}else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&text[i+1]==="\n")i++;row.push(cell);cell="";if(row.some(c=>c.trim()))rows.push(row);row=[]}else cell+=ch}
+  row.push(cell);if(row.some(c=>c.trim()))rows.push(row);
+  if(rows.length<2)return null;
+  const norm=h=>String(h).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
+  const map=rows[0].map(h=>{const n=norm(h);return Object.keys(CSVCOLS).find(k=>CSVCOLS[k].includes(n))||null});
+  if(!map.includes("name"))return null;
+  return rows.slice(1).map(r=>{const o={};map.forEach((k,i)=>{if(k&&r[i]!=null&&String(r[i]).trim())o[k]=String(r[i]).trim()});if(o.need&&!NEEDS.includes(o.need))delete o.need;return o});
+}
+async function importLeads(text,filename){
+  let arr;try{arr=JSON.parse(text);if(!Array.isArray(arr))arr=arr.leads}catch{}
+  if(!Array.isArray(arr))arr=parseCsv(text);
+  if(!Array.isArray(arr)){toast(/\.csv$/i.test(filename||"")?"CSV faile nerastas stulpelis „Pavadinimas“.":"Netinkamas failas. Reikia CSV iš Excel arba Coldai kopijos.");return}
+  const key=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\b(uab|mb|ii|ab|vsi|pi)\b/g,"").replace(/[^a-z0-9]/g,"");
+  const ph=s=>String(s||"").replace(/\D/g,"").slice(-8);
+  const seen=leads.map(l=>({id:l.id,c:l.companyCode,p:ph(l.phone),n:key(l.name)}));
+  let added=0,dup=0;const now=Date.now();
+  for(const [i,r] of arr.entries()){
+    if(!r||typeof r!=="object"||!String(r.name||"").trim()){continue}
+    const c=String(r.companyCode||""),p=ph(r.phone),n=key(r.name),rid=/^[\w.-]{1,100}$/.test(String(r.id||""))?String(r.id):"";
+    if(seen.some(x=>(rid&&x.id===rid)||(c&&x.c===c)||(p.length===8&&x.p===p)||(n.length>2&&x.n===n))){dup++;continue}
+    const l={id:rid||uid(),status:"new",attempts:0,assignee:"",fresh:true,createdBy:meId||"",createdAt:now-i,updatedAt:now};
+    for(const k of LEAD_FIELDS)if(r[k]!==undefined)l[k]=typeof r[k]==="number"?r[k]:String(r[k]).slice(0,2000);
+    if(!l.need)l.need="Svetainė";
+    if(await put("leads",l.id,l)){added++;seen.push({id:l.id,c,p,n})}
+  }
+  toast(`Importuota ${pl(added,"kontaktas","kontaktai","kontaktų")}${dup?`, praleista ${dup} jau esamų`:""}.`);
+}
+async function exportCsv(){
+  const cell=v=>/[",\n;]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
+  const head=["Pavadinimas","Statusas","Atsakingas","Telefonas","El. paštas","Sritis","Miestas","Pajamos","Reikia","Svetainė","Įmonės kodas","Bandymų","Paskutinis skambutis","Sandorio suma","Sandorio etapas","Šaltinis"];
+  const rows=leads.map(l=>{const d=deals.find(x=>x.leadId===l.id);return[l.name,stat(l.status).label,l.assignee?who(l.assignee):"",l.phone,l.email,l.category,l.city,l.revenue,l.need,l.website,l.companyCode,String(l.attempts||0),l.lastCalledAt?new Date(ms(l.lastCalledAt)).toISOString():"",d?String(num(d.value)):"",d?stage(d.stage).label:"",l.source].map(v=>cell(String(v||"")))});
+  const csv="﻿"+[head,...rows].map(r=>r.join(";")).join("\n");
+  if(downloads){try{await downloads.save({filename:`rysys-${dayKey(Date.now())}.csv`,data:csv});return}catch(e){if(e?.code==="declined")return}}
+  try{await navigator.clipboard.writeText(csv);toast("CSV nukopijuotas. Įklijuok į Excel ar Google Sheets.")}catch{toast("Nepavyko eksportuoti.")}
+}
+
+addEventListener("hashchange",()=>{S.menu=null;S.sheet=false;S.dealOpen=null;S.more=false;S.pal=false;render()});
+matchMedia("(min-width:1500px)").addEventListener("change",render);
+setInterval(()=>render(true),60000);
+render();
+connect();
+</script>
+</body>
+</html>
