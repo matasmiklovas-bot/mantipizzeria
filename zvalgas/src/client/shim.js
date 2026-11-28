@@ -80,7 +80,7 @@
       while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;let e;try{e=JSON.parse(line)}catch{continue}
         if(e.type==="client"){handoff=e;continue}if(handoff&&e.type==="done")continue;onEvent(e)}}
     if(!handoff)return;
-    try{let any=false;await freeAsk(handoff.system,handoff.messages,t=>{any=true;onEvent({type:"text",text:t})});if(!any)throw new Error("AI grąžino tuščią atsakymą. Pabandyk dar kartą.")}
+    try{let any=false;const t0=Date.now();let first=0;await freeAsk(handoff.system,handoff.messages,t=>{if(!first)first=Date.now()-t0;any=true;onEvent({type:"text",text:t})});if(!any)throw new Error("AI grąžino tuščią atsakymą. Pabandyk dar kartą.");onEvent({type:"meta",via:"browser",first})}
     catch(err){onEvent({type:"error",message:err&&err.message||"AI nepasiekiamas. Patikrink internetą."})}
     onEvent({type:"done"});
   }

@@ -20,6 +20,8 @@ export const forgetGeminiKey = () => {
 };
 export const geminiOn = async () => !!(await geminiKey());
 const model = () => process.env.GEMINI_MODEL || "gemini-flash-latest";
+/** Chat without web search: the fastest model, since speed matters more than depth for call advice. */
+export const chatModel = () => process.env.GEMINI_CHAT_MODEL || "gemini-flash-lite-latest";
 /** Model for Google Search grounding (the free tier allows it only on some models). */
 export const searchModel = () => process.env.GEMINI_SEARCH_MODEL || model();
 
@@ -97,6 +99,8 @@ async function call(path: string, payload: string, signal?: AbortSignal, m?: str
       return call(path, JSON.stringify(j), signal, m, key);
     }
   }
+  // A model name this key can't use (404): fall back to the default model.
+  if (r.status === 404 && m && m !== model()) r = await go(model());
   // Busy model (503): try the lighter one once.
   if (r.status === 503 && (m || model()) !== FALLBACK) r = await go(FALLBACK);
   if (!r.ok) {

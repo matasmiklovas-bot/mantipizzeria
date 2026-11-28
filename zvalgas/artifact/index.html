@@ -484,6 +484,7 @@ form.add .acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .cmsg.ai .cb{flex:1;min-width:0;font-size:15.5px;line-height:1.65;color:var(--text);padding-top:3px}
 .cmsg.ai .cb p{margin:0 0 8px}.cmsg.ai .cb ul{margin:4px 0 10px 18px}.cmsg.ai .cb li{margin:3px 0}
 .cmsg.ai .cb code{font-family:var(--mono);font-size:13px;background:var(--hover);padding:1px 5px;border-radius:5px}
+.cmeta{margin-top:6px;font-size:11.5px;color:var(--muted)}
 .csearch{display:inline-flex;align-items:center;gap:5px;margin:0 6px 8px 0;padding:3px 10px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}
 .typing{display:inline-flex;gap:4px;padding:8px 0}.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:pulse 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
 .cempty{margin:auto;text-align:center;max-width:640px;padding:24px 0}
@@ -1491,7 +1492,7 @@ function viewClaude(){
   const sugg=lead?[[aiApi.web&&window.COLDLINE_WEB.aiFull?"Ką žinai apie šią įmonę? Paieškok internete.":"Ką gali pasakyti apie šią įmonę iš turimų duomenų? Kuo jie gali būti suinteresuoti?",aiApi.web&&window.COLDLINE_WEB.aiFull?"Ištirti įmonę":"Apie įmonę"],["Kaip pradėti pokalbį su šia įmone? Duok 2–3 sakinius.","Pirmi sakiniai"],["Jie sako „turim Facebook, užtenka“. Ką atsakyti?","Prieštaravimas"],["Parašyk trumpą el. laišką po skambučio šiai įmonei.","Laiškas po skambučio"]]
     :[["Kam iš sąrašo skambinti pirmiausia ir kodėl?","Kam skambinti"],["Klientas sako „brangu“. Kaip atsakyti žmogiškai?","„Brangu“"],["Parašyk trumpą el. laišką po skambučio, kai klientas sako „atsiųskit pasiūlymą“.","Laiškas"],["Duok 5 patarimus, kaip nesijaudinti skambinant.","Drąsa skambinti"]];
   const msgs=c.msgs.map((m,i)=>m.role==="user"?`<div class="cmsg me"><div class="cb">${esc(m.content)}</div></div>`
-    :`<div class="cmsg ai"><span class="cav">${icon("spark",14)}</span><div class="cb">${(m.searches||[]).map(q=>`<span class="csearch">${icon("search",12)} ${esc(q)}</span>`).join("")}${m.content?md(m.content):c.busy&&i===c.msgs.length-1?`<span class="typing"><i></i><i></i><i></i></span>`:""}</div></div>`).join("");
+    :`<div class="cmsg ai"><span class="cav">${icon("spark",14)}</span><div class="cb">${(m.searches||[]).map(q=>`<span class="csearch">${icon("search",12)} ${esc(q)}</span>`).join("")}${m.content?md(m.content):c.busy&&i===c.msgs.length-1?`<span class="typing"><i></i><i></i><i></i></span>`:""}${m.meta&&m.content?`<div class="cmeta">${{gemini:"Gemini",free:"Nemokamas AI",browser:"Nemokamas AI per naršyklę"}[m.meta.via]||"AI"}${m.meta.first?` · ${(m.meta.first/1000).toLocaleString("lt-LT",{maximumFractionDigits:1})} s`:""}</div>`:""}</div></div>`).join("");
   return`<div class="chat">
     <header class="chead"><span class="cav big">${icon("spark",18)}</span><div class="ctitle"><b>${aiApi.web?"AI pagalbininkas":"Claude"}</b><small>Pokalbiai, laiškai, prieštaravimai ir įmonių paieška</small></div>
       ${modelPick()}${c.msgs.length?`<button class="btn" data-act="chat-new" title="Naujas pokalbis">${icon("plus",15)}<span class="hide-xs">Naujas</span></button>`:""}</header>
@@ -1511,7 +1512,7 @@ async function chatSend(text){
   const ta=document.querySelector("textarea[data-key=chat]");if(ta){ta.value="";ta.style.height="auto"}
   render();
   try{await aiApi.chat(c.msgs.slice(0,-1).map(m=>({role:m.role,content:m.content})),c.leadId,aiModel(),e=>{
-    if(e.type==="text")a.content+=e.text;else if(e.type==="search")a.searches.push(e.query);else if(e.type==="error")c.err=e.message;
+    if(e.type==="text")a.content+=e.text;else if(e.type==="search")a.searches.push(e.query);else if(e.type==="error")c.err=e.message;else if(e.type==="meta")a.meta=e;
     S.chatScroll=true;render(true)})}
   catch(err){c.err=err&&err.message||"Nepavyko."}
   if(!a.content){c.msgs.pop();if(!c.err)c.err="Atsakymo negauta. Bandyk dar kartą."}

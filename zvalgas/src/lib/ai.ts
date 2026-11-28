@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getVercelOidcToken } from "@vercel/oidc";
 import { freeErrorMessage, freeStream, freeText } from "./free";
-import { GeminiError, geminiErrorMessage, geminiOn, geminiStream, geminiText } from "./gemini";
+import { chatModel, GeminiError, geminiErrorMessage, geminiOn, geminiStream, geminiText } from "./gemini";
 
 /**
  * Which AI answers:
@@ -45,13 +45,14 @@ export async function liteStream(
   if (await geminiOn()) {
     let wrote = false;
     try {
-      return await geminiStream(system, turns, { ...opts, onText: (t) => ((wrote = true), opts.onText?.(t)) });
+      const r = await geminiStream(system, turns, { ...opts, model: opts.search ? undefined : chatModel(), onText: (t) => ((wrote = true), opts.onText?.(t)) });
+      return { ...r, via: "gemini" as const };
     } catch (err) {
       if (wrote || opts.signal?.aborted) throw err;
       console.error("[ai:gemini→free]", err);
     }
   }
-  return freeStream(system + NO_WEB, turns, opts);
+  return { ...(await freeStream(system + NO_WEB, turns, opts)), via: "free" as const };
 }
 
 export async function liteText(system: string, prompt: string, opts: { signal?: AbortSignal } = {}) {

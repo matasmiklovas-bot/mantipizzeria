@@ -79,6 +79,7 @@ function limited(id: string) {
 }
 
 export async function POST(request: Request) {
+  const t0 = Date.now();
   const who = await me(request).catch(() => null);
   if (!who) return unauthorized();
   if (!aiAvailable()) return Response.json({ error: "AI šiame serveryje neįjungtas.", code: "no_key" }, { status: 503 });
@@ -99,12 +100,19 @@ export async function POST(request: Request) {
         const system = `${SYSTEM}\n\nŠiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who.name}.\n\n${await contextBlock(who.ws, leadId).catch(() => "")}`;
         const turns = messages.map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: String(m.content) }));
         try {
-          await liteStream(system, turns, {
+          let first = 0;
+          const res = await liteStream(system, turns, {
             search: wantsWeb(turns[turns.length - 1]?.content ?? ""),
             signal: request.signal,
-            onText: (t) => ((wrote = true), send({ type: "text", text: t })),
+            onText: (t) => {
+              if (!first) first = Date.now() - t0;
+              wrote = true;
+              send({ type: "text", text: t });
+            },
             onSearch: (q) => send({ type: "search", query: q }),
           });
+          // Who answered and how long the first word took, shown under the answer.
+          send({ type: "meta", via: res.via, first, total: Date.now() - t0 });
         } catch (err) {
           if (!request.signal.aborted) {
             console.error("[chat:lite]", err);
