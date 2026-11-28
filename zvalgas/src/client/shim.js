@@ -54,9 +54,9 @@
     const r=await fetch("/api/search",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(form),signal});
     if(!r.ok||!r.body){const e=await r.json().catch(()=>({}));throw new Error(e.error||"Paieška nepavyko")}
     const rd=r.body.getReader(),dec=new TextDecoder();let buf="";
-    for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
-      while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(line){try{onEvent(JSON.parse(line))}catch{}}}}
-    tick();
+    try{for(;;){const{value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+      while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(line){let e;try{e=JSON.parse(line)}catch{continue}try{onEvent(e)}catch{}if(e.type==="lead"||e.type==="result")tick()}}}}
+    finally{tick()}
   }};
   /* Free AI straight from the browser, used when the server can't reach any model (its IP can be refused). */
   const FREE="https://text.pollinations.ai/openai";

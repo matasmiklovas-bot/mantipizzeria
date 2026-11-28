@@ -80,6 +80,7 @@ export type SearchEvent =
   | { type: "search"; query: string }
   | { type: "fetch"; url: string }
   | { type: "lead"; name: string; city: string; phone: string; revenue: string; category: string }
+  | { type: "scan"; scanned: number; added: number }
   | { type: "result"; found: number; added: number }
   | { type: "error"; message: string }
   | { type: "done" };

@@ -1854,18 +1854,26 @@ async function copyText(t,msg){try{await navigator.clipboard.writeText(t);toast(
 setInterval(()=>{const el=document.getElementById("calltimer");if(el&&S.callStart)el.textContent=fmtDur(Date.now()-S.callStart)},1000);
 const LEAD_FIELDS=["name","companyCode","category","city","phone","email","website","revenue","revenueValue","employees","need","reason","source"];
 async function runSearch(){
-  if(!ai||S.aiBusy)return;S.aiBusy=true;S.found=[];S.searchDone=null;S.aiNow="Pradedama paieška…";S.aiAbort=new AbortController();render();
-  let res={added:0,found:0,error:""};
-  try{await ai.search({industry:S.form.industry,city:S.form.city,revenue:S.form.revenue,needs:S.form.needs,count:Math.min(20,S.form.count),model:aiModel()},e=>{
+  if(!ai||S.aiBusy)return;S.aiBusy=true;S.found=[];S.searchDone=null;S.aiNow="Pradedama paieška…";
+  const ctl=new AbortController();S.aiAbort=ctl;render();
+  const want=Math.min(20,S.form.count);let res={added:0,found:0,error:""},quiet=null,ended=false;
+  /* Every company is saved the moment the server finds it, so finishing early never loses anything. */
+  const finish=()=>{if(ended)return;ended=true;clearTimeout(quiet);
+    if(!res.added&&S.found.length)res.added=S.found.length;
+    S.aiBusy=false;if(S.aiAbort===ctl)S.aiAbort=null;S.searchDone=res;render();if(res.added)celebrate()};
+  const alive=()=>{clearTimeout(quiet);quiet=setTimeout(()=>{res.error=S.found.length?"":"1551.lt neatsako. Pabandyk po minutės.";ctl.abort()},30000)};
+  alive();
+  try{await ai.search({industry:S.form.industry,city:S.form.city,revenue:S.form.revenue,needs:S.form.needs,count:want,model:aiModel()},e=>{
+    if(ended)return;alive();
     if(e.type==="search")S.aiNow="Ieškoma: "+e.query.replace(/^1551\.lt:\s*/,"");
     else if(e.type==="fetch")S.aiNow="Tikrinama: "+host(e.url);
-    else if(e.type==="lead"){S.found=[...S.found,e];S.aiNow=`Rasta ${S.found.length} iš ${Math.min(20,S.form.count)}…`}
-    else if(e.type==="result")res={...res,added:e.added,found:e.found};
+    else if(e.type==="scan")S.aiNow=`Peržiūrėta ${e.scanned} · tinka ${e.added} iš ${want}`;
+    else if(e.type==="lead"){S.found=[...S.found,e];S.aiNow=`Rasta ${S.found.length} iš ${want}…`}
+    else if(e.type==="result"){res={...res,added:e.added,found:e.found};finish();return}
     else if(e.type==="error")res.error=e.message;
-    render(true)},S.aiAbort.signal)}
-  catch(err){res.error=err&&err.name==="AbortError"?"Sustabdyta.":(err&&err.message||"Nepavyko.")}
-  S.aiBusy=false;S.aiAbort=null;S.searchDone=res;render();
-  if(res.added)celebrate();
+    render(true)},ctl.signal)}
+  catch(err){if(!ended&&!res.error&&!S.found.length)res.error=err&&err.name==="AbortError"?"Sustabdyta.":(err&&err.message||"Nepavyko.")}
+  finish();
 }
 async function exportBackup(){
   const data=JSON.stringify(leads.map(l=>Object.fromEntries([["id",l.id],...LEAD_FIELDS.filter(k=>l[k]!==undefined&&l[k]!=="").map(k=>[k,l[k]])])),null,1);

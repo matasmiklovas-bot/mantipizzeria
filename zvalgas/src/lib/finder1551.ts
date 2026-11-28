@@ -29,10 +29,24 @@ const slug = (s: string) =>
     .trim()
     .replace(/\s+/g, "+");
 
+/** One catalog page; a page that hangs is dropped after 8 s instead of stalling the whole search. */
 async function get(url: string, signal?: AbortSignal): Promise<string> {
-  const r = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "lt" }, signal, redirect: "follow" });
+  const limit = AbortSignal.timeout(8000);
+  const r = await fetch(url, {
+    headers: { "User-Agent": UA, "Accept-Language": "lt" },
+    signal: signal ? AbortSignal.any([signal, limit]) : limit,
+    redirect: "follow",
+  });
   if (!r.ok) throw new Error(`1551 ${r.status}`);
   return r.text();
+}
+
+/** True when the company's town is the one asked for (1551.lt also returns nearby towns). */
+export function inCity(c: Found, city: string) {
+  if (!city) return true;
+  const n = (v: string) => v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, "");
+  const want = n(city).slice(0, 4);
+  return !!want && n(c.city).startsWith(want);
 }
 
 /** Words people type for "anything" / "all of Lithuania": these mean no filter. */

@@ -1,11 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "node:crypto";
 import { aiClient, aiErrorMessage, modelId, modelKey, liteText, webSearch } from "@/lib/ai";
-import { anyValue, fitsRevenue, readCompany, ruleReason, searchPage, type Found } from "@/lib/finder1551";
+import { anyValue, fitsRevenue, inCity, readCompany, ruleReason, searchPage, type Found } from "@/lib/finder1551";
 import { cleanLead } from "@/lib/api";
 import { withoutDuplicates } from "@/lib/dedupe";
 import { me, unauthorized } from "@/lib/session";
-import { dbUrl, list, putMany } from "@/lib/store";
+import { dbUrl, list, patch, putMany } from "@/lib/store";
 import { NEEDS, REVENUE_BRACKETS, type LeadInput, type SearchEvent, type SearchRequest } from "@/lib/types";
 
 async function existingKeys(ws: string) {
@@ -13,17 +13,14 @@ async function existingKeys(ws: string) {
   return docs.map((d) => ({ name: String(d.data.name ?? ""), phone: String(d.data.phone ?? ""), companyCode: String(d.data.companyCode ?? "") }));
 }
 
-async function insertLeads(ws: string, items: LeadInput[], author: string): Promise<number> {
+async function insertLeads(ws: string, items: LeadInput[], author: string): Promise<string[]> {
   const now = Date.now();
-  await putMany(
-    ws,
-    "leads",
-    items.map((it, i) => {
-      const id = `ai-${randomUUID().slice(0, 12)}`;
-      return { id, data: { ...it, id, status: "new", attempts: 0, assignee: "", createdBy: author, createdAt: now - i, updatedAt: now, fresh: true } };
-    }),
-  );
-  return items.length;
+  const docs = items.map((it, i) => {
+    const id = `ai-${randomUUID().slice(0, 12)}`;
+    return { id, data: { ...it, id, status: "new", attempts: 0, assignee: "", createdBy: author, createdAt: now - i, updatedAt: now, fresh: true } };
+  });
+  await putMany(ws, "leads", docs);
+  return docs.map((d) => d.id);
 }
 
 export const maxDuration = 300;
@@ -164,53 +161,63 @@ export async function POST(request: Request) {
           const kw = req.industry && !anyValue(req.industry) ? req.industry : DEFAULT_KEYWORDS[Math.floor(Math.random() * DEFAULT_KEYWORDS.length)];
           const city = anyValue(req.city) ? "" : req.city;
           send({ type: "search", query: `1551.lt: ${kw}${city ? `, ${city}` : ", visa Lietuva"}` });
-          const picked: Found[] = [];
+          const picked: (Found & { id: string })[] = [];
           const t0 = Date.now();
+          // Stay well inside the hosting time limit; whatever was found by then is already saved.
+          const BUDGET = 45_000;
           let scanned = 0;
-          for (let page = 1; page <= 8 && picked.length < req.count && Date.now() - t0 < 200_000; page++) {
-            const urls = await searchPage(kw, city, page, request.signal);
+          for (let page = 1; page <= 8 && picked.length < req.count && Date.now() - t0 < BUDGET; page++) {
+            const urls = page === 1 ? await searchPage(kw, city, page, request.signal) : await searchPage(kw, city, page, request.signal).catch(() => []);
             if (!urls.length) break;
-            for (let i = 0; i < urls.length && picked.length < req.count; i += 6) {
+            for (let i = 0; i < urls.length && picked.length < req.count && Date.now() - t0 < BUDGET; i += 6) {
               const batch = await Promise.all(urls.slice(i, i + 6).map((u) => readCompany(u, request.signal).catch(() => null)));
+              send({ type: "scan", scanned: scanned + batch.filter(Boolean).length, added: picked.length });
               for (const c of batch) {
                 if (!c) continue;
                 scanned++;
-                if (!(c.phone || c.email) || !fitsRevenue(c, req.revenue)) continue;
+                if (!(c.phone || c.email) || !fitsRevenue(c, req.revenue) || !inCity(c, city)) continue;
                 const rr = ruleReason(c, req.needs, `${kw.replace(/\+/g, " ")} ${city || c.city}`.trim().toLowerCase());
                 if (!rr) continue;
                 if (!withoutDuplicates([c], [...known, ...picked]).fresh.length) continue;
-                picked.push({ ...c, ...rr, category: c.category && c.category.length > 3 ? c.category : kw });
-                send({ type: "lead", name: c.name, city: c.city, phone: c.phone, revenue: c.revenue || "", category: c.category || kw });
+                const found: Found = { ...c, ...rr, category: c.category && c.category.length > 3 ? c.category : kw };
+                const lead: Partial<Found> = { ...found };
+                delete lead.facebook;
+                delete lead.revenueValue;
+                // Saved the moment it is found, so a slow step later can never lose it.
+                const [id] = await insertLeads(who.ws, [lead as Found], user);
+                picked.push({ ...found, id });
+                send({ type: "lead", name: c.name, city: c.city, phone: c.phone, revenue: c.revenue || "", category: found.category });
                 if (picked.length >= req.count) break;
               }
             }
           }
+          send({ type: "result", found: scanned, added: picked.length });
           if (picked.length) {
+            // Nicer reasons from AI are a bonus: at most 10 s, and the leads are already in the list.
             try {
               const facts = picked.map((c, n) => `${n + 1}. ${c.name} | ${c.category} | ${c.city} | apyvarta: ${c.revenue || "nežinoma"} | darbuotojai: ${c.employees || "nežinoma"} | svetainė: ${c.website || "nėra"} | Facebook: ${c.facebook ? "yra" : "nenurodyta"} | siūlyti: ${c.need}`).join("\n");
-              const out = await liteText(
-                "Tu padedi lietuviui, kuris skambina mažoms įmonėms ir siūlo svetaines. Kiekvienai įmonei parašyk vieną konkretų sakinį lietuviškai, kodėl verta skambinti, remdamasis TIK pateiktais faktais. Nieko neišgalvok. Grąžink tik JSON masyvą su tekstais ta pačia tvarka.",
-                facts,
-              );
+              const limit = AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]);
+              const out = await Promise.race([
+                liteText(
+                  "Tu padedi lietuviui, kuris skambina mažoms įmonėms ir siūlo svetaines. Kiekvienai įmonei parašyk vieną konkretų sakinį lietuviškai, kodėl verta skambinti, remdamasis TIK pateiktais faktais. Nieko neišgalvok. Grąžink tik JSON masyvą su tekstais ta pačia tvarka.",
+                  facts,
+                  { signal: limit },
+                ),
+                new Promise<never>((_, no) => limit.addEventListener("abort", () => no(new Error("reasons timeout")))),
+              ]);
               const a = out.indexOf("["), b = out.lastIndexOf("]");
               const arr = a >= 0 && b > a ? (JSON.parse(out.slice(a, b + 1)) as unknown[]) : [];
-              arr.forEach((t, n) => {
-                if (typeof t === "string" && t.trim() && picked[n]) picked[n].reason = `${t.trim().slice(0, 400)} (Pagal 1551.lt: svetainė ${picked[n].website ? "yra" : "nenurodyta"}.)`;
-              });
+              await Promise.all(
+                arr.map((t, n) => {
+                  const c = picked[n];
+                  if (typeof t !== "string" || !t.trim() || !c) return null;
+                  return patch(who.ws, "leads", c.id, { reason: `${t.trim().slice(0, 400)} (Pagal 1551.lt: svetainė ${c.website ? "yra" : "nenurodyta"}.)` });
+                }),
+              );
             } catch (err) {
-              console.error("[search:reasons]", err);
+              if (!request.signal.aborted) console.error("[search:reasons]", err);
             }
           }
-          const added = await insertLeads(
-            who.ws,
-            picked.map((c) => {
-              const lead: Partial<Found> = { ...c };
-              delete lead.facebook;
-              return lead as Found;
-            }),
-            user,
-          );
-          send({ type: "result", found: scanned, added });
         } catch (err) {
           if (!request.signal.aborted) {
             console.error("[search:1551]", err);
@@ -265,7 +272,7 @@ export async function POST(request: Request) {
             const found = sanitize(submit.input);
             const { fresh } = withoutDuplicates(found, await existingKeys(who.ws));
             for (const l of fresh) send({ type: "lead", name: l.name, city: l.city || "", phone: l.phone || "", revenue: l.revenue || "", category: l.category || "" });
-            const added = await insertLeads(who.ws, fresh, user);
+            const added = (await insertLeads(who.ws, fresh, user)).length;
             send({ type: "result", found: found.length, added });
             break;
           }
