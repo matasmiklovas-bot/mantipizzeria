@@ -1,7 +1,8 @@
 import { timingSafeEqual } from "node:crypto";
 import { baseUrl, OAUTH_COOKIE, redirectUri } from "@/lib/oauth";
 import { allowed, cookieValue, createSession, secure, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
-import { upsertUser } from "@/lib/store";
+import { joinCookie, workspaceForNewUser } from "@/lib/join";
+import { getUser, upsertUser } from "@/lib/store";
 
 type IdToken = { iss?: string; aud?: string; sub?: string; email?: string; email_verified?: boolean; name?: string; picture?: string; exp?: number };
 
@@ -52,7 +53,10 @@ export async function GET(request: Request) {
 
   const id = `g_${claims.sub}`;
   try {
-    await upsertUser({ id, email: claims.email, name: (claims.name || claims.email.split("@")[0]).slice(0, 120), avatar: claims.picture?.startsWith("https://") ? claims.picture : "" });
+    const name = (claims.name || claims.email.split("@")[0]).slice(0, 120);
+    const known = await getUser(id);
+    const ws = known ? known.ws : await workspaceForNewUser(request, id, name);
+    await upsertUser({ id, email: claims.email, name, avatar: claims.picture?.startsWith("https://") ? claims.picture : "", ws });
   } catch {
     return back(request, "db");
   }
@@ -60,5 +64,6 @@ export async function GET(request: Request) {
   const headers = new Headers({ Location: `${baseUrl(request)}/` });
   headers.append("Set-Cookie", `${SESSION_COOKIE}=${createSession(id)}; Max-Age=${SESSION_DAYS * 86400}; ${flags}`);
   headers.append("Set-Cookie", `${OAUTH_COOKIE}=; Path=/; Max-Age=0`);
+  headers.append("Set-Cookie", joinCookie(request, ""));
   return new Response(null, { status: 302, headers });
 }

@@ -3,7 +3,7 @@ import { get, type Collection } from "./store";
 
 export async function isManager(u: Me): Promise<boolean> {
   if (u.owner) return true;
-  const t = await get("team", u.id);
+  const t = await get(u.ws, "team", u.id);
   return t?.role === "manager";
 }
 
@@ -15,6 +15,6 @@ export async function checkWrite(u: Me, col: Collection, id: string, data: Recor
   if (col !== "team") return data;
   if (await isManager(u)) return data;
   if (id !== u.id) throw new Error("FORBIDDEN");
-  const prev = await get("team", id);
+  const prev = await get(u.ws, "team", id);
   return { ...data, role: prev?.role === "manager" ? "manager" : "caller", commission: prev?.commission ?? data.commission ?? 10 };
 }

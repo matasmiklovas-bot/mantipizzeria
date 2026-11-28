@@ -1,6 +1,5 @@
 import { claudeActive } from "@/lib/ai";
 import { forgetGeminiKey, geminiErrorMessage, geminiText } from "@/lib/gemini";
-import { isManager } from "@/lib/rules";
 import { json, me, unauthorized } from "@/lib/session";
 import { getSecret, setSecret } from "@/lib/store";
 
@@ -17,14 +16,15 @@ async function state() {
 export async function GET(request: Request) {
   const u = await me(request).catch(() => null);
   if (!u) return unauthorized();
-  return json({ ...(await state()), canEdit: await isManager(u) });
+  const st = await state();
+  return json({ ...st, saved: u.admin ? st.saved : st.saved ? "nustatytas" : "", canEdit: u.admin });
 }
 
 /** Save a key after checking that Google accepts it. */
 export async function POST(request: Request) {
   const u = await me(request).catch(() => null);
   if (!u) return unauthorized();
-  if (!(await isManager(u))) return json({ error: "Keisti gali tik savininkas arba vadovas." }, 403);
+  if (!u.admin) return json({ error: "AI raktą keičia platformos administratorius." }, 403);
   const body = (await request.json().catch(() => ({}))) as { key?: unknown };
   const key = typeof body.key === "string" ? body.key.trim() : "";
   if (!/^[\w-]{20,120}$/.test(key)) return json({ error: "Tai nepanašu į raktą. Nukopijuok visą raktą (prasideda „AIza“)." }, 400);
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   const u = await me(request).catch(() => null);
   if (!u) return unauthorized();
-  if (!(await isManager(u))) return json({ error: "Keisti gali tik savininkas arba vadovas." }, 403);
+  if (!u.admin) return json({ error: "AI raktą keičia platformos administratorius." }, 403);
   await setSecret("gemini", null);
   forgetGeminiKey();
   return json({ ok: true, ...(await state()), canEdit: true });

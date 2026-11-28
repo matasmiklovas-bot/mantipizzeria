@@ -30,7 +30,7 @@ export async function PUT(request: Request, ctx: Ctx) {
   const data = await body(request);
   if (!data) return json({ error: "Blogi duomenys", code: "invalid_argument" }, 400);
   try {
-    await put(t.col, t.id, await checkWrite(t.u, t.col, t.id, data));
+    await put(t.u.ws, t.col, t.id, await checkWrite(t.u, t.col, t.id, data));
   } catch (e) {
     if ((e as Error).message === "FORBIDDEN") return json({ error: "Neturi teisės", code: "invalid_argument" }, 403);
     throw e;
@@ -49,7 +49,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
     delete fields.role;
     delete fields.commission;
   }
-  const next = await patch(t.col, t.id, fields);
+  const next = await patch(t.u.ws, t.col, t.id, fields);
   if (!next) return json({ error: "Nerasta", code: "not_found" }, 404);
   return json({ ok: true, data: next });
 }
@@ -58,6 +58,6 @@ export async function DELETE(request: Request, ctx: Ctx) {
   const t = await target(request, ctx);
   if ("error" in t) return t.error;
   if (!(await isManager(t.u))) return json({ error: "Trinti gali tik vadovas", code: "invalid_argument" }, 403);
-  await remove(t.col, t.id);
+  await remove(t.u.ws, t.col, t.id);
   return new Response(null, { status: 204 });
 }

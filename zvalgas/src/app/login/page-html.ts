@@ -4,8 +4,9 @@ const G = `<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><p
 
 const LOGO = (k: string) => `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2ed47c"/><stop offset="1" stop-color="#0b7a40"/></linearGradient><linearGradient id="ls${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#lg${k})"/><rect width="64" height="64" rx="15" fill="url(#ls${k})"/><g fill="#fff"><rect x="13" y="26" width="6" height="12" rx="3"/><rect x="23" y="17" width="6" height="30" rx="3"/><rect x="33" y="11" width="6" height="42" rx="3"/><rect x="43" y="21" width="6" height="22" rx="3"/></g></svg>`;
 
-export function loginHtml({ error, missing, google }: { error: string; missing: string[]; google: boolean }) {
+export function loginHtml({ error, missing, google, invite }: { error: string; missing: string[]; google: boolean; invite?: { name: string; token: string } | null }) {
   const ready = !missing.length;
+  const join = invite && /^[\w-]{8,64}$/.test(invite.token) ? invite.token : "";
   return `<!DOCTYPE html>
 <html lang="lt"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
@@ -125,6 +126,8 @@ input:focus{border-color:#127a45;background:#fff;box-shadow:0 0 0 3px rgba(18,12
 .gbtn{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;height:48px;border-radius:13px;border:1px solid #e0e0d9;font-size:15px;font-weight:600;color:#0d0d0c;text-decoration:none;background:#fff;transition:background .15s}
 .gbtn:hover{background:#f8f8f6}
 .cfg{margin-top:14px;border-radius:12px;background:#fbf6e8;border:1px solid #eadfbf;color:#5a4a1d;padding:10px 13px;font-size:13px;line-height:1.5}
+.inv{display:flex;flex-direction:column;gap:2px;margin:-6px 0 16px;padding:11px 14px;border-radius:12px;background:#e8f2eb;color:#0f5a33;font-size:12.5px}
+.inv b{font-size:15.5px;color:#0b3f24}
 .fine{margin-top:16px;font-size:12px;color:#8e8e86;line-height:1.5;text-align:center}
 
 /* entrance */
@@ -167,7 +170,8 @@ input:focus{border-color:#127a45;background:#fff;box-shadow:0 0 0 3px rgba(18,12
 <section class="side">
   <div class="mtop rise">${LOGO("b")}<b>Coldai</b><span>Skambink. Susitark. Parduok.</span></div>
   <div class="card rise d2" id="card">
-    <h2 id="t">Sveikas sugrįžęs</h2>
+    ${join ? `<div class="inv"><span>Kvietimas į komandą</span><b>${esc(invite!.name || "Coldai")}</b></div>` : ""}
+    <h2 id="t">Su sugrįžimu</h2>
     <p class="sub" id="s">Prisijunk ir tęsk ten, kur baigei.</p>
     <div class="tabs" role="tablist" data-m="login"><button type="button" data-m="login" aria-pressed="true">Prisijungti</button><button type="button" data-m="register" aria-pressed="false">Sukurti paskyrą</button></div>
     <form id="f" novalidate>
@@ -178,7 +182,7 @@ input:focus{border-color:#127a45;background:#fff;box-shadow:0 0 0 3px rgba(18,12
     </form>
     ${google ? `<div class="or">arba</div><a class="gbtn" href="/api/auth/google">${G}Tęsti su Google</a>` : ""}
     ${ready ? "" : `<div class="cfg">Serveryje trūksta: ${missing.map(esc).join(", ")}</div>`}
-    <p class="fine">Paskyrą susikuria kiekvienas pats. Pirmas užsiregistravęs tampa savininku.</p>
+    <p class="fine">${join ? "Sukūręs paskyrą iškart matysi komandos kontaktus." : "Nauja paskyra – nauja tuščia komandos erdvė. Kolegas pakviesi nuoroda iš Nustatymų."}</p>
   </div>
 </section>
 </main>
@@ -197,8 +201,9 @@ addEventListener("orientationchange",()=>setTimeout(()=>{base=0;fit()},300));fit
 
 /* form */
 const f=$("f"),e=$("e"),go=$("go"),pw=f.password,tabs=document.querySelector(".tabs");let mode="login";
-const T={login:["Sveikas sugrįžęs","Prisijunk ir tęsk ten, kur baigei.","Prisijungti","current-password"],
-  register:["Sukurk paskyrą","Sugalvok vardą ir slaptažodį. Užtruks 5 sekundes.","Sukurti ir prisijungti","new-password"]};
+const JOIN=${JSON.stringify(join)};
+const T={login:["Su sugrįžimu","Prisijunk ir tęsk ten, kur baigei.","Prisijungti","current-password"],
+  register:["Sukurk paskyrą",JOIN?"Sugalvok vardą ir slaptažodį – prisijungsi prie komandos.":"Sugalvok vardą ir slaptažodį. Užtruks 5 sekundes.",JOIN?"Prisijungti prie komandos":"Sukurti ir prisijungti","new-password"]};
 const set=m=>{mode=m;tabs.dataset.m=m;tabs.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.m===m)));
   const t=T[m];$("t").textContent=t[0];$("s").textContent=t[1];go.textContent=t[2];pw.autocomplete=t[3];e.textContent=""};
 tabs.querySelectorAll("button").forEach(b=>b.onclick=()=>set(b.dataset.m));
@@ -208,10 +213,11 @@ f.onsubmit=async ev=>{ev.preventDefault();e.textContent="";
   if(f.username.value.trim().length<3){fail("Vardas turi būti bent 3 simbolių.");f.username.focus();return}
   if(pw.value.length<6){fail("Slaptažodis turi būti bent 6 simbolių.");pw.focus();return}
   go.disabled=true;go.classList.add("busy");
-  try{const r=await fetch("/api/auth/password",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({username:f.username.value,password:pw.value,mode})});
+  try{const r=await fetch("/api/auth/password",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({username:f.username.value,password:pw.value,mode,join:JOIN})});
     const d=await r.json().catch(()=>({}));if(r.ok){location.replace("/");return}fail(d.error||"Nepavyko. Bandyk dar kartą.")}
   catch{fail("Nėra ryšio. Bandyk dar kartą.")}
   go.disabled=false;go.classList.remove("busy")};
+if(JOIN&&!${JSON.stringify(error)})set("register");
 if(matchMedia("(pointer:fine)").matches)f.username.focus();
 
 /* live call demo */

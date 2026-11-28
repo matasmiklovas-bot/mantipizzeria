@@ -130,6 +130,12 @@ aside.side{display:none;width:68px;flex-shrink:0;flex-direction:column;backgroun
 .panel{padding:18px 20px}
 .empty{display:grid;place-items:center;min-height:60vh;padding:64px 24px;text-align:center}
 .empty h2{font-family:var(--serif);font-size:28px;font-weight:500;letter-spacing:-.015em}
+.onb{max-width:520px;text-align:left}.onb h2{font-size:36px}.onb>p{margin-top:6px;font-size:15px}
+.onbl{margin-top:22px;list-style:none;display:grid;gap:10px;counter-reset:s}
+.onbl a{position:relative;display:block;padding:15px 18px 15px 58px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--sh)}
+.onbl a:hover{border-color:var(--line-2);box-shadow:var(--sh-2)}
+.onbl a::before{counter-increment:s;content:counter(s);position:absolute;left:16px;top:15px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--call-soft);color:var(--call);font-weight:700;font-size:13px}
+.onbl b{display:block;font-size:15px}.onbl span{display:block;margin-top:2px;font-size:13.5px;color:var(--muted);line-height:1.45}
 .none{padding:8px 6px 14px;font-size:12.5px;color:var(--muted)}
 
 /* controls */
@@ -1073,6 +1079,10 @@ function viewCall(){
         ${p.l.status==="new"&&!p.l.attempts?"":`<small class="trunc" style="color:${p.tone}">${esc(p.label)}</small>`}</button></li>`).join("")}</ul>`;
   let center;
   if(!S.loaded&&S.conn!=="none")center=`<div class="muted" style="padding:32px;font-size:13px">Kraunama…</div>`;
+  else if(!cur&&!leads.length)center=`<div class="empty"><div class="onb"><h2>Labas${callName()?", "+esc(callName()):""}!</h2><p class="muted">Tavo komandos erdvė tuščia. Trys žingsniai iki pirmo skambučio:</p>
+    <ol class="onbl"><li><a href="#kontaktai" data-act="find-open"><b>Rask įmonių</b><span>Iš 1551.lt su telefonais ir apyvarta, arba įkelk savo sąrašą iš Excel.</span></a></li>
+      <li><a href="#nustatymai"><b>Pakviesk komandą</b><span>Nusiųsk kvietimo nuorodą – kolegos matys tuos pačius kontaktus.</span></a></li>
+      <li><a href="#nustatymai"><b>Užpildyk savo įmonę</b><span>Pavadinimas, parašas ir kaina atsiras laiškuose po skambučio.</span></a></li></ol></div></div>`;
   else if(!cur)center=`<div class="empty"><div><h2>Eilė tuščia</h2><p class="muted" style="margin:6px auto 0;max-width:360px;font-size:14px">${leads.length?"Visiems paskambinta. Neatsiliepę ir galvojantys grįš patys.":"Dar nėra kontaktų."}</p><a href="#kontaktai" data-act="find-open" class="btn ink" style="margin-top:18px">${icon("search",15)} Rasti įmonių</a></div></div>`;
   else{
     const l=cur.l,meta=[l.category,l.city].filter(Boolean).join(" · ");
@@ -1255,6 +1265,7 @@ function memberStats(id){
 }
 function viewTeam(){
   const mgr=isManager(),ids=people();
+  if(window.COLDLINE_WEB&&!S.ws)loadTeam();
   const rows=ids.map(id=>({id,m:member(id),s:memberStats(id)})).sort((a,b)=>b.s.rev-a.s.rev||b.s.month-a.s.month);
   const unassigned=leads.filter(l=>!l.assignee&&l.status==="new").length;
   const right=mgr?`<button class="btn ink" data-act="distribute" ${unassigned?"":"disabled"}>${icon("shuffle",15)} Paskirstyti ${pl(unassigned,"naują kontaktą","naujus kontaktus","naujų kontaktų")}</button>`:"";
@@ -1271,7 +1282,7 @@ function viewTeam(){
         ${mgr?`<td class="r"><input class="mini mono" inputmode="decimal" data-comm="${esc(id)}" value="${esc(num(m.commission??DEF_COMMISSION))}"></td><td class="r"><input class="mini mono" inputmode="numeric" data-goal="${esc(id)}" value="${esc(num(m.goal)||DEF_GOAL)}"></td>`:""}
       </tr>`).join("")}</tbody></table></div>
     <div class="cols">
-      <div class="box panel"><div class="sect">Pridėti skambintoją</div><ol class="steps">${window.COLDLINE_WEB?`<li>Nusiųsk nuorodą <button class="linkbtn" data-act="copy" data-v="${esc(location.origin)}">${esc(location.host)} ${icon("copy",13)}</button></li><li>Žmogus spaudžia „Sukurti paskyrą“ ir atsiranda šioje lentelėje.</li>`:`<li>Viršuje spausk <b>Share</b> ir pakviesk su teise <b>Contributor</b>.</li><li>Kai žmogus pirmą kartą atidarys nuorodą, jis atsiras lentelėje.</li>`}<li>Nustatyk komisinius ir dienos tikslą, tada paskirstyk kontaktus.</li></ol></div>
+      <div class="box panel"><div class="sect">Pridėti skambintoją</div><ol class="steps">${window.COLDLINE_WEB?`${inviteUrl()?`<li>Nusiųsk kvietimo nuorodą <button class="linkbtn" data-act="copy" data-v="${esc(inviteUrl())}">kopijuoti ${icon("copy",13)}</button></li>`:`<li>Kvietimo nuorodą rasi <a class="u" href="#nustatymai">Nustatymuose</a>.</li>`}<li>Žmogus spaudžia „Prisijungti prie komandos“ ir atsiranda šioje lentelėje.</li>`:`<li>Viršuje spausk <b>Share</b> ir pakviesk su teise <b>Contributor</b>.</li><li>Kai žmogus pirmą kartą atidarys nuorodą, jis atsiras lentelėje.</li>`}<li>Nustatyk komisinius ir dienos tikslą, tada paskirstyk kontaktus.</li></ol></div>
       <div class="box panel"><div class="sect">Skaičiavimas</div><p class="t2" style="font-size:13.5px;line-height:1.7">Komisiniai = laimėto sandorio suma × komisinių %. Pelnas = suma − savikaina − komisiniai. Skambintojas mato savo ir dar nepriskirtus kontaktus. Paskirstant kontaktai skiriami tik skambintojams.</p></div></div>
   </div></div>`;
 }
@@ -1325,6 +1336,18 @@ function viewOverview(){
 const SETF=[["company","Įmonė, kurią atstovauji","pvz. Webdirbtuvė"],["site","Darbų pavyzdžiai (nuoroda)","pvz. webdirbtuve.lt/darbai"],["price","Kaina nuo, €","490"],["phone","Telefonas laiškuose","+370 600 00000"],["sign","Parašas","Matas, Webdirbtuvė"]];
 async function saveSettings(p){settings={...settings,...p,updatedAt:Date.now()};render();
   try{await db.collection("meta").doc("settings").set(settings);toast("Išsaugota.")}catch{toast("Nepavyko išsaugoti.")}}
+async function loadTeam(){
+  if(!window.COLDLINE_WEB||S.ws==="loading")return;S.ws="loading";
+  try{const r=await fetch("/api/workspace",{credentials:"same-origin"});S.ws=r.ok?await r.json():{error:"Nepavyko."}}catch{S.ws={error:"Nėra ryšio."}}
+  render();
+}
+async function teamPost(body,msg){
+  S.wsBusy=true;render();
+  try{const r=await fetch("/api/workspace",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+    const d=await r.json().catch(()=>({}));if(r.ok){S.ws=d;toast(msg)}else toast(d.error||"Nepavyko.")}catch{toast("Nėra ryšio.")}
+  S.wsBusy=false;render();
+}
+const inviteUrl=()=>S.ws&&S.ws!=="loading"&&S.ws.invite||"";
 async function loadAiSettings(){
   if(!window.COLDLINE_WEB||S.aiSet==="loading")return;S.aiSet="loading";
   try{const r=await fetch("/api/settings/ai",{credentials:"same-origin"});S.aiSet=r.ok?await r.json():{error:"Nepavyko gauti AI būsenos."}}catch{S.aiSet={error:"Nėra ryšio."}}
@@ -1340,6 +1363,8 @@ async function aiKey(method,key){
 function viewSettings(){
   const mgr=isManager(),web=!!window.COLDLINE_WEB,origin=location.origin&&location.origin!=="null"?location.origin:"";
   if(web&&!S.aiSet)loadAiSettings();
+  if(web&&!S.ws)loadTeam();
+  const W=S.ws&&S.ws!=="loading"?S.ws:null;
   const a=S.aiSet&&S.aiSet!=="loading"?S.aiSet:null;
   const prov=a?a.provider:"";
   const aiState=!a?`<p class="muted">Tikrinama…</p>`:a.error?`<p class="aierr">${esc(a.error)}</p>`
@@ -1349,15 +1374,18 @@ function viewSettings(){
       <ol class="steps"><li>Atidaryk <a class="u" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a> ir prisijunk su Google paskyra.</li><li>Spausk <b>Create API key</b>. Kortelės nereikia, tai nemokama.</li><li>Nukopijuok raktą (prasideda „AIza“) ir įklijuok čia.</li></ol>
       <form class="keyrow" data-act="aikey-form"><input class="inp" data-key="aikey" value="${esc(S.aiKeyDraft||"")}" placeholder="${a.saved?"Naujas raktas":"AIza…"}" autocomplete="off" spellcheck="false" autocapitalize="none">
         <button class="btn ink" ${S.aiKeyBusy?"disabled":""}>${S.aiKeyBusy?"Tikrinama…":"Patikrinti ir išsaugoti"}</button>${a.saved?`<button type="button" class="btn" data-act="aikey-del" ${S.aiKeyBusy?"disabled":""}>Pašalinti</button>`:""}</form>
-      ${S.aiKeyErr?`<p class="aierr">${esc(S.aiKeyErr)}</p>`:""}`:`<p class="muted small">AI raktą gali įvesti savininkas arba vadovas.</p>`):"";
+      ${S.aiKeyErr?`<p class="aierr">${esc(S.aiKeyErr)}</p>`:""}`:`<p class="muted small">AI visoms komandoms įjungia platformos administratorius – tau nieko daryti nereikia.</p>`):"";
   const field=([k,t,ph])=>`<label class="field">${t}<input class="inp" name="${k}" data-key="set.${k}" value="${esc(S.setDraft&&S.setDraft[k]!=null?S.setDraft[k]:settings[k]||"")}" placeholder="${esc(ph)}" ${mgr?"":"disabled"}></label>`;
   return`<div class="scroll thin"><div class="page narrow">${head("Nustatymai","")}
     ${web?`<section class="box panel sset"><div class="sh"><h2>AI</h2><p>Pokalbiai, skambučio planai ir priežastys, kodėl skambinti.</p></div><div class="sb">${aiState}${keyForm}</div></section>`:""}
     <section class="box panel sset"><div class="sh"><h2>Tavo įmonė</h2><p>Šie duomenys įrašomi į laiškų ir SMS šablonus po skambučio.</p></div>
       <form class="sb setgrid" data-act="settings-form">${SETF.map(field).join("")}${mgr?`<div class="full"><button class="btn ink">Išsaugoti</button></div>`:`<p class="muted small full">Keisti gali savininkas arba vadovas.</p>`}</form></section>
-    ${web?`<section class="box panel sset"><div class="sh"><h2>Pakviesti komandą</h2><p>Nusiųsk nuorodą. Žmogus spaudžia „Sukurti paskyrą“ ir iškart mato bendrą sąrašą.</p></div>
-      <div class="sb"><div class="invite"><span class="mono trunc">${esc(origin)}</span><button class="btn" data-act="copy" data-v="${esc(origin)}">${icon("copy",15)} Kopijuoti</button></div>
-      <p class="muted small">Naujam žmogui Komandoje nustatyk rolę, komisinius ir dienos tikslą.</p></div></section>`:""}
+    ${web?`<section class="box panel sset"><div class="sh"><h2>Komanda</h2><p>Kiekviena komanda turi savo kontaktus. Kolegos prisijungia tik per tavo kvietimo nuorodą.</p></div>
+      <div class="sb">${!W?`<p class="muted">Kraunama…</p>`:W.error?`<p class="aierr">${esc(W.error)}</p>`:`
+        <form class="keyrow" data-act="team-form"><input class="inp" style="font-family:inherit" name="name" data-key="teamname" value="${esc(S.teamDraft??W.name)}" placeholder="Komandos pavadinimas" ${W.canEdit?"":"disabled"}>${W.canEdit?`<button class="btn" ${S.wsBusy?"disabled":""}>Išsaugoti</button>`:""}</form>
+        ${W.invite?`<span class="lbl">Kvietimo nuoroda</span><div class="invite"><span class="mono trunc">${esc(W.invite)}</span><button class="btn ink" data-act="copy" data-v="${esc(W.invite)}">${icon("copy",15)} Kopijuoti</button></div>
+        <p class="muted small">Nusiųsk ją kolegai. Jis spaudžia „Prisijungti prie komandos“ ir iškart mato jūsų kontaktus. Jei nuoroda pateko ne tiems žmonėms – <button class="linkbtn" data-act="team-rotate" ${S.wsBusy?"disabled":""}>sukurk naują</button>, sena nustos veikti.</p>`
+        :`<p class="muted small">Kviesti naujus žmones gali savininkas arba vadovas.</p>`}`}</div></section>`:""}
     <section class="box panel sset"><div class="sh"><h2>Duomenys</h2><p>Atsisiųsk kontaktus į Excel arba įkelk savo sąrašą.</p></div>
       <div class="sb"><div class="btnrow"><button class="btn" data-act="csv" ${leads.length?"":"disabled"}>${icon("download",15)} Excel (CSV)</button><button class="btn" data-act="backup" ${leads.length?"":"disabled"}>${icon("download",15)} Atsarginė kopija</button>
         ${mgr?`<label class="btn">${icon("upload",15)} Importuoti CSV ar JSON<input type="file" accept=".csv,.json,text/csv,application/json" data-key="import" hidden></label>`:""}</div>
@@ -1611,6 +1639,7 @@ document.addEventListener("click",async e=>{
     case"deal-open-lead":S.dealOpen=null;S.sel=id;S.scope="all";location.hash="";break;
     case"distribute":b.disabled=true;await distribute();break;
     case"wipe":await wipe();break;
+    case"team-rotate":if(confirm("Sukurti naują kvietimo nuorodą? Sena nustos veikti."))teamPost({rotate:true},"Nauja nuoroda sukurta.");break;
     case"aikey-del":if(confirm("Pašalinti AI raktą? AI vėl veiks tik ribotai."))aiKey("DELETE");break;
   }
 });
@@ -1624,6 +1653,7 @@ document.addEventListener("input",e=>{
   else if(k.startsWith("f."))S.form[k.slice(2)]=v;
   else if(k==="chat"){S.chatDraft=v;e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,180)+"px"}
   else if(k==="aikey")S.aiKeyDraft=v;
+  else if(k==="teamname")S.teamDraft=v;
   else if(k.startsWith("set.")){S.setDraft=S.setDraft||{};S.setDraft[k.slice(4)]=v}
   else if(k==="mailsubj"){if(S.mail)S.mail.subject=v}
   else if(k==="mailbody"){if(S.mail)S.mail.body=v}
@@ -1656,6 +1686,7 @@ document.addEventListener("submit",async e=>{
   e.preventDefault();const f=e.target,act=f.dataset.act;
   if(act==="note-form"){const c=current(queues());if(c)sendNote(c.l);return}
   if(act==="chat-form"){chatSend(S.chatDraft);return}
+  if(act==="team-form"){const n=String(S.teamDraft??"").trim();S.teamDraft=null;if(n)teamPost({name:n},"Pavadinimas išsaugotas.");else render();return}
   if(act==="aikey-form"){const k=String(S.aiKeyDraft||"").trim();if(k)aiKey("POST",k);return}
   const d=Object.fromEntries(new FormData(f));for(const k in d)d[k]=String(d[k]).trim().slice(0,2000);
   if(act==="settings-form"){if(!isManager())return;const p={};for(const [k] of SETF)p[k]=d[k]||"";S.setDraft=null;await saveSettings(p);return}

@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { getUser, isOwner, type User } from "./store";
+import { getUser, getWorkspace, isOwner, MAIN_WS, type User } from "./store";
 
 export const SESSION_COOKIE = "cl_session";
 export const SESSION_DAYS = 30;
@@ -37,7 +37,8 @@ export function cookieValue(request: Request, name: string): string | null {
   return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
 }
 
-export type Me = User & { owner: boolean };
+/** owner: owns this workspace. admin: owns "main", so runs the platform (the AI key every team uses). */
+export type Me = User & { owner: boolean; admin: boolean; wsName: string };
 
 /** The signed-in person, or null. */
 export async function me(request: Request): Promise<Me | null> {
@@ -45,8 +46,12 @@ export async function me(request: Request): Promise<Me | null> {
   if (!id) return null;
   const u = await getUser(id);
   if (!u || !allowed(u.email)) return null;
-  return { ...u, owner: await isOwner(u) };
+  const w = await getWorkspace(u.ws);
+  const owner = await isOwner(u, w);
+  return { ...u, owner, admin: owner && u.ws === MAIN_WS, wsName: w?.name || "" };
 }
+
+export const JOIN_COOKIE = "cl_join";
 
 /** ALLOWED_EMAILS: comma list of addresses or @domains. Empty means anyone with a Google account. */
 export function allowed(email: string): boolean {

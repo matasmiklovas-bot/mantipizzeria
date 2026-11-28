@@ -8,14 +8,15 @@ import { me, unauthorized } from "@/lib/session";
 import { dbUrl, list, putMany } from "@/lib/store";
 import { NEEDS, REVENUE_BRACKETS, type LeadInput, type SearchEvent, type SearchRequest } from "@/lib/types";
 
-async function existingKeys() {
-  const { docs } = await list("leads");
+async function existingKeys(ws: string) {
+  const { docs } = await list(ws, "leads");
   return docs.map((d) => ({ name: String(d.data.name ?? ""), phone: String(d.data.phone ?? ""), companyCode: String(d.data.companyCode ?? "") }));
 }
 
-async function insertLeads(items: LeadInput[], author: string): Promise<number> {
+async function insertLeads(ws: string, items: LeadInput[], author: string): Promise<number> {
   const now = Date.now();
   await putMany(
+    ws,
     "leads",
     items.map((it, i) => {
       const id = `ai-${randomUUID().slice(0, 12)}`;
@@ -159,7 +160,7 @@ export async function POST(request: Request) {
       if (!process.env.ANTHROPIC_API_KEY) {
         // Free path: read the public 1551.lt catalog directly; AI (if any) only writes the reasons.
         try {
-          const known = await existingKeys();
+          const known = await existingKeys(who.ws);
           const kw = req.industry && !anyValue(req.industry) ? req.industry : DEFAULT_KEYWORDS[Math.floor(Math.random() * DEFAULT_KEYWORDS.length)];
           const city = anyValue(req.city) ? "" : req.city;
           send({ type: "search", query: `1551.lt: ${kw}${city ? `, ${city}` : ", visa Lietuva"}` });
@@ -201,6 +202,7 @@ export async function POST(request: Request) {
             }
           }
           const added = await insertLeads(
+            who.ws,
             picked.map((c) => {
               const lead: Partial<Found> = { ...c };
               delete lead.facebook;
@@ -223,7 +225,7 @@ export async function POST(request: Request) {
       const client = await aiClient();
       try {
         // Names already in the list, so the model doesn't return them again.
-        const known = await existingKeys();
+        const known = await existingKeys(who.ws);
         const exclude = known.slice(-300).map((k) => k.name.slice(0, 120));
         const messages: Anthropic.Beta.BetaMessageParam[] = [
           { role: "user", content: buildPrompt(req, exclude) },
@@ -261,8 +263,8 @@ export async function POST(request: Request) {
           );
           if (submit) {
             const found = sanitize(submit.input);
-            const { fresh } = withoutDuplicates(found, await existingKeys());
-            const added = await insertLeads(fresh, user);
+            const { fresh } = withoutDuplicates(found, await existingKeys(who.ws));
+            const added = await insertLeads(who.ws, fresh, user);
             send({ type: "result", found: found.length, added });
             break;
           }

@@ -25,13 +25,13 @@ export async function POST(request: Request) {
   if (!aiAvailable()) return json({ error: "AI neįjungtas." }, 503);
   const body = (await request.json().catch(() => ({}))) as { leadId?: unknown; model?: unknown; force?: unknown; text?: unknown };
   const id = typeof body.leadId === "string" && /^[\w.-]{1,100}$/.test(body.leadId) ? body.leadId : "";
-  const l = id ? await get("leads", id) : null;
+  const l = id ? await get(who.ws, "leads", id) : null;
   if (!l) return json({ error: "Nerasta įmonė." }, 404);
   // A plan the browser wrote itself (the server couldn't reach the AI): store it for the team.
   if (typeof body.text === "string") {
     const text = body.text.trim().slice(0, 3000);
     if (!text) return json({ error: "Tuščias atsakymas." }, 400);
-    await patch("leads", id, { aiBrief: text, aiBriefAt: Date.now() });
+    await patch(who.ws, "leads", id, { aiBrief: text, aiBriefAt: Date.now() });
     return json({ brief: text });
   }
   if (typeof l.aiBrief === "string" && l.aiBrief && body.force !== true) return json({ brief: l.aiBrief });
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     try {
       const text = await liteText(SYSTEM, facts);
       if (!text) return json({ error: "Tuščias atsakymas." }, 502);
-      await patch("leads", id, { aiBrief: text.slice(0, 3000), aiBriefAt: Date.now() });
+      await patch(who.ws, "leads", id, { aiBrief: text.slice(0, 3000), aiBriefAt: Date.now() });
       return json({ brief: text });
     } catch (err) {
       console.error("[brief:lite]", err, liteErrorMessage(err));
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     if (msg.stop_reason === "refusal") return json({ error: "AI atsisakė." }, 422);
     const text = msg.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("").trim();
     if (!text) return json({ error: "Tuščias atsakymas." }, 502);
-    await patch("leads", id, { aiBrief: text.slice(0, 3000), aiBriefAt: Date.now() });
+    await patch(who.ws, "leads", id, { aiBrief: text.slice(0, 3000), aiBriefAt: Date.now() });
     return json({ brief: text });
   } catch (err) {
     console.error("[brief]", err);

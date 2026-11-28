@@ -29,9 +29,9 @@ function leadLine(l: Lead) {
     .join(" · ");
 }
 
-async function contextBlock(leadId: string | null): Promise<string> {
+async function contextBlock(ws: string, leadId: string | null): Promise<string> {
   const parts: string[] = [];
-  const { docs } = await list("leads");
+  const { docs } = await list(ws, "leads");
   const leads = docs.map((d) => d.data);
   const by: Record<string, number> = {};
   for (const l of leads) by[s(l.status, 20) || "new"] = (by[s(l.status, 20) || "new"] || 0) + 1;
@@ -42,7 +42,7 @@ async function contextBlock(leadId: string | null): Promise<string> {
     .slice(0, 15);
   if (top.length) parts.push(`Neskambintos su didžiausia apyvarta:\n${top.map((l) => `- ${leadLine(l)}`).join("\n")}`);
   if (leadId) {
-    const l = await get("leads", leadId);
+    const l = await get(ws, "leads", leadId);
     if (l) {
       parts.push(
         `Šiuo metu atidaryta įmonė:\n${leadLine(l)}\nTelefonas: ${s(l.phone, 60)}\nEl. paštas: ${s(l.email, 120)}\nSvetainė: ${s(l.website, 200) || "nėra"}\nĮmonės kodas: ${s(l.companyCode, 30)}\nDarbuotojai: ${s(l.employees, 60)}\nKodėl skambinti: ${s(l.reason, 800)}\nŠaltinis: ${s(l.source, 300)}`,
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       const send = (e: Record<string, unknown>) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
       if (liteActive()) {
         let wrote = false;
-        const system = `${SYSTEM}\n\nŠiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who.name}.\n\n${await contextBlock(leadId).catch(() => "")}`;
+        const system = `${SYSTEM}\n\nŠiandien ${new Date().toLocaleDateString("lt-LT")}. Klausia: ${who.name}.\n\n${await contextBlock(who.ws, leadId).catch(() => "")}`;
         const turns = messages.map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: String(m.content) }));
         try {
           await liteStream(system, turns, {
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
       }
       try {
         const client = await aiClient();
-        const context = await contextBlock(leadId);
+        const context = await contextBlock(who.ws, leadId);
         const convo: Anthropic.Beta.BetaMessageParam[] = [...messages];
         for (let round = 0; round < 4; round++) {
           const s2 = client.beta.messages.stream(
